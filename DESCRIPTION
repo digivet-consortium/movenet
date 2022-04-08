@@ -19,4 +19,5 @@ Language: en-GB
 LinkingTo: 
     Rcpp
 Imports: 
-    Rcpp
+    Rcpp,
+    igraph
