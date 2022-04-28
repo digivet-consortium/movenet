@@ -2,12 +2,15 @@
 #'
 #' @param move_data_file a delimited file with movement data
 #'
-#' @importFrom readr read_delim
+#' @importFrom dplyr mutate
+#' @importFrom magrittr %>%
+#' @importFrom readr read_delim parse_datetime
 #'
 #' @return reformatted movement data (selected & renamed columns)
 #' @export
 #'
 #' @examples
+#'
 reformat_move_data <- function(move_data_file, delim = NULL, datetime_format = ""){
 
   source("R/config.R") #better as argument to function, or turned into .yml file?
