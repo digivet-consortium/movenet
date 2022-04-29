@@ -6,7 +6,7 @@
 #'
 #' @importFrom dplyr mutate
 #' @importFrom magrittr %>%
-#' @importFrom readr read_delim parse_datetime
+#' @import readr
 #'
 #' @return reformatted movement data (selected & renamed columns)
 #' @export
