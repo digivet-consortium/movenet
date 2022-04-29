@@ -1,6 +1,8 @@
 #' Reformats movement data from a delimited file into a common intermediate format (extracts and renames selected columns)
 #'
-#' @param move_data_file a delimited file with movement data
+#' @param move_data_file Path to a delimited file with movement data (alternatively: literal data or a connection).
+#' @param delim Character used as delimiter between fields (optional). The default value (NULL) results in an automatic guess based on the first 1000 lines of data.
+#' @param datetime_format Datetime format specification, as described for readr::parse_datetime. The default value ("") results in datetimes being parsed as ISO8601. The format specification must match the complete string.
 #'
 #' @importFrom dplyr mutate
 #' @importFrom magrittr %>%
