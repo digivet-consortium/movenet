@@ -15,7 +15,7 @@
 #'
 reformat_move_data <- function(move_data_file, delim = NULL, datetime_format = ""){
 
-  source("R/config.R") #better as argument to function, or turned into .yml file?
+  #source("R/config.R") #Never use source in a package - use other way of setting options
   varlist <- c(move_ID,origin_ID,dest_ID,dep_date,arr_date,nr_pigs)
 
   read_delim(move_data_file, delim = delim,
@@ -27,4 +27,7 @@ reformat_move_data <- function(move_data_file, delim = NULL, datetime_format = "
            arr_date = parse_datetime(arr_date, format = datetime_format),
            nr_pigs = as.integer(nr_pigs))
 
-  }
+}
+
+
+
