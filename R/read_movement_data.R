@@ -25,7 +25,7 @@ reformat_move_data <- function(move_data_file, delim = NULL, datetime_format = "
     `colnames<-`(c("move_ID","origin_ID","dest_ID","dep_date","arr_date","nr_pigs")) %>%
     mutate(dep_date = parse_datetime(dep_date, format = datetime_format),
            arr_date = parse_datetime(arr_date, format = datetime_format),
-           nr_pigs = as.integer(nr_pigs))
+           nr_pigs = as.integer(nr_pigs)) #or any numeric? (to allow for use with units / application of some probability function)
 
 }
 
