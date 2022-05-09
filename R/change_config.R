@@ -2,21 +2,23 @@
 #' @title Change configurations
 #'
 #' @param country some description
+#'
+#' @importFrom yaml yaml.load_file
 
 
 #' @rdname change_config
 #' @export
-change_config <- function(country){
+change_config <- function(surveillance_system){
 
-  yamlfile <- system.file("configurations", paste0(country, ".yaml"), package="movenet")
-  if(yamlfile=="") stop("Specified country config not found")
+  yamlfile <- system.file("configurations", paste0(surveillance_system, ".yml"), package="movenet")
+  if(yamlfile=="") stop("Specified surveillance system config file not found")
 
   # Change to contents of yaml file:
-  save_config(list(hello=1, date_time="%Y-%m-%d"))
+  save_config(yaml.load_file(yamlfile))
 }
 
 
-#' @rdname change_config
+#' @rdname new_config
 #' @export
 new_config <- function(){
 
@@ -26,7 +28,7 @@ new_config <- function(){
 }
 
 
-#' @rdname change_config
+#' @rdname get_config
 #' @export
 get_config <- function(parameter){
 
