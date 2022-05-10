@@ -19,7 +19,7 @@ change_config <- function(surveillance_system){
 }
 
 
-#' @rdname new_config
+#' @rdname change_config
 #' @export
 new_config <- function(){
 
@@ -29,7 +29,7 @@ new_config <- function(){
 }
 
 
-#' @rdname get_config
+#' @rdname change_config
 #' @export
 get_config <- function(...){
   #This is a mixture of runjags.options and runjags.getOption,
