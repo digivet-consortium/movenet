@@ -2,18 +2,12 @@
 % Please edit documentation in R/change_config.R
 \name{change_config}
 \alias{change_config}
-\alias{new_config}
-\alias{get_config}
 \title{Change configurations}
 \usage{
-change_config(country)
-
-new_config()
-
-get_config(parameter)
+change_config(surveillance_system)
 }
 \arguments{
-\item{country}{some description}
+\item{surveillance_system}{some description}
 }
 \description{
 Change configurations

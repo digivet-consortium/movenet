@@ -2,6 +2,6 @@ Rcpp::loadModule("movenet_module", TRUE)
 
 .onLoad <- function(libname, pkgname){
 
-  change_config("denmark")
+  change_config("ScotEID")
 
 }

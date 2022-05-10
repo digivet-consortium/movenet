@@ -1,9 +1,10 @@
 #' @name change_config
 #' @title Change configurations
 #'
-#' @param country some description
+#' @param surveillance_system some description
 #'
 #' @importFrom yaml yaml.load_file
+#' @importFrom purrr flatten
 
 
 #' @rdname change_config
@@ -23,23 +24,38 @@ change_config <- function(surveillance_system){
 new_config <- function(){
 
   # Option to save the template for editing:
-  file.copy(system.file("configurations", "template.yaml", package="movenet"), getwd())
+  file.copy(system.file("configurations", "template.yml", package="movenet"), getwd())
 
 }
 
 
 #' @rdname get_config
 #' @export
-get_config <- function(parameter){
+get_config <- function(...){
+  #This is a mixture of runjags.options and runjags.getOption,
+  #Allows for querying of multiple options simultaneously
+  #Works with get_config("option1","option2") but not get_config(c("option1","option2"))
 
-  # TODO: use pmatch
-  stopifnot(parameter %in% names(movenetenv$config))
+  opts <- list(...)
+  if(length(opts)>0){
+    recognised <- pmatch(opts, names(movenetenv$config))
+    if(any(is.na(recognised))){
+      warning(paste("Igoring unmatched or ambiguous option(s): ", paste(opts[is.na(recognised)],collapse=", ")))
+      opts <- opts[!is.na(recognised)]
+    }
+    return(movenetenv$config[recognised[!is.na(recognised)]])
+  }
 
-  return(movenetenv$config[[parameter]])
+  #if no specific options given, return full set of options
+  else{
+    return(movenetenv$config)
+  }
+
 }
 
 
 save_config <- function(config){
-  movenetenv$config <- config
+  movenetenv$config <- flatten(config) %>% #can use unlist instead (-> named chr)
+    `names<-`(sub(pattern = ".+\\.(.+)", replacement = "\\1", x = names(.)))
 }
 movenetenv <- new.env()

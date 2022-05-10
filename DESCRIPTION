@@ -21,4 +21,5 @@ LinkingTo:
 Imports: 
     Rcpp,
     igraph,
-    yaml
+    yaml,
+    purrr
