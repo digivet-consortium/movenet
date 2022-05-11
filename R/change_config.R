@@ -9,14 +9,25 @@
 
 #' @rdname change_config
 #' @export
-change_config <- function(surveillance_system){
+load_config <- function(surveillance_system){
 
   yamlfile <- system.file("configurations", paste0(surveillance_system, ".yml"), package="movenet")
   if(yamlfile=="") stop("Specified surveillance system config file not found")
 
   # Change to contents of yaml file:
-  save_config(yaml.load_file(yamlfile))
+  config2options(yaml.load_file(yamlfile))
 }
+
+#' @rdname change_config
+#' @export
+#save_config <- function(name){
+#
+#  template <- system.file("configurations", "template.yml", package="movenet")
+#  outfile <- system.file("configurations", paste0(name, ".yml"), package="movenet")
+#  file.copy(template_path, outfile)
+#
+#  as.yaml(movenetenv$options)
+#}
 
 
 #' @rdname change_config
@@ -38,24 +49,66 @@ get_config <- function(...){
 
   opts <- list(...)
   if(length(opts)>0){
-    recognised <- pmatch(opts, names(movenetenv$config))
+    recognised <- pmatch(opts, names(movenetenv$options))
     if(any(is.na(recognised))){
       warning(paste("Igoring unmatched or ambiguous option(s): ", paste(opts[is.na(recognised)],collapse=", ")))
       opts <- opts[!is.na(recognised)]
     }
-    return(movenetenv$config[recognised[!is.na(recognised)]])
+    return(movenetenv$options[recognised[!is.na(recognised)]])
   }
 
   #if no specific options given, return full set of options
   else{
-    return(movenetenv$config)
+    return(movenetenv$options)
   }
 
 }
 
+#' @rdname change_config
+#' @export
+movenet.options <- function(...){
+  #doesnt work with named list (allowed in R options())
+  #invisibly returns newly set values rather than previous values (as R options() does)
+  #doesn't print options when called without argument (returns values invisibly)
+  opts <- list(...)
 
-save_config <- function(config){
-  movenetenv$config <- flatten(config) %>% #can use unlist instead (-> named chr)
+  if(length(opts)>0){
+    options <- movenetenv$options
+    recognised <- pmatch(names(opts), names(options))
+    if(any(is.na(recognised))){
+      warning(paste("Igoring unmatched or ambiguous option(s): ", paste(names(opts)[is.na(recognised)],collapse=", ")))
+      opts <- opts[!is.na(recognised)]
+    }
+    optnames <- names(options)[recognised[!is.na(recognised)]]
+    if(length(optnames)>0) for(i in 1:length(optnames)){
+      options[optnames[i]] <- opts[[i]]
+    }
+    assign("config",options,envir=movenetenv)
+
+  }
+
+  #Here one can plug in checks for valid option setting
+
+  invisible(movenetenv$options) #returns newly set values rather than previous values
+  }
+
+#' @rdname change_config
+#' @export
+movenet.getOption <- function(name){
+  if(length(name)!=1) stop("Only 1 option can be retrieved at a time")
+  opt <- pmatch(name,names(movenetenv$options))
+  if(is.na(opt)) stop(paste("Unmatched or ambiguous option '", name, "'", sep=""))
+  return(movenetenv$options[[opt]])
+}
+
+
+config2options <- function(config){
+  movenetenv$options <- flatten(config) %>% #can use unlist instead (-> named chr)
     `names<-`(sub(pattern = ".+\\.(.+)", replacement = "\\1", x = names(.)))
 }
 movenetenv <- new.env()
+
+#options2config <- function(options){
+#
+#}
+

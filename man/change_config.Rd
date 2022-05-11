@@ -2,15 +2,22 @@
 % Please edit documentation in R/change_config.R
 \name{change_config}
 \alias{change_config}
+\alias{load_config}
 \alias{new_config}
 \alias{get_config}
+\alias{movenet.options}
+\alias{movenet.getOption}
 \title{Change configurations}
 \usage{
-change_config(surveillance_system)
+load_config(surveillance_system)
 
 new_config()
 
 get_config(...)
+
+movenet.options(...)
+
+movenet.getOption(name)
 }
 \arguments{
 \item{surveillance_system}{some description}
