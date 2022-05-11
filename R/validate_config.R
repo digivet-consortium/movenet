@@ -37,7 +37,7 @@ test_config_structure <- function(file){
     move_keys_obs <- names(yamlfile[["movement_data"]])
     move_keys_exp <- c("move_ID", "origin_ID", "dest_ID", "dep_date", "arr_date", "nr_pigs")
     move_notmissing <- length(move_keys_obs) > 5 && all(move_keys_exp %in% move_keys_obs) #tests that required move keys are present; but file may have more keys
-    move_allchar <- all(sapply(yamlfile[["movement_data"]][move_keys_exp],is.character)) #tests that required move values are all characters (may need adapting for DK dates))
+    move_allchar <- all(sapply(yamlfile[["movement_data"]][move_keys_obs %in% move_keys_exp],is.character)) #tests that required & non-missing move values are all characters (may need adapting for DK dates))
     move_valid <- all(move_notmissing && move_allchar)
 
     #node_keys_obs <- names(yamlfile[["holding_data"]])
@@ -55,7 +55,7 @@ test_config_structure <- function(file){
     #}
     if (!move_allchar){ #Needs adapting when holding data is incorporated
       warning(
-        sprintf("Data fields not in expected character format: %s\n", paste0(move_keys_exp[!sapply(yamlfile[["movement_data"]][move_keys_exp],is.character)],collapse=", "))
+        sprintf("Data fields not in expected character format: %s\n", paste0(names(which(!sapply(yamlfile[["movement_data"]][move_keys_obs %in% move_keys_exp],is.character))),collapse=", "))
       )
     }
 
