@@ -5,3 +5,5 @@ movement_data:
   dep_date: "departure_date" #Date of transport departure
   arr_date: "arrival_date" #Date of transport arrival
   nr_pigs: "qty_pigs" #Number of pigs transported
+
+holding_data:
