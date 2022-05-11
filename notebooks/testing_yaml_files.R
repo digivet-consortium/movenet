@@ -36,7 +36,7 @@ valid_yaml <- function(infile){
   return(valid)
 }
 
-#from https://rdrr.io/cran/validate/src/R/yaml.R
+#adapted from https://rdrr.io/cran/validate/src/R/yaml.R
 is_yaml_file <- function(infile){
   out <- tryCatch(yaml::yaml.load_file(infile),error = function(e) FALSE)
   !identical(out,FALSE)
