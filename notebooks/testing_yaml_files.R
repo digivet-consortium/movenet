@@ -9,6 +9,7 @@
 
 #+ setup, message=FALSE
 devtools::load_all()
+library(yaml)
 
 infile<-system.file("configurations", paste0("ScotEID", ".yml"),package="movenet")
 testempty<-system.file("configurations", paste0("ScotEID_testempty", ".yml"),package="movenet")
