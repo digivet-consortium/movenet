@@ -40,7 +40,7 @@ test_that("validate_config.R returns FALSE and warnings when essential fields ar
 
   expect_warning(validate_config(missing_toplevel), "Missing top-level keys: holding_data")
   expect_warning(validate_config(missing_field), "Missing movement_data keys: nr_pigs")
-  expect_warning(validate_config(missing_field_typo), "Missing movement_data keys: dep_date")
+  expect_warning(validate_config(missing_field_typo), "Missing movement_data keys: move_date")
 
   #add tests that missing_field & missing_field_typo do NOT raise "Data fields not in expected character format" errors ?
 })

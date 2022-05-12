@@ -2,8 +2,7 @@ movement_data:
   move_ID: "movement_reference" #Movement identifier
   origin_ID: "departure_cph" #Identifier of origin holding/establishment/..
   dest_ID: "dest_cph" #Identifier of destination holding/establishment/..
-  dep_date: "departure_date" #Date of transport departure
-  arr_date: "arrival_date" #Date of transport arrival
+  move_date: "departure_date" #Date of transport departure
   nr_pigs: 5 #Number of pigs transported
 
 holding_data:
