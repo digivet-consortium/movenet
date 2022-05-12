@@ -11,9 +11,8 @@
 #'
 #' @export
 validate_config <- function(file){
-
-  if (!is_yaml_file(file)){
-    warning("Input file not valid yaml format", call. = FALSE) #I don't know how to silence the warnings from is_yaml_file()
+  if (is_yaml_file(file)==FALSE){
+    return(FALSE)
   }
   else{
     test_config_structure(file)
@@ -69,7 +68,11 @@ test_config_structure <- function(file){
 #adapted from https://rdrr.io/cran/validate/src/R/yaml.R
 is_yaml_file <- function(file){
   out <- tryCatch(yaml.load_file(file),error = function(e) FALSE)
-  !identical(out,FALSE)
+  test<-!identical(out,FALSE)
+  if(test==FALSE){
+    warning("Input file not valid yaml format", call.=FALSE)
+  }
+  return(test)
 }
 #Accepts lots of formats that can be read as yaml (e.g. .md or .R files)
 #When faced with e.g. pdf, it prints warnings that aren't helpful. How do I silence these?

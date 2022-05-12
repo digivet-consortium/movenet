@@ -12,14 +12,13 @@ test_that("validate_config.R accepts config file with additional fields",{
 
 })
 
-#test_that("validate_config.R returns FALSE and warnings when input is not a yaml file",{
-#
-#  not_yaml<-system.file("configurations", paste0("ScotEID_testmore", ".yml"),package="movenet")
-#  expect_false(validate_config(not_yaml))
-#  expect_warning(validate_config(not_yaml))
-#  expect_snapshot(validate_config(not_yaml))
-#
-#})
+test_that("validate_config.R returns FALSE and warnings when input is not a yaml file",{
+
+  not_yaml<-"../../LICENSE.md"
+  expect_false(validate_config(not_yaml))
+  expect_warning(validate_config(not_yaml), "Input file not valid yaml format")
+
+})
 
 test_that("validate_config.R returns FALSE and warnings when input is an unrelated yaml file",{
 
