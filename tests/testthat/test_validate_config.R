@@ -25,6 +25,8 @@ test_that("validate_config.R returns FALSE and warnings when input is an unrelat
   unrelated_yaml<-"../../DESCRIPTION"
   expect_false(validate_config(unrelated_yaml))
   expect_warning(validate_config(unrelated_yaml), "Missing top-level keys: movement_data, holding_data")
+  expect_warning(validate_config(unrelated_yaml), "Missing movement_data keys")
+  #expect_warning(validate_config(unrelated_yaml), "Missing holding_data keys")
 
 })
 
