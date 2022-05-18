@@ -8,3 +8,5 @@ movement_data:
   bar: 5
 
 holding_data:
+
+extra_field:
