@@ -49,8 +49,8 @@ validate_yaml <- function(file){
 
 validate_config_root <- function(yamlfile){
   root_keys_obs <- names(yamlfile)
-  root_keys_exp <- c("movement_data","holding_data")
-  root_valid <-  length(root_keys_obs) > 1 && all(root_keys_exp %in% root_keys_obs)
+  root_keys_exp <- c("movement_data") #"holding_data"
+  root_valid <-  length(root_keys_obs) > 0 && all(root_keys_exp %in% root_keys_obs)
   if (!root_valid){
     sprintf("Missing mandatory top-level keys: %s", paste0(root_keys_exp[!root_keys_exp %in% root_keys_obs],collapse=", "))
   } #Does this need to be invisible?
