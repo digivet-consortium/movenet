@@ -29,8 +29,9 @@ internal_validate_config <- function(file){
     yamlfile <- yaml.load_file(file)
     msg <- c(
       validate_config_root(yamlfile),
-      validate_config_move(yamlfile)
-     #validate_config_holding(yamlfile)
+      validate_config_move(yamlfile),
+     #validate_config_holding(yamlfile),
+      validate_config_datatype(yamlfile)
     )
     invisible(msg)
   }
@@ -52,36 +53,44 @@ validate_config_root <- function(yamlfile){
   root_keys_exp <- c("movement_data") #"holding_data"
   root_valid <-  length(root_keys_obs) > 0 && all(root_keys_exp %in% root_keys_obs)
   if (!root_valid){
-    sprintf("Missing mandatory top-level keys: %s", paste0(root_keys_exp[!root_keys_exp %in% root_keys_obs],collapse=", "))
+    sprintf("Unexpected config file structure. Missing mandatory top-level keys: %s", paste0(root_keys_exp[!root_keys_exp %in% root_keys_obs],collapse=", "))
   } #Does this need to be invisible?
+
+  #validate_config_root generates the missing message, when keys are present but not at appropriate level.
+  #Can change this behaviour if needed but this gets a bit complicated
 }
 
 validate_config_move <- function(yamlfile){
   move_keys_obs <- names(yamlfile[["movement_data"]])
   move_keys_exp <- c("move_ID", "origin_ID", "dest_ID", "move_date", "nr_pigs")
   move_notmissing <- length(move_keys_obs) > 4 && all(move_keys_exp %in% move_keys_obs) #tests that required move keys are present; but file may have more keys
-  move_allchar <- all(sapply(yamlfile[["movement_data"]][move_keys_obs %in% move_keys_exp],is.character)) #tests that required & non-missing move values are all characters
-  move_valid <- all(move_notmissing && move_allchar)
-  msg <- NULL
   if (!move_notmissing){
-      msg <- append(msg, sprintf("Missing mandatory movement_data keys: %s", paste0(move_keys_exp[!move_keys_exp %in% move_keys_obs],collapse=", ")))
-  }
-  if (!move_allchar){
-      msg <- append(msg, sprintf("Data fields not in expected character format: %s", paste0(names(which(!sapply(yamlfile[["movement_data"]][move_keys_obs %in% move_keys_exp],is.character))),collapse=", ")))
-  }
-  msg #Does this need to be invisible?
+    sprintf("Unexpected config file structure. Missing mandatory second-level (movement_data) keys: %s", paste0(move_keys_exp[!move_keys_exp %in% move_keys_obs],collapse=", "))
+  } #Does this need to be invisible?
+
+  #validate_config_move generates the missing message, when keys are present but not at appropriate level.
+  #Can change this behaviour if needed but this gets a bit complicated
 }
 
 #validate_config_holding <- function(yamlfile){
   #holding_keys_obs <- names(yamlfile[["holding_data"]])
   #holding_keys_exp <-  # ADD MANDATORY KEYS!
   #holding_notmissing <- length(move_keys_obs) > x && all(holding_keys_exp %in% holding_keys_obs) # SUBSTITUTE X!  tests that required holding keys are present; but file may have more keys
-
   #if (!holding_notmissing){
-  #    sprintf("Missing mandatory holding_data keys: %s", paste0(holding_keys_exp[!holding_keys_exp %in% holding_keys_obs],collapse=", "))
+  #    sprintf("Unexpected config file structure. Missing mandatory second-level (holding_data) keys: %s", paste0(holding_keys_exp[!holding_keys_exp %in% holding_keys_obs],collapse=", "))
   #}
 #}
 
-
+validate_config_datatype <- function(yamlfile){
+  move_keys_obs <- names(yamlfile[["movement_data"]])
+  move_keys_exp <- c("move_ID", "origin_ID", "dest_ID", "move_date", "nr_pigs")
+  move_allchar <- all(sapply(yamlfile[["movement_data"]][move_keys_obs %in% move_keys_exp],is.character)) #tests that required & non-missing move values are all characters
+  msg <- NULL
+  if (!move_allchar){
+    msg <- append(msg, sprintf("Data fields not in expected character format: %s", paste0(names(which(!sapply(yamlfile[["movement_data"]][move_keys_obs %in% move_keys_exp],is.character))),collapse=", ")))
+  }
+  # Add checks for holding_data data types
+  msg #Does this need to be invisible?
+}
 
 
