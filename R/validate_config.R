@@ -11,18 +11,24 @@
 #'
 #' @export
 validate_config <- function(file){
+  if (!file.exists(file)){
+    stop(paste0(file, ": no such file exists"))
+  }
   failed_validation_messages = internal_validate_config(file)
   if (is.null(failed_validation_messages)){
     invisible(TRUE)
   }
   else{
     stop(
-      sprintf(paste(file,"is not a valid movenet config file\n%s"), paste0(failed_validation_messages, collapse=""))
+      sprintf(paste(file,"is not a valid movenet config file\n%s"), paste0(failed_validation_messages, collapse="\n"))
     )}
   }
 
 
 internal_validate_config <- function(file){
+  if (!file.exists(file)){
+    stop(paste0(file, ": no such file exists"))
+  }
   if (validate_yaml(file)$test == FALSE){
     invisible(validate_yaml(file)$msg)
   }else{
@@ -39,6 +45,9 @@ internal_validate_config <- function(file){
 
 #adapted from https://rdrr.io/cran/validate/src/R/yaml.R
 validate_yaml <- function(file){
+  if (!file.exists(file)){
+    stop(paste0(file, ": no such file exists"))
+  }
   out <- tryCatch(yaml.load_file(file),error = function(e) FALSE)
   test <- !identical(out,FALSE)
   msg <- NULL

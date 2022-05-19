@@ -49,6 +49,14 @@ test_that("validate_config.R accepts config file with additional (top-level & mo
 
 })
 
+test_that("validate_config.R raises ERROR with informative message when stated input file does not exist",{
+
+  expect_error(validate_config("foo"), "no such file exists")
+  expect_error(internal_validate_config("foo"), "no such file exists")
+  expect_error(validate_yaml("foo"), "no such file exists")
+
+})
+
 test_that("validate_config.R returns ERROR with informative message when input is not a yaml file",{
 
   not_yaml <- "../../LICENSE.md"
