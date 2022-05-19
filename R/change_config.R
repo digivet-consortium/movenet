@@ -103,8 +103,7 @@ movenet.getOption <- function(name){
 
 
 config2options <- function(config){
-  movenetenv$options <- flatten(config) %>% #can use unlist instead (-> named chr)
-    `names<-`(sub(pattern = ".+\\.(.+)", replacement = "\\1", x = names(.)))
+  movenetenv$options <- names(flatten(config))
 }
 movenetenv <- new.env()
 
