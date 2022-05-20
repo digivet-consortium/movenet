@@ -9,10 +9,20 @@
 
 #' @rdname change_config
 #' @export
-load_config <- function(surveillance_system){
+load_config <- function(configname){
 
-  yamlfile <- system.file("configurations", paste0(surveillance_system, ".yml"), package="movenet")
-  if(yamlfile=="") stop("Specified surveillance system config file not found")
+  yamlfile <- system.file("configurations", paste0(configname, ".yml"), package="movenet")
+    if(yamlfile=="") stop(paste("Specified config file", yamlfile,"not found"))
+
+  # Suggestions to allow reading of any configfile (but not worry about config path):
+  # 1) two arguments:
+  # - name for pre-installed configs
+  # - file for path to any config file
+  # if argument not specified and name not found, error.
+  # 2) try to guess from form
+  # - no slashes/extension -> name
+  # - slashes+extension -> path
+  # - extension only -> try name otherwise path
 
   # Change to contents of yaml file:
   config2options(yaml.load_file(yamlfile))
@@ -28,6 +38,8 @@ load_config <- function(surveillance_system){
 #
 #  as.yaml(movenetenv$options)
 #}
+
+# Idea: argument save_to_configurations_dir = TRUE/FALSE (or similar), to save to directory with pre-installed config files rather than working directory
 
 
 #' @rdname change_config
@@ -103,6 +115,7 @@ movenet.getOption <- function(name){
 
 
 config2options <- function(config){
+  op <- options()
   movenetenv$options <- names(flatten(config))
 }
 movenetenv <- new.env()
