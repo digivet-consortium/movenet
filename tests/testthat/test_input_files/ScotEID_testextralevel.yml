@@ -1,8 +1,8 @@
 foo:
   movement_data:
-    move_ID: "movement_reference" #Movement identifier
-    origin_ID: "departure_cph" #Identifier of origin holding/establishment/..
-    dest_ID: "dest_cph" #Identifier of destination holding/establishment/..
-    move_date: "departure_date" #Date of transport departure
+    movenet.move_ID: "movement_reference" #Movement identifier
+    movenet.origin_ID: "departure_cph" #Identifier of origin holding/establishment/..
+    movenet.dest_ID: "dest_cph" #Identifier of destination holding/establishment/..
+    movenet.move_date: "departure_date" #Date of transport departure
 
 

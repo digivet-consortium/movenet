@@ -1,8 +1,6 @@
 movement_data:
-  move_ID: "movement_reference" #Transport identifier
-  origin_ID: "departure_cph" #Identifier of origin holding/establishment/..
-  dest_ID: "dest_cph" #Identifier of destination holding/establishment/..
-  move_date: "departure_date" #Date of transport (if multiple date types are available, use the one deemed most appropriate)
-  nr_pigs: "qty_pigs" #Number of pigs transported
-
-holding_data:
+  movenet.move_ID: "movement_reference" #Transport identifier
+  movenet.origin_ID: "departure_cph" #Identifier of origin holding/establishment/..
+  movenet.dest_ID: "dest_cph" #Identifier of destination holding/establishment/..
+  movenet.move_date: "departure_date" #Date of transport (if multiple date types are available, use the one deemed most appropriate)
+  movenet.nr_pigs: "qty_pigs" #Number of pigs transported
