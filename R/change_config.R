@@ -15,14 +15,9 @@ load_config <- function(configname){
     if(yamlfile=="") stop(paste("Specified config file", yamlfile,"not found"))
 
   # Suggestions to allow reading of any configfile (but not worry about config path):
-  # 1) two arguments:
-  # - name for pre-installed configs
-  # - file for path to any config file
-  # if argument not specified and name not found, error.
-  # 2) try to guess from form
-  # - no slashes/extension -> name
-  # - slashes+extension -> path
-  # - extension only -> try name otherwise path
+  # 1) two arguments: name & path
+  # 2) guess whether name or path from form
+  # See https://github.com/digivet-consortium/movenet/issues/9
 
   # Change to contents of yaml file:
   config2options(yaml.load_file(yamlfile))
@@ -115,8 +110,7 @@ movenet.getOption <- function(name){
 
 
 config2options <- function(config){
-  op <- options()
-  movenetenv$options <- names(flatten(config))
+  movenetenv$options <- flatten(config)
 }
 movenetenv <- new.env()
 
