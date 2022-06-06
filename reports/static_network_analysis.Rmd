@@ -1,5 +1,5 @@
 ---
-title: Static network analysis
+title: "Static network analysis"
 ---
 
 ```{r setup, include = FALSE}
@@ -18,8 +18,31 @@ E(g)$weight <- edgelist$nr_pigs
 
 ```
 
+## Full graph: repeated edges (movements) are considered separately
+
 ```{r plot graph, echo = FALSE}
 plot(g)
 ```
 
+Network size (number of nodes): `r vcount(g)`
 
+Network order (number of edges): `r ecount(g)`
+
+
+## Simplified graph: combining all repeated edges (movements)
+
+```{r simplify graph, echo = FALSE}
+#Overall movement summary (nr_pigs summed over all repeated edges)
+g_moves_summed <- simplify(g, remove.multiple = TRUE, edge.attr.comb = list(nr_pigs = "sum", weight = "sum", "ignore"))
+#Mean (or median) number of pigs moved between each set of vertices
+g_moves_mean <- simplify(g, remove.multiple = TRUE, edge.attr.comb = list(nr_pigs = "mean", weight = "mean", "ignore"))
+g_moves_median <- simplify(g, remove.multiple = TRUE, edge.attr.comb = list(nr_pigs = "median", weight = "median", "ignore"))
+```
+
+```{r plot simplified graph, echo = FALSE}
+plot(g_moves_summed)
+```
+
+Network size (number of nodes): `r vcount(g_moves_summed)`
+
+Network order (number of edges): `r ecount(g_moves_summed)`
