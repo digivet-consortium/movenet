@@ -56,17 +56,18 @@ get_config <- function(...){
 
   opts <- list(...)
   if(length(opts)>0){
-    recognised <- pmatch(opts, names(movenetenv$options))
+    options <- flatten(movenetenv$options)
+    recognised <- pmatch(opts, names(options))
     if(any(is.na(recognised))){
-      warning(paste("Igoring unmatched or ambiguous option(s): ", paste(opts[is.na(recognised)],collapse=", ")))
+      warning(paste("Igoring unmatched or ambiguous option(s): ", paste(names(opts)[is.na(recognised)],collapse=", ")))
       opts <- opts[!is.na(recognised)]
     }
-    return(movenetenv$options[recognised[!is.na(recognised)]])
+    return(options[recognised[!is.na(recognised)]])
   }
 
   #if no specific options given, return full set of options
   else{
-    return(movenetenv$options)
+    return(options)
   }
 
 }
@@ -80,37 +81,39 @@ movenet.options <- function(...){
   opts <- list(...)
 
   if(length(opts)>0){
-    options <- movenetenv$options
-    recognised <- pmatch(names(opts), names(options))
+    options_w_structure <- movenetenv$options
+    options_no_structure <- flatten(movenetenv$options)
+    recognised <- pmatch(names(opts), names(options_no_structure))
     if(any(is.na(recognised))){
       warning(paste("Igoring unmatched or ambiguous option(s): ", paste(names(opts)[is.na(recognised)],collapse=", ")))
       opts <- opts[!is.na(recognised)]
     }
-    optnames <- names(options)[recognised[!is.na(recognised)]]
+    optnames <- names(options_no_structure)[recognised[!is.na(recognised)]]
     if(length(optnames)>0) for(i in 1:length(optnames)){
-      options[optnames[i]] <- opts[[i]]
+      options_no_structure[optnames[i]] <- opts[[i]]
     }
-    assign("config",options,envir=movenetenv)
-
+    assign("options",relist(unlist(options_no_structure),options_w_structure),envir=movenetenv)
   }
 
   #Here one can plug in checks for valid option setting
 
-  invisible(movenetenv$options) #returns newly set values rather than previous values
+  invisible(options) #returns newly set values rather than previous values
   }
+
 
 #' @rdname change_config
 #' @export
 movenet.getOption <- function(name){
   if(length(name)!=1) stop("Only 1 option can be retrieved at a time")
-  opt <- pmatch(name,names(movenetenv$options))
+  options <- flatten(movenetenv$options)
+  opt <- pmatch(name,names(options))
   if(is.na(opt)) stop(paste("Unmatched or ambiguous option '", name, "'", sep=""))
-  return(movenetenv$options[[opt]])
+  return(options[[opt]])
 }
 
 
 config2options <- function(config){
-  movenetenv$options <- flatten(config)
+  movenetenv$options <- config
 }
 movenetenv <- new.env()
 
