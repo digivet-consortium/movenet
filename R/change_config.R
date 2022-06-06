@@ -118,7 +118,4 @@ config2options <- function(config){
 }
 movenetenv <- new.env()
 
-#options2config <- function(options){
-#
-#}
 
