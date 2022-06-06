@@ -98,7 +98,7 @@ movenet.options <- function(...){
 
   #Here one can plug in checks for valid option setting
 
-  invisible(options) #returns newly set values rather than previous values
+  invisible(movenetenv$options) #returns newly set values rather than previous values
   }
 
 
