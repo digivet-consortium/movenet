@@ -3,13 +3,16 @@
 \name{change_config}
 \alias{change_config}
 \alias{load_config}
+\alias{save_config}
 \alias{new_config}
 \alias{get_config}
 \alias{movenet.options}
 \alias{movenet.getOption}
 \title{Change configurations}
 \usage{
-load_config(surveillance_system)
+load_config(configname)
+
+save_config(name)
 
 new_config()
 

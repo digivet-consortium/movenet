@@ -3,7 +3,7 @@
 #'
 #' @param surveillance_system some description
 #'
-#' @importFrom yaml yaml.load_file
+#' @importFrom yaml yaml.load_file write_yaml
 #' @importFrom purrr flatten
 
 
@@ -25,14 +25,15 @@ load_config <- function(configname){
 
 #' @rdname change_config
 #' @export
-#save_config <- function(name){
-#
-#  template <- system.file("configurations", "template.yml", package="movenet")
-#  outfile <- system.file("configurations", paste0(name, ".yml"), package="movenet")
-#  file.copy(template_path, outfile)
-#
-#  as.yaml(movenetenv$options)
-#}
+save_config <- function(name){
+
+  outfile <- paste0(system.file("configurations", package = "movenet"),"/",name,".yml")
+
+  write_yaml(x = movenetenv$options, file = outfile)
+}
+
+# This works but leaves strings/fields unquoted. Is this problematic?
+# Otherwise see as.yaml doc details on adding a "quote" attribute to force quotation marks
 
 # Idea: argument save_to_configurations_dir = TRUE/FALSE (or similar), to save to directory with pre-installed config files rather than working directory
 
