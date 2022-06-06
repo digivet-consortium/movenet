@@ -56,8 +56,8 @@ get_config <- function(...){
   #Works with get_config("option1","option2") but not get_config(c("option1","option2"))
 
   opts <- list(...)
+  options <- flatten(movenetenv$options)
   if(length(opts)>0){
-    options <- flatten(movenetenv$options)
     recognised <- pmatch(opts, names(options))
     if(any(is.na(recognised))){
       warning(paste("Igoring unmatched or ambiguous option(s): ", paste(names(opts)[is.na(recognised)],collapse=", ")))
