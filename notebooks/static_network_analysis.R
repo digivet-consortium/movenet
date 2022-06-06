@@ -45,3 +45,27 @@ reciprocity(random_graph)
 degree_distribution(mygraph)
 plot(degree_distribution(mygraph))
 
+
+#from Schulz et al 2017 https://doi.org/10.1371/journal.pone.0179915
+
+#number of active holdings (i.e. with >=1 edge) - & temporal trend
+vcount(mygraph)
+#number of registered movements - & temporal trend
+ecount(mygraph)
+#number of pigs moved - & temporal trend
+#number of pigs moved between holdings of diff type
+
+
+#holding size - & temporal trend
+
+#loyalty patterns (req comparison of yearly snapshots)
+#in-loyalty, out-loyalty - comparison for different holding types
+
+#network components - overall & for each year
+#
+#(ingoing, outgoing) contact chains for different holding types
+
+
+#methods of network analyses were described and introduced into veterinary science [4,5,6,7].
+#Network analyses of pig movements were performed in several countries and highlighted the potential for pathogen spread and implications for control programs by estimating the potential transmission pathways between holdings connected by direct or indirect contacts [9–14].
+#In Denmark, Bigras-Poulin et al. [16] described trade patterns of Danish pigs between Sept 2002 and May 2003. Their analysis covered only a short time period
