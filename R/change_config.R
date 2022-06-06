@@ -32,8 +32,7 @@ save_config <- function(name){
   write_yaml(x = movenetenv$options, file = outfile)
 }
 
-# This works but leaves strings/fields unquoted. Is this problematic?
-# Otherwise see as.yaml doc details on adding a "quote" attribute to force quotation marks
+# This leaves strings/fields unquoted, but that should be fine.
 
 # Idea: argument save_to_configurations_dir = TRUE/FALSE (or similar), to save to directory with pre-installed config files rather than working directory
 
