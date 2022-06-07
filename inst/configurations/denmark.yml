@@ -1,2 +1,6 @@
 movement_data:
-
+  movenet.move_ID: "ID" #Transport identifier
+  movenet.origin_ID: "CHRNR_AFSENDER" #Identifier of origin holding/establishment/..
+  movenet.dest_ID: "CHRNR_MODTAGER" #Identifier of destination holding/establishment/..
+  movenet.move_date: "DATO_FLYTNING" #Date of transport (if multiple date types are available, use the one deemed most appropriate)
+  movenet.nr_pigs: "ANTAL_FLYT_DYR" #Number of pigs transported
