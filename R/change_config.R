@@ -1,7 +1,7 @@
 #' @name change_config
 #' @title Change configurations
 #'
-#' @param surveillance_system some description
+#' @param configname some description
 #'
 #' @importFrom yaml yaml.load_file write_yaml
 #' @importFrom purrr flatten
@@ -12,22 +12,27 @@
 load_config <- function(configname){
 
   yamlfile <- system.file("configurations", paste0(configname, ".yml"), package="movenet")
-    if(yamlfile=="") stop(paste("Specified config file", yamlfile,"not found"))
+    if(yamlfile=="") stop(paste("Specified config file not found:", configname))
 
   # Suggestions to allow reading of any configfile (but not worry about config path):
   # 1) two arguments: name & path
   # 2) guess whether name or path from form
   # See https://github.com/digivet-consortium/movenet/issues/9
 
-  # Change to contents of yaml file:
-  config2options(yaml.load_file(yamlfile))
+  # Should this also run validate_config.R (or somehow refer to some validation result)?
+
+  # Change options to contents of yaml file:
+  movenetenv$options <- yaml.load_file(yamlfile)
+
+  message(paste("Successfully loaded config file:", configname))
 }
+movenetenv <- new.env()
 
 #' @rdname change_config
 #' @export
-save_config <- function(name){
+save_config <- function(configname){
 
-  outfile <- paste0(system.file("configurations", package = "movenet"),"/",name,".yml")
+  outfile <- paste0(system.file("configurations", package = "movenet"),"/",configname,".yml")
 
   write_yaml(x = movenetenv$options, file = outfile)
 }
@@ -111,10 +116,5 @@ movenet.getOption <- function(name){
   return(options[[opt]])
 }
 
-
-config2options <- function(config){
-  movenetenv$options <- config
-}
-movenetenv <- new.env()
 
 
