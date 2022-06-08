@@ -35,6 +35,8 @@ save_config <- function(configname){
   outfile <- paste0(system.file("configurations", package = "movenet"),"/",configname,".yml")
 
   write_yaml(x = movenetenv$options, file = outfile)
+
+  message(paste("Successfully saved config file:", configname,"\nIt can be found at:", outfile))
 }
 
 # This leaves strings/fields unquoted, but that should be fine.
@@ -47,7 +49,9 @@ save_config <- function(configname){
 new_config <- function(){
 
   # Option to save the template for editing:
-  file.copy(system.file("configurations", "template.yml", package="movenet"), getwd())
+  file.copy(system.file("configurations", "template.yml", package = "movenet"), getwd())
+
+  message(paste0("Successfully saved config template to working directory. It can be found at: ",getwd(),"/template.yml"))
 
 }
 
@@ -64,7 +68,7 @@ get_config <- function(...){
   if(length(opts)>0){
     recognised <- pmatch(opts, names(options))
     if(any(is.na(recognised))){
-      warning(paste("Igoring unmatched or ambiguous option(s): ", paste(names(opts)[is.na(recognised)],collapse=", ")))
+      warning(paste("Ignoring unmatched or ambiguous option(s): ", paste(names(opts)[is.na(recognised)],collapse=", ")))
       opts <- opts[!is.na(recognised)]
     }
     return(options[recognised[!is.na(recognised)]])
@@ -90,7 +94,7 @@ movenet.options <- function(...){
     options_no_structure <- flatten(movenetenv$options)
     recognised <- pmatch(names(opts), names(options_no_structure))
     if(any(is.na(recognised))){
-      warning(paste("Igoring unmatched or ambiguous option(s): ", paste(names(opts)[is.na(recognised)],collapse=", ")))
+      warning(paste("Ignoring unmatched or ambiguous option(s): ", paste(names(opts)[is.na(recognised)],collapse=", ")))
       opts <- opts[!is.na(recognised)]
     }
     optnames <- names(options_no_structure)[recognised[!is.na(recognised)]]
