@@ -10,7 +10,7 @@ library(magrittr)
 
 ```{r create_graph, include = FALSE}
 edgelist <- data %>%
-  select(origin_ID, dest_ID, nr_pigs, dep_date, move_ID)
+  select(origin_ID, dest_ID, nr_pigs, move_date, move_ID)
 
 g <- graph_from_data_frame(edgelist,directed=TRUE)
 
