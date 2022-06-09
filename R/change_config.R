@@ -12,7 +12,7 @@
 load_config <- function(configname){
 
   yamlfile <- system.file("configurations", paste0(configname, ".yml"), package="movenet")
-    if(yamlfile=="") stop(paste("Specified config file not found:", configname))
+  if(yamlfile=="") stop(paste("Specified config file not found:", configname))
 
   # Suggestions to allow reading of any configfile (but not worry about config path):
   # 1) two arguments: name & path
@@ -32,6 +32,7 @@ movenetenv <- new.env()
 #' @export
 save_config <- function(configname){
 
+  if(configname=="") stop('"" is not a valid configname')
   outfile <- paste0(system.file("configurations", package = "movenet"),"/",configname,".yml")
 
   write_yaml(x = movenetenv$options, file = outfile)
@@ -61,52 +62,50 @@ new_config <- function(){
 get_config <- function(...){
   #This is a mixture of runjags.options and runjags.getOption,
   #Allows for querying of multiple options simultaneously
-  #Works with get_config("option1","option2") but not get_config(c("option1","option2"))
+  #Works with get_config("option1","option2"), get_config(c("option1","option2")), and get_config(list("option1","option2"))
 
-  opts <- list(...)
+  opts <- flatten(list(...))
   options <- flatten(movenetenv$options)
   if(length(opts)>0){
     recognised <- pmatch(opts, names(options))
     if(any(is.na(recognised))){
-      warning(paste("Ignoring unmatched or ambiguous option(s): ", paste(names(opts)[is.na(recognised)],collapse=", ")))
+      warning(paste("Ignoring unmatched or ambiguous option(s):", paste(opts[is.na(recognised)],collapse=", ")))
       opts <- opts[!is.na(recognised)]
     }
     return(options[recognised[!is.na(recognised)]])
   }
-
   #if no specific options given, return full set of options
   else{
     return(options)
   }
-
 }
 
 #' @rdname change_config
 #' @export
 movenet.options <- function(...){
   #doesnt work with named list (allowed in R options())
-  #invisibly returns newly set values rather than previous values (as R options() does)
-  #doesn't print options when called without argument (returns values invisibly)
-  opts <- list(...)
+  #doesn't print options when called without argument
+  old_opts <- movenetenv$options
+  options_no_structure <- flatten(movenetenv$options)
+  opts <- flatten(list(...))
 
   if(length(opts)>0){
-    options_w_structure <- movenetenv$options
-    options_no_structure <- flatten(movenetenv$options)
     recognised <- pmatch(names(opts), names(options_no_structure))
     if(any(is.na(recognised))){
-      warning(paste("Ignoring unmatched or ambiguous option(s): ", paste(names(opts)[is.na(recognised)],collapse=", ")))
+      warning(paste("Ignoring unmatched or ambiguous option(s):", paste(names(opts)[is.na(recognised)],collapse=", ")))
       opts <- opts[!is.na(recognised)]
     }
     optnames <- names(options_no_structure)[recognised[!is.na(recognised)]]
     if(length(optnames)>0) for(i in 1:length(optnames)){
       options_no_structure[optnames[i]] <- opts[[i]]
     }
-    assign("options",relist(unlist(options_no_structure),options_w_structure),envir=movenetenv)
+    assign("options",relist(unlist(options_no_structure),old_opts),envir=movenetenv)
+    invisible(old_opts) #invisibly returns previous values (want this with or without structure?)
   }
-
-  #Here one can plug in checks for valid option setting
-
-  invisible(movenetenv$options) #returns newly set values rather than previous values
+  #if no specific options given, return full set of options (without structure)
+  else{
+    return(options_no_structure)
+  }
   }
 
 
