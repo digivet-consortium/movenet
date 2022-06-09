@@ -2,7 +2,9 @@ Package: movenet
 Title: What the Package Does (One Line, Title Case)
 Version: 0.1.0-1
 Authors@R: 
-    person("Matt", "Denwood", , "md@sund.ku.dk", role = c("aut", "cre"))
+    c(person("Matt", "Denwood", , "md@sund.ku.dk", role = c("aut", "cre")),
+      person("Carlijn", "Bogaardt", , "Carlijn.Bogaardt@glasgow.ac.uk", role = "aut")
+      )
 Description: What the package does (one paragraph).
 License: GPL (>= 3)
 Encoding: UTF-8
@@ -10,7 +12,6 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 Suggests: 
     knitr,
-    rmarkdown,
     spelling,
     testthat (>= 3.0.0),
     withr
@@ -20,7 +21,11 @@ Language: en-GB
 LinkingTo: 
     Rcpp
 Imports: 
-    Rcpp,
+    dplyr,
     igraph,
-    yaml,
-    purrr
+    magrittr,
+    purrr,
+    Rcpp,
+    readr,
+    rmarkdown
+    yaml
