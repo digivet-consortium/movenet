@@ -2,7 +2,9 @@ Package: movenet
 Title: What the Package Does (One Line, Title Case)
 Version: 0.1.0-1
 Authors@R: 
-    person("Matt", "Denwood", , "md@sund.ku.dk", role = c("aut", "cre"))
+    c(person("Matt", "Denwood", , "md@sund.ku.dk", role = c("aut", "cre")),
+      person("Carlijn", "Bogaardt", , "Carlijn.Bogaardt@glasgow.ac.uk", role = "aut")
+      )
 Description: What the package does (one paragraph).
 License: GPL (>= 3)
 Encoding: UTF-8
@@ -20,4 +22,7 @@ LinkingTo:
     Rcpp
 Imports: 
     Rcpp,
-    igraph
+    igraph,
+    readr,
+    magrittr,
+    dplyr

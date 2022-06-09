@@ -11,5 +11,10 @@ What the package does (one paragraph).
 \author{
 \strong{Maintainer}: Matt Denwood \email{md@sund.ku.dk}
 
+Authors:
+\itemize{
+  \item Carlijn Bogaardt \email{Carlijn.Bogaardt@glasgow.ac.uk}
+}
+
 }
 \keyword{internal}
