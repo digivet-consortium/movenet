@@ -27,5 +27,5 @@ Imports:
     purrr,
     Rcpp,
     readr,
-    rmarkdown
+    rmarkdown,
     yaml
