@@ -1,0 +1,7 @@
+movement_data:
+  movenet.move_ID: "movement_reference" #Movement identifier
+  movenet.origin_ID: "departure_cph" #Identifier of origin holding/establishment/..
+  movenet.dest_ID: "dest_cph" #Identifier of destination holding/establishment/..
+  movenet.move_date: "departure_date" #Date of transport departure
+  movenet.nr_pigs: 5 #Number of pigs transported
+

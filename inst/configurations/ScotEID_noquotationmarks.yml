@@ -1,0 +1,6 @@
+movement_data:
+  movenet.move_ID: movement_reference
+  movenet.origin_ID: departure_cph
+  movenet.dest_ID: dest_cph
+  movenet.move_date: departure_date
+  movenet.nr_pigs: qty_pigs
