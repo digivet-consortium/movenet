@@ -144,3 +144,33 @@ test_that("get_config() returns all options, if an empty list is given",{
 })
 
 
+test_that("movenet.options() returns value of a single option, if this is requested by its full name",{
+  expect_vector(movenet.options("movenet.move_ID"), ptype=list(), size =1)
+  expect_named(movenet.options("movenet.move_ID"), c("movenet.move_ID"))
+  expect_mapequal(movenet.options("movenet.move_ID"), movenetenv$options$movement_data["movenet.move_ID"])
+})
+test_that("movenet.options() returns value of a single option, if this is requested by a correct partial match",{
+  expect_vector(movenet.options("movenet.move_I"), ptype=list(), size =1)
+  expect_named(movenet.options("movenet.move_I"), c("movenet.move_ID"))
+  expect_mapequal(movenet.options("movenet.move_I"), movenetenv$options$movement_data["movenet.move_ID"])
+})
+test_that("movenet.options() returns value of multiple options, if requested by their full names as separate character strings",{
+  expect_vector(movenet.options("movenet.move_ID", "movenet.nr_pigs"), ptype=list(), size = 2)
+  expect_named(movenet.options("movenet.move_ID", "movenet.nr_pigs"), c("movenet.move_ID", "movenet.nr_pigs"))
+  expect_mapequal(movenet.options("movenet.move_ID", "movenet.nr_pigs"), movenetenv$options$movement_data[c("movenet.move_ID","movenet.nr_pigs")])
+})
+test_that("movenet.options() returns value of multiple options, if requested by their full names as a single character vector",{
+  expect_vector(movenet.options(c("movenet.move_ID", "movenet.nr_pigs")), ptype=list(), size = 2)
+  expect_named(movenet.options(c("movenet.move_ID", "movenet.nr_pigs")), c("movenet.move_ID", "movenet.nr_pigs"))
+  expect_mapequal(movenet.options(c("movenet.move_ID", "movenet.nr_pigs")), movenetenv$options$movement_data[c("movenet.move_ID","movenet.nr_pigs")])
+})
+test_that("movenet.options() returns all options, if no argument is given",{
+  expect_vector(movenet.options(), ptype=list(), size = length(flatten(movenetenv$options)))
+  expect_mapequal(movenet.options(), flatten(movenetenv$options))
+})
+test_that("movenet.options() returns all options, if an empty list is given",{
+  expect_vector(movenet.options(list()), ptype=list(), size = length(flatten(movenetenv$options)))
+  expect_mapequal(movenet.options(list()), flatten(movenetenv$options))
+})
+
+
