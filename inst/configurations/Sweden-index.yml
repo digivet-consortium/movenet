@@ -1,0 +1,5 @@
+movement_data:
+  movenet.origin_ID: "#1" #Identifier of origin holding/establishment/..
+  movenet.dest_ID: "#2" #Identifier of destination holding/establishment/..
+  movenet.move_date: "#3" #Date of transport (if multiple date types are available, use the one deemed most appropriate)
+  movenet.nr_pigs: "#7" #Number of pigs transported
