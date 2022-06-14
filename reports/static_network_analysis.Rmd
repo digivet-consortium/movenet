@@ -28,7 +28,6 @@ Network size (number of nodes): `r vcount(g)`
 
 Network order (number of edges): `r ecount(g)`
 
-
 ## Simplified graph: combining all repeated edges (movements)
 
 ```{r simplify graph, echo = FALSE}
@@ -46,3 +45,30 @@ plot(g_moves_summed)
 Network size (number of nodes): `r vcount(g_moves_summed)`
 
 Network order (number of edges): `r ecount(g_moves_summed)`
+
+## Centrality
+
+### Degree centrality (all, in, out)
+```{r degree distribution, echo = FALSE}
+plot(degree_distribution(g, mode = "all", cumulative = TRUE)[-1], log="xy", ylab = "CCDF", xlab = "Degree") #[-1] to exclude degree = 0, and make "index" (original x axis, starting with 1 = degree 0) equal to degree
+plot(degree_distribution(g, mode = "in", cumulative = TRUE)[-1], log="xy", ylab = "CCDF", xlab = "Indegree")
+plot(degree_distribution(g, mode = "out", cumulative = TRUE)[-1], log="xy", ylab = "CCDF", xlab = "Outdegree")
+```
+
+### Closeness centrality (all)
+```{r closeness, echo = FALSE}
+hist(closeness(g, mode = "all"))
+```
+
+### Betweenness centrality (weighted by nr pigs - prob wrong way)
+```{r betweenness, echo = FALSE}
+hist(betweenness(g))
+```
+
+## Components
+Whether the graph is strongly connected?
+```{r components, echo = FALSE}
+is_connected(g) 
+components(g)
+```
+
