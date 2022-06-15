@@ -15,7 +15,7 @@
 #'
 reformat_move_data <- function(move_data_file, delim = NULL, datetime_format = ""){
 
-  varlist <- movenetenv$options$movement_data[c("movenet.move_ID","movenet.origin_ID","movenet.dest_ID","movenet.move_date","movenet.nr_pigs")]
+  varlist <- movenetenv$options$movement_data[c("movenet.origin_ID","movenet.dest_ID","movenet.move_date","movenet.nr_pigs")]
 
   read_delim(move_data_file, delim = delim,
              col_select = unlist(varlist),
