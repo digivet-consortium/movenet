@@ -1,7 +1,3 @@
-test_that("multiplication works", {
-  expect_equal(2 * 2, 4)
-})
-
 #locale doesn't influence sep
 #read in .csv
 #read in .tsv
@@ -20,14 +16,12 @@ test_that("multiplication works", {
 
 test_that("datetime is interpreted correctly, when using iso format", {
   #set example data with iso dates, run function
-  expect_s3_class(data$dep_date, "POSIXct")
-  expect_s3_class(data$arr_date, "POSIXct")
+  expect_s3_class(data$move_date, "POSIXct")
   })
 
 test_that("datetime is interpreted correctly, when providing a format string", {
   #set example data with non-iso dates, run function with valid format string options
-  expect_s3_class(data$dep_date, "POSIXct")
-  expect_s3_class(data$arr_date, "POSIXct")
+  expect_s3_class(data$move_date, "POSIXct")
 })
 
 test_that("warning/error is raised when datetime format string is invalid (not a recognisable datetime format string)", {
