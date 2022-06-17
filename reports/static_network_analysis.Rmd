@@ -9,12 +9,11 @@ library(magrittr)
 ```
 
 ```{r create_graph, include = FALSE}
-edgelist <- data %>%
-  select(origin_ID, dest_ID, nr_pigs, move_date)
+edgelist <- data
 
 g <- graph_from_data_frame(edgelist,directed=TRUE)
 
-E(g)$weight <- edgelist$nr_pigs
+E(g)$weight <- edgelist[[4]] #equivalent to nr_pigs
 
 ```
 
