@@ -15,15 +15,17 @@
 #'
 reformat_move_data <- function(move_data_file, delim = NULL, datetime_format = ""){
 
-  varlist <- movenetenv$options$movement_data[c("movenet.origin_ID","movenet.dest_ID","movenet.move_date","movenet.nr_pigs")]
+  minvars <- movenetenv$options$movement_data[c("movenet.origin_ID","movenet.dest_ID","movenet.move_date","movenet.nr_pigs")]
+  extra <- movenetenv$options$movement_data[is.na(match(names(movenetenv$options$movement_data),c("movenet.origin_ID","movenet.dest_ID","movenet.move_date","movenet.nr_pigs")))]
+
+  #create list with column types for minimal variables
+  minvar_coltypes <- list("c", "c", col_datetime(format = datetime_format), "i") #or any numeric for nr_pigs? (to allow for use with units / application of some probability function)
+  names(minvar_coltypes) <- lapply(unname(minvars),FUN=as.name)
 
   read_delim(move_data_file, delim = delim,
-             col_select = unlist(varlist),
-             col_types = cols(.default = col_character())
-             ) %>%
-    `colnames<-`(gsub("movenet\\.(.*)","\\1",names(varlist))) %>%
-    mutate(move_date = parse_datetime(move_date, format = datetime_format),
-           nr_pigs = as.integer(nr_pigs)) #or any numeric? (to allow for use with units / application of some probability function)
+             col_select = unname(unlist(c(minvars,extra))),
+             col_types = minvar_coltypes #this guesses column type when not specified, i.e. for extra variables
+             )
 
 }
 
