@@ -1,5 +1,5 @@
 movement_data:
-  movenet.origin_ID: "Fr\u00E5nppn" #Identifier of origin holding/establishment/..
-  movenet.dest_ID: "Tillppn" #Identifier of destination holding/establishment/..
-  movenet.move_date: "Avf\u00E4rdsdatum" #Date of transport (if multiple date types are available, use the one deemed most appropriate)
-  movenet.nr_pigs: "Djurantal" #Number of pigs transported
+  movenet.origin_ID: "Fr\u00E5nppn" #Column name or number for Identifier of origin holding/establishment/..
+  movenet.dest_ID: "Tillppn" #Column name or number for Identifier of destination holding/establishment/..
+  movenet.move_date: "Avf\u00E4rdsdatum" #Column name or number for Date of transport (if multiple date types are available, use the one deemed most appropriate)
+  movenet.nr_pigs: "Djurantal" #Column name or number for Number of pigs transported

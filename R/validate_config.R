@@ -71,8 +71,8 @@ validate_config_root <- function(yamlfile){
 
 validate_config_move <- function(yamlfile){
   move_keys_obs <- names(yamlfile[["movement_data"]])
-  move_keys_exp <- c("movenet.move_ID", "movenet.origin_ID", "movenet.dest_ID", "movenet.move_date", "movenet.nr_pigs")
-  move_notmissing <- length(move_keys_obs) > 4 && all(move_keys_exp %in% move_keys_obs) #tests that required move keys are present; but file may have more keys
+  move_keys_exp <- c("movenet.origin_ID", "movenet.dest_ID", "movenet.move_date", "movenet.nr_pigs")
+  move_notmissing <- length(move_keys_obs) > 3 && all(move_keys_exp %in% move_keys_obs) #tests that required move keys are present; but file may have more keys
   if (!move_notmissing){
     sprintf("Unexpected config file structure. Missing mandatory second-level (movement_data) keys: %s", paste0(move_keys_exp[!move_keys_exp %in% move_keys_obs],collapse=", "))
   } #Does this need to be invisible?
@@ -92,11 +92,13 @@ validate_config_move <- function(yamlfile){
 
 validate_config_datatype <- function(yamlfile){
   move_keys_obs <- names(yamlfile[["movement_data"]])
-  move_keys_exp <- c("movenet.move_ID", "movenet.origin_ID", "movenet.dest_ID", "movenet.move_date", "movenet.nr_pigs")
-  move_allchar <- all(sapply(yamlfile[["movement_data"]][move_keys_obs %in% move_keys_exp],is.character)) #tests that required & non-missing move values are all characters
+  move_keys_exp <- c("movenet.origin_ID", "movenet.dest_ID", "movenet.move_date", "movenet.nr_pigs")
+  move_char <- sapply(yamlfile[["movement_data"]][move_keys_obs %in% move_keys_exp],is.character) #tests that required & non-missing move values are characters
+  move_int <- sapply(yamlfile[["movement_data"]][move_keys_obs %in% move_keys_exp],is.integer) #tests that required & non-missing move values are integers
+  move_charint <- (move_char | move_int)
   msg <- NULL
-  if (!move_allchar){
-    msg <- append(msg, sprintf("Data fields not in expected character format: %s", paste0(names(which(!sapply(yamlfile[["movement_data"]][move_keys_obs %in% move_keys_exp],is.character))),collapse=", ")))
+  if (!all(move_charint)){
+    msg <- append(msg, sprintf("Data fields not in expected character or integer format: %s", paste0(names(which(move_charint==FALSE)),collapse=", ")))
   }
   # Add checks for holding_data data types
   msg #Does this need to be invisible?
