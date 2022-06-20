@@ -6,14 +6,16 @@ title: "Static network analysis"
 library(dplyr)
 library(igraph)
 library(magrittr)
+truenames <- colnames(data)
+colnames(data)[1:4]<-c("origin_ID","dest_ID","move_date","nr_pigs")
+#can reset names of edge attributes with names(edge_attr(g))<-truenames[-c(1,2)]
 ```
 
 ```{r create_graph, include = FALSE}
-edgelist <- data
 
-g <- graph_from_data_frame(edgelist,directed=TRUE)
+g <- graph_from_data_frame(data,directed=TRUE)
 
-E(g)$weight <- edgelist[[4]] #equivalent to nr_pigs
+E(g)$weight <- data$nr_pigs
 
 ```
 
