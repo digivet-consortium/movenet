@@ -15,8 +15,13 @@
 #'
 reformat_move_data <- function(move_data_file, delim = NULL, datetime_format = ""){
 
+  if (!file.exists(file)){
+    stop(paste0(move_data_file, ": no such file exists"))
+  }
+
   minvars <- movenetenv$options$movement_data[c("movenet.origin_ID","movenet.dest_ID","movenet.move_date","movenet.nr_pigs")]
   extra <- movenetenv$options$movement_data[is.na(match(names(movenetenv$options$movement_data),c("movenet.origin_ID","movenet.dest_ID","movenet.move_date","movenet.nr_pigs")))]
+
 
   #create list with column types for minimal variables
   minvar_coltypes <- list("c", "c", col_datetime(format = datetime_format), "i") #or any numeric for nr_pigs? (to allow for use with units / application of some probability function)
