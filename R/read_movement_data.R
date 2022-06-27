@@ -6,6 +6,7 @@
 #'
 #' @importFrom dplyr mutate
 #' @importFrom magrittr %>%
+#' @importFrom purrr has_element
 #' @import readr
 #'
 #' @return reformatted movement data (selected & renamed columns)
@@ -15,11 +16,16 @@
 #'
 reformat_move_data <- function(move_data_file, delim = NULL, datetime_format = ""){
 
-  if (!file.exists(file)){
+  if (!file.exists(move_data_file)){
     stop(paste0(move_data_file, ": no such file exists"))
   }
 
-  minvars <- movenetenv$options$movement_data[c("movenet.origin_ID","movenet.dest_ID","movenet.move_date","movenet.nr_pigs")]
+  min_move_keys <- c("movenet.origin_ID", "movenet.dest_ID", "movenet.move_date", "movenet.nr_pigs")
+  if (!all(min_move_keys %in% names(movenetenv$options$movement_data))){
+    stop(sprintf("Unexpected config structure. Missing mandatory movement_data keys: %s", paste0(min_move_keys[!min_move_keys %in% names(movenetenv$options$movement_data)],collapse=", ")))
+  }
+  minvars <- movenetenv$options$movement_data[min_move_keys]
+
   extra <- movenetenv$options$movement_data[is.na(match(names(movenetenv$options$movement_data),c("movenet.origin_ID","movenet.dest_ID","movenet.move_date","movenet.nr_pigs")))]
 
 
@@ -31,7 +37,6 @@ reformat_move_data <- function(move_data_file, delim = NULL, datetime_format = "
              col_select = unname(unlist(c(minvars,extra))),
              col_types = minvar_coltypes #this guesses column type when not specified, i.e. for extra variables
              )
-
 }
 
 
