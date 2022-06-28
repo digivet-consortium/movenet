@@ -50,17 +50,17 @@ reformat_move_data <- function(move_data_file, delim = NULL, datetime_format = "
 
 reformat_nrpigs <- function(nr_pigs_col){
   tryCatch(
-    warning = function(cnd) {
+    error = function(cnd) {
       cnd$message <- paste0("Column `",colnames(nr_pigs_col),"` must be an integer: it can't contain a decimal or grouping mark.")
-      suppressWarnings(stop(cnd, call. = FALSE))
+      stop(cnd)
     },
-    parse_integer(nr_pigs_col[[colnames(nr_pigs_col)]])
+    withr::with_options(list(warn=2),parse_integer(nr_pigs_col[[colnames(nr_pigs_col)]]))
   )
 }
 
 reformat_date <- function(date_col, datetime_format){
   tryCatch(
-    warning = function(cnd) {
+    error = function(cnd) {
       old_message <- cnd$message
       msg <- paste0("Can't parse column `",colnames(date_col),"` as date.\n")
       msglist <- c()
@@ -81,10 +81,11 @@ reformat_date <- function(date_col, datetime_format){
         msglist <- c(msglist,paste0("The specified `datetime_format` (value `",datetime_format,"`) and the actual format of column `",colnames(date_col),"` don't appear to match.\nAlternatively, column `",colnames(date_col),
                                     "` contains one or more invalid dates.\nSee `?parse_datetime` for guidance on readr date(time) format specifications.\nOriginal readr warning message:\n",old_message))
       }
-      cnd$message <- paste0(msg, paste0(msglist,collapse="\nAdditionally:\n"))
-      suppressWarnings(stop(cnd, call. = FALSE))
+      cnd$message <- paste0(msg, paste0(msglist,collapse="\nIn addition:\n"))
+      stop(cnd)
     },
-    parse_datetime(date_col[[colnames(date_col)]], format = datetime_format)
+    withr::with_options(list(warn=2),
+                        parse_datetime(date_col[[colnames(date_col)]], format = datetime_format))
   )
 }
 
