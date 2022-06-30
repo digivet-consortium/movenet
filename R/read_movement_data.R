@@ -25,23 +25,20 @@ reformat_move_data <- function(move_data_file, delim = NULL, datetime_format = "
     stop(sprintf("Unexpected config structure. Missing mandatory movement_data keys: %s", paste0(min_move_keys[!min_move_keys %in% names(movenetenv$options$movement_data)],collapse=", ")))
   }
 
-  #identify columns of interest
-  minvars <- movenetenv$options$movement_data[min_move_keys] #mandatory
-  extra <- movenetenv$options$movement_data[is.na(match(names(movenetenv$options$movement_data),min_move_keys))] #optional
-
-  #read in datafile (all columns), with col type for mandatory columns (minvars) initially set as character
-  minvar_coltypes <- list("c", "c", "c", "c") #this creates named list with col type for minvars
-  names(minvar_coltypes) <- unlist(unname(minvars))
-  all_data <- read_delim(move_data_file, delim = delim,
-                         col_types = minvar_coltypes #this guesses col type when not specified, i.e. for extra variables
-                         )
+  #read in datafile (all columns), with col type initially character for all columns
+  all_data <- read_delim(move_data_file, delim = delim, col_types = cols(.default = col_character()))
 
   #select columns of interest
+  minvars <- movenetenv$options$movement_data[min_move_keys] #mandatory
+  extra <- movenetenv$options$movement_data[is.na(match(names(movenetenv$options$movement_data),min_move_keys))] #optional
   selected_data <- select_cols(data = all_data, minvars = minvars, extra = extra)
 
-  #check data & change col types for nr_pigs and move_date; or raise informative errors
+  #check data & change col types; or raise informative errors
   selected_data[minvars$movenet.nr_pigs] <- reformat_nrpigs(selected_data[minvars$movenet.nr_pigs])
   selected_data[minvars$movenet.move_date] <- reformat_date(selected_data[minvars$movenet.move_date], datetime_format = datetime_format)
+  if (length(selected_data) > 4){
+    selected_data[unlist(extra[extra %in% names(selected_data)])] <- suppressMessages(type_convert(selected_data[unlist(extra[extra %in% names(selected_data)])])) #guess coltype of extra columns
+  }
 
   return(selected_data)
 }
