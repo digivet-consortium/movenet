@@ -1,6 +1,5 @@
 old_config<-movenetenv$options
-load_config("ScotEID")
-#suppressMessages(load_config("ScotEID"))
+suppressMessages(load_config("ScotEID"))
 ScotEID_config <- yaml.load_file(system.file("configurations", "ScotEID.yml", package="movenet"))
 ScotEID_movedata <- ScotEID_config$movement_data
 ScotEID_colnames <- unlist(unname(ScotEID_movedata[c("movenet.origin_ID","movenet.dest_ID","movenet.move_date","movenet.nr_pigs","movenet.move_ID")]))
@@ -43,15 +42,25 @@ test_that("When input datafile does not exist, an error is raised", {
   expect_error(reformat_move_data("foo.csv"), 'no such file exists')
 })
 
-#WIP!! Requires catching error from read_delim
-#test_that("when input datafile misses a min col, an error is raised", {
-#  expect_error(reformat_move_data("test_input_files/ScotEID_testdata_colmissing.csv"), "")
-#  expect_error(reformat_move_data("test_input_files/ScotEID_testdata_2colsmissing.csv"), "")
-#})
+test_that("when input datafile misses (a) mandatory col(s), an error is raised", {
+  expect_error(reformat_move_data("test_input_files/ScotEID_testdata_colmissing.csv"), "Can't find the following mandatory columns in the datafile\\: departure_date")
+  expect_error(reformat_move_data("test_input_files/ScotEID_testdata_2colsmissing.csv"), "Can't find the following mandatory columns in the datafile\\: dest_cph, departure_date")
+#These also raise warnings when run through testthat (though not when the function is run directly on my system?)
+#because lines 33-36 of read_movement_data: I set a column type for a column that doesn't exist, so vroom says: "The following named parsers don't match the column names: departure_date"
+#Is this always silent (if so not a problem)?
+})
 
-#WIP!! Requires catching error from read_delim
-#test_that("when input datafile misses a requested extra col, a warning is raised", {
-#})
+test_that("when input datafile misses a requested optional col, a warning is raised and results are produced without the col", {
+  expect_warning(reformat_move_data("test_input_files/ScotEID_testdata_optcolmissing.csv"), "Can't find the following requested optional columns in the datafile\\: movement_reference\\.\n Proceeding without missing optional columns\\.")
+  output <- reformat_move_data("test_input_files/ScotEID_testdata_optcolmissing.csv")
+  expect_s3_class(output,"data.frame")
+  expect_named(output,ScotEID_colnames[c(1:4)])
+  expect_type(output[[ScotEID_movedata$movenet.origin_ID]], "character")
+  expect_type(output[[ScotEID_movedata$movenet.dest_ID]], "character")
+  expect_s3_class(output[[ScotEID_movedata$movenet.move_date]], "POSIXct") #this also works for wrong datetime formats though
+  expect_true(all(!is.na(output[[ScotEID_movedata$movenet.move_date]]))) #tests that all dates are interpretable = no NAs generated
+  expect_type(output[[ScotEID_movedata$movenet.nr_pigs]], "integer")
+})
 
 test_that("datetime is interpreted correctly, when input has implicit iso format, but some dates are missing (NAs)", {
   output <- expect_condition(reformat_move_data("test_input_files/ScotEID_testdata_NAdate.csv"), NA) #test lack of warning/error
