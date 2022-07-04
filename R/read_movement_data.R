@@ -26,7 +26,7 @@ reformat_move_data <- function(move_data_file, delim = NULL, datetime_format = "
   }
 
   #read in datafile (all columns), with col type initially character for all columns
-  all_data <- read_delim(move_data_file, delim = delim, col_types = cols(.default = col_character()))
+  all_data <- read_delim(move_data_file, delim = delim, col_types = cols(.default = col_character()), lazy = TRUE)
 
   #select columns of interest
   minvars <- movenetenv$options$movement_data[min_move_keys] #mandatory
