@@ -31,6 +31,12 @@ reformat_move_data <- function(move_data_file, delim = NULL, datetime_format = "
   #select columns of interest
   minvars <- movenetenv$options$movement_data[min_move_keys] #mandatory
   extra <- movenetenv$options$movement_data[is.na(match(names(movenetenv$options$movement_data),min_move_keys))] #optional
+  #convert options with integer values (column indices) to column names
+  if(any(sapply(movenetenv$options$movement_data,is.integer))){
+    opt_w_names <- colindex2name(data = all_data, minvars = minvars, extra = extra)
+    minvars <- opt_w_names[[1]]
+    extra <- opt_w_names[[2]]
+  }
   selected_data <- select_cols(data = all_data, minvars = minvars, extra = extra)
 
   #check data & change col types; or raise informative errors
@@ -43,6 +49,28 @@ reformat_move_data <- function(move_data_file, delim = NULL, datetime_format = "
   return(selected_data)
 }
 
+colindex2name <- function(data, minvars, extra){
+  if (any(sapply(minvars, is.integer))){
+    if (any(sapply(minvars, function(x) (is.integer(x) & x > length(data))))){
+      outofrange_minvars <- minvars[which(sapply(minvars, function(x) (is.integer(x) & x > length(data))))]
+      stop(sprintf("Can't find the following mandatory columns in the datafile: %s.\nThese column indices exceed the number of columns in the datafile.",
+                   paste0("#",outofrange_minvars," (",names(outofrange_minvars),")", collapse = ", ")), call. = FALSE)
+    }
+    minvars[names(minvars[which(sapply(minvars, is.integer))])] <- colnames(data)[unlist(minvars[which(sapply(minvars, is.integer))])]
+  }
+  if (any(sapply(extra, is.integer))){
+    if (any(sapply(extra, function(x) (is.integer(x) & x > length(data))))){
+      outofrange_extra <- extra[which(sapply(extra, function(x) (is.integer(x) & x > length(data))))]
+      warning(sprintf("Can't find the following requested optional columns in the datafile: %s.\nThese column indices exceed the number of columns in the datafile.\nProceeding without missing optional columns.",
+                      paste0("#",outofrange_extra," (",names(outofrange_extra),")", collapse = ", ")), call. = FALSE)
+      extra[which(extra %in% outofrange_extra)] <- NULL
+    }
+    withinrange_extra <- extra[which(sapply(extra, function(x) (is.integer(x) & x <= length(data))))]
+    extra[names(extra[which(extra %in% withinrange_extra)])] <- colnames(data)[unlist(withinrange_extra)]
+  }
+  return(list(minvars,extra))
+}
+
 select_cols <- function(data, minvars, extra){
   if (!(all(unlist(minvars) %in% colnames(data)))){
     missing_minvars <- unname(unlist(minvars))[which(!(unlist(minvars) %in% colnames(data)))]
@@ -50,7 +78,7 @@ select_cols <- function(data, minvars, extra){
   }
   if (!(all(unlist(extra) %in% colnames(data)))){
     missing_extra <- unname(unlist(extra))[which(!(unlist(extra) %in% colnames(data)))]
-    warning(sprintf("Can't find the following requested optional columns in the datafile: %s.\n Proceeding without missing optional columns.",
+    warning(sprintf("Can't find the following requested optional columns in the datafile: %s.\nProceeding without missing optional columns.",
                     paste0(missing_extra, collapse=", ")),
             call. = FALSE)
     to_extract <- unname(unlist(c(minvars,extra)))[-which(unname(unlist(c(minvars,extra))) %in% missing_extra)]
