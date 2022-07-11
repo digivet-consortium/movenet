@@ -12,7 +12,7 @@
 \usage{
 load_config(configname)
 
-save_config(name)
+save_config(configname)
 
 new_config()
 
@@ -23,7 +23,7 @@ movenet.options(...)
 movenet.getOption(name)
 }
 \arguments{
-\item{surveillance_system}{some description}
+\item{configname}{some description}
 }
 \description{
 Change configurations

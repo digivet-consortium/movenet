@@ -4,7 +4,7 @@
 #' @param configname some description
 #'
 #' @importFrom yaml yaml.load_file write_yaml
-#' @importFrom purrr flatten
+#' @importFrom purrr flatten modify
 
 
 #' @rdname change_config
@@ -88,18 +88,27 @@ movenet.options <- function(...){
   old_opts <- movenetenv$options
   options_no_structure <- flatten(movenetenv$options)
   opts <- flatten(list(...))
-
+  if(has_element(list(...), NULL)){
+    #The following should really only be for mandatory options. Should somehow allow functionality to remove optional options with NULL
+    #But the assign/relist statement in line 111 doesnt deal well with NULLs -> ??
+    warning(paste("Option values can't be NULL.\nIgnoring option(s) with value NULL:", paste(names(list(...))[which(sapply(list(...),is.null))],collapse=", ")), call. = FALSE)
+  }
   if(length(opts)>0){
     recognised <- pmatch(names(opts), names(options_no_structure))
     if(any(is.na(recognised))){
-      warning(paste("Ignoring unmatched or ambiguous option(s):", paste(names(opts)[is.na(recognised)],collapse=", ")))
+      warning(paste("Ignoring unmatched or ambiguous option(s):", paste(names(opts)[is.na(recognised)],collapse=", ")), call. = FALSE)
       opts <- opts[!is.na(recognised)]
     }
     optnames <- names(options_no_structure)[recognised[!is.na(recognised)]]
+    if(any(!sapply(opts,function(x){is.character(x) | is.integer(x)}))){
+      warning(paste("Option values must be character (column name) or integer (column index) format.\nIgnoring non-character/non-integer value(s) for option(s):",paste(names(opts)[which(!sapply(opts,function(x){is.character(x) | is.integer(x)}))],collapse=", ")), call. = FALSE)
+      optnames <- optnames[-which(!sapply(opts,function(x){is.character(x) | is.integer(x)}))]
+      opts <- opts[-which(!sapply(opts,function(x){is.character(x) | is.integer(x)}))]
+    }
     if(length(optnames)>0) for(i in 1:length(optnames)){
       options_no_structure[optnames[i]] <- opts[[i]]
     }
-    assign("options",relist(unlist(options_no_structure),old_opts),envir=movenetenv)
+    assign("options",modify(relist(options_no_structure,old_opts),flatten),envir=movenetenv) #this doesn't deal well with NULLs
     invisible(old_opts) #invisibly returns previous values (want this with or without structure?)
   }
   #if no specific options given, return full set of options (without structure)
