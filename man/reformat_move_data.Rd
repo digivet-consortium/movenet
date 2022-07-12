@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_movement_data.R
 \name{reformat_move_data}
 \alias{reformat_move_data}
-\title{Reformats movement data from a delimited file into a common intermediate format (extracts and renames selected columns)}
+\title{Reading and reformatting of animal movement data}
 \usage{
 reformat_move_data(move_data_file, delim = NULL, datetime_format = "")
 }

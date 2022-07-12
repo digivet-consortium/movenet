@@ -1,3 +1,6 @@
+#' @title Reading and reformatting of animal movement data
+#'
+#' @description
 #' Reformats movement data from a delimited file into a common intermediate format (extracts and renames selected columns)
 #'
 #' @param move_data_file Path to a delimited file with movement data (alternatively: literal data or a connection).
@@ -26,7 +29,8 @@ reformat_move_data <- function(move_data_file, delim = NULL, datetime_format = "
   }
 
   #read in datafile (all columns), with col type initially character for all columns
-  all_data <- read_delim(move_data_file, delim = delim, col_types = cols(.default = col_character()), lazy = TRUE)
+  all_data <- read_delim(move_data_file, delim = delim, col_types = cols(.default = col_character()), lazy = TRUE,
+                         name_repair = asciify)
 
   #select columns of interest
   minvars <- movenetenv$options$movement_data[min_move_keys] #mandatory
@@ -48,6 +52,9 @@ reformat_move_data <- function(move_data_file, delim = NULL, datetime_format = "
 
   return(selected_data)
 }
+
+#' @export
+asciify <- function(x) make.names(stringi::stri_trans_general(x, 'Latin-ASCII'), unique=TRUE)
 
 colindex2name <- function(data, minvars, extra){
   if (any(sapply(minvars, is.integer))){
