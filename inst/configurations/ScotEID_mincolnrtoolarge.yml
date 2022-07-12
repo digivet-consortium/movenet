@@ -1,7 +1,13 @@
-movement_data:
-  movenet.move_ID: 1 #Column name or number for Transport identifier
-  movenet.origin_ID: "departure_cph" #Column name or number for Identifier of origin holding/establishment/..
-  movenet.dest_ID: 20 #Column name or number for Identifier of destination holding/establishment/..
-  movenet.move_date: 5 #Column name or number for Date of transport (if multiple date types are available, use the one deemed most appropriate)
-  movenet.nr_pigs: 7 #Column name or number for Number of pigs transported
-  movenet.move_ref: "foreign_reference"
+movedata_fileopts:
+  separator: ","   #Separator (delimiter) character used in movement datafile
+  encoding: "UTF-8"    #Encoding used in movement datafile
+  decimal: "."  #Decimal mark used in movement datafile
+  date_format: "" #Date format specification used in movement datafile (empty string "" for ISO8601 format, or see ?readr::parse_date for guidance)
+
+movedata_cols:
+  move_ID: 1 #Column name or number for Transport identifier
+  origin_ID: "departure_cph" #Column name or number for Identifier of origin holding/establishment/..
+  dest_ID: 20 #Column name or number for Identifier of destination holding/establishment/..
+  move_date: 5 #Column name or number for Date of transport (if multiple date types are available, use the one deemed most appropriate)
+  nr_pigs: 7 #Column name or number for Number of pigs transported
+  move_ref: "foreign_reference"
