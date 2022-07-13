@@ -105,24 +105,28 @@ validate_config_movecols <- function(yamlfile){
 
 validate_config_datatype <- function(yamlfile){
   msg <- NULL
-  opts_char <- sapply(yamlfile[["movedata_fileopts"]],is.character) #tests that moveopts values are characters
-  if (!all(opts_char)){
-    msg <- append(msg, sprintf("Data field(s) not in expected character format: %s", paste0(names(which(opts_char==FALSE)),collapse=", ")))
+  if(length(yamlfile[["movedata_fileopts"]]) > 0){
+    opts_char <- sapply(yamlfile[["movedata_fileopts"]],is.character) #tests that moveopts values are characters
+    if (!all(opts_char)){
+      msg <- append(msg, sprintf("Data field(s) not in expected character format: %s", paste0(names(which(opts_char==FALSE)),collapse=", ")))
+    }
+    if (!nchar(yamlfile[["movedata_fileopts"]][["separator"]]) == 1){
+      msg <- append(msg, "Data field `separator` doesn't have the expected format of a single character")
+    }
+    if (!nchar(yamlfile[["movedata_fileopts"]][["decimal"]]) == 1){
+      msg <- append(msg, "Data field `decimal` doesn't have the expected format of a single character")
+    }
+    if(!grepl("%(Y|y|AD|D|F|x|s)|^$",yamlfile[["movedata_fileopts"]][["date_format"]])){
+      msg <- append(msg,paste0("Data field `date_format` doesn't match readr date format specifications.\nSee `?readr::parse_datetime` for guidance."))
+    }
   }
-  if (!length(yamlfile[["movedata_fileopts"]][["separator"]]) == 1){
-    msg <- append(msg, "Data field `separator` does not have expected length of 1")
-  }
-  if (!length(yamlfile[["movedata_fileopts"]][["decimal"]]) == 1){
-    msg <- append(msg, "Data field `decimal` does not have expected length of 1")
-  }
-  if(!grepl("%(Y|y|AD|D|F|x|s)|^$",yamlfile[["movedata_fileopts"]][["date_format"]])){
-    msg <- append(msg,paste0("Data field `date_format` doesn't match readr date format specifications.\nSee `?readr::parse_datetime` for guidance."))
-  }
-  move_char <- sapply(yamlfile[["movedata_cols"]],is.character) #tests that movecol values are characters
-  move_int <- sapply(yamlfile[["movedata_cols"]],is.integer) #tests that movecol values are integers
-  move_charint <- (move_char | move_int)
-  if (!all(move_charint)){
-    msg <- append(msg, sprintf("Data field(s) not in expected character or integer format: %s", paste0(names(which(move_charint==FALSE)),collapse=", ")))
+  if(length(yamlfile[["movedata_cols"]]) > 0){
+    move_char <- sapply(yamlfile[["movedata_cols"]],is.character) #tests that movecol values are characters
+    move_int <- sapply(yamlfile[["movedata_cols"]],is.integer) #tests that movecol values are integers
+    move_charint <- (move_char | move_int)
+    if (!all(move_charint)){
+      msg <- append(msg, sprintf("Data field(s) not in expected character or integer format: %s", paste0(names(which(move_charint==FALSE)),collapse=", ")))
+    }
   }
   # Add checks for holding_data data types
   msg #Does this need to be invisible?
