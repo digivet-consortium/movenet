@@ -91,7 +91,7 @@ movenet.options <- function(...){
   if(has_element(list(...), NULL)){
     #The following should really only be for mandatory options. Should somehow allow functionality to remove optional options with NULL
     #But the assign/relist statement in line 111 doesnt deal well with NULLs -> ??
-    warning(paste("Option values can't be NULL.\nIgnoring option(s) with value NULL:", paste(names(list(...))[which(sapply(list(...),is.null))],collapse=", ")), call. = FALSE)
+    warning(paste("Option values can't be NULL. Ignoring option(s) with value NULL:", paste(names(list(...))[which(sapply(list(...),is.null))],collapse=", ")), call. = FALSE)
   }
   if(length(opts)>0){
     recognised <- pmatch(names(opts), names(options_no_structure))
@@ -100,11 +100,37 @@ movenet.options <- function(...){
       opts <- opts[!is.na(recognised)]
     }
     optnames <- names(options_no_structure)[recognised[!is.na(recognised)]]
-    if(any(!sapply(opts,function(x){is.character(x) | is.integer(x)}))){
-      warning(paste("Option values must be character (column name) or integer (column index) format.\nIgnoring non-character/non-integer value(s) for option(s):",paste(names(opts)[which(!sapply(opts,function(x){is.character(x) | is.integer(x)}))],collapse=", ")), call. = FALSE)
-      optnames <- optnames[-which(!sapply(opts,function(x){is.character(x) | is.integer(x)}))]
-      opts <- opts[-which(!sapply(opts,function(x){is.character(x) | is.integer(x)}))]
+
+    char_opts <- opts[which(optnames %in% c("separator","encoding","decimal","date_format"))]
+    if(any(!sapply(char_opts,is.character))){
+      char_names <- optnames[which(optnames %in% c("separator","encoding","decimal","date_format"))]
+      nonchar_names <- char_names[which(!sapply(char_opts, is.character))]
+      warning(paste("Ignoring option(s) of which the value(s) do(es) not have the required format (character):", paste(nonchar_names, collapse=", ")), call. = FALSE)
+      opts <- opts[-which(optnames %in% nonchar_names)]
+      optnames <- optnames[-which(optnames %in% nonchar_names)]
     }
+    singlechar_opts <- opts[which(optnames %in% c("separator","decimal"))]
+    if(any(!sapply(singlechar_opts,function(x){nchar(x) == 1}))){
+      singlechar_names <- optnames[which(optnames %in% c("separator","decimal"))]
+      nonsinglechar_names <- singlechar_names[which(!sapply(singlechar_opts,function(x){nchar(x) == 1}))]
+      warning(paste("Ignoring option(s) of which the value(s) do(es) not have the required format (single character):", paste(nonsinglechar_names, collapse=", ")), call. = FALSE)
+      opts <- opts[-which(optnames %in% nonsinglechar_names)]
+      optnames <- optnames[-which(optnames %in% nonsinglechar_names)]
+    }
+    if(("date_format" %in% optnames) & (!grepl("%(Y|y|AD|D|F|x|s)|^$",opts["date_format"]))){
+      warning("Ignoring option `date_format`, as the value doesn't appear to match readr date format specifications. See `?readr::parse_datetime` for guidance.", call. = FALSE)
+      opts <- opts[-which(optnames=="date_format")]
+      optnames <- optnames[-which(optnames=="date_format")]
+    }
+    charint_opts <- opts[which(optnames %in% c("origin_ID","dest_ID","move_date","nr_pigs"))]
+    if(any(!sapply(charint_opts,function(x){is.character(x) | is.integer(x)}))){
+      charint_names <- optnames[which(optnames %in% c("origin_ID","dest_ID","move_date","nr_pigs"))]
+      noncharint_names <- charint_names[which(!sapply(charint_opts,function(x){is.character(x) | is.integer(x)}))]
+      warning(paste("Ignoring option(s) of which the value(s) do(es) not have the required format (character or integer):", paste(noncharint_names, collapse=", ")), call. = FALSE)
+      opts <- opts[-which(optnames %in% noncharint_names)]
+      optnames <- optnames[-which(optnames %in% noncharint_names)]
+    }
+
     if(length(optnames)>0) for(i in 1:length(optnames)){
       options_no_structure[optnames[i]] <- opts[[i]]
     }
