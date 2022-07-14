@@ -117,7 +117,7 @@ validate_config_datatype <- function(yamlfile){
       msg <- append(msg, "Data field `decimal` doesn't have the expected format of a single character")
     }
     if(!grepl("%(Y|y|AD|D|F|x|s)|^$",yamlfile[["movedata_fileopts"]][["date_format"]])){
-      msg <- append(msg,paste0("Data field `date_format` doesn't match readr date format specifications.\nSee `?readr::parse_datetime` for guidance."))
+      msg <- append(msg,paste0("Data field `date_format` doesn't match readr date format specifications.\nSee `?readr::parse_date` for guidance."))
     }
   }
   if(length(yamlfile[["movedata_cols"]]) > 0){

@@ -118,7 +118,7 @@ movenet.options <- function(...){
       optnames <- optnames[-which(optnames %in% nonsinglechar_names)]
     }
     if(("date_format" %in% optnames) & (!grepl("%(Y|y|AD|D|F|x|s)|^$",opts["date_format"]))){
-      warning("Ignoring option `date_format`, as the value doesn't appear to match readr date format specifications. See `?readr::parse_datetime` for guidance.", call. = FALSE)
+      warning("Ignoring option `date_format`, as the value doesn't appear to match readr date format specifications. See `?readr::parse_date` for guidance.", call. = FALSE)
       opts <- opts[-which(optnames=="date_format")]
       optnames <- optnames[-which(optnames=="date_format")]
     }
