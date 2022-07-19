@@ -1,8 +1,8 @@
 movedata_fileopts:
-  separator: ","   #Separator (delimiter) character used in movement datafile
-  encoding: "UTF-8"    #Encoding used in movement datafile
-  decimal: "."  #Decimal mark used in movement datafile
-  date_format: "" #Date format specification used in movement datafile (empty string "" for ISO8601 format, or see ?readr::parse_date for guidance)
+  separator: ,   #Separator (delimiter) character used in movement datafile
+  encoding: UTF-8    #Encoding used in movement datafile
+  decimal: .  #Decimal mark used in movement datafile
+  date_format: %Y%m%d #Date format specification used in movement datafile (empty string "" for ISO8601 format, or see ?readr::parse_date for guidance)
 
 movedata_cols:
   move_ID: movement_reference #Column name or number for Transport identifier
