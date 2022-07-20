@@ -104,11 +104,13 @@ select_cols <- function(data, minvars, extra){
 reformat_nrpigs <- function(nr_pigs_col){
   tryCatch(
     error = function(cnd) {
-      cnd$message <- paste0("Column `",colnames(nr_pigs_col),"` must be an integer: it can't contain a decimal or grouping mark.")
+      cnd$message <- paste0("Column `",colnames(nr_pigs_col),"` must be numeric and can't contain a grouping mark.")
       cnd$call <- NULL
       stop(cnd)
     },
-    withr::with_options(list(warn=2),parse_integer(nr_pigs_col[[colnames(nr_pigs_col)]])))
+    withr::with_options(list(warn=2),parse_double(nr_pigs_col[[colnames(nr_pigs_col)]],
+                                                  locale = locale(decimal_mark = movenetenv$options$movedata_fileopts$decimal)))
+  )
 }
 
 reformat_date <- function(date_col){

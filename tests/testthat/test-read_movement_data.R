@@ -14,7 +14,7 @@ test_that("when config has all min cols only, and input has correct dateformat +
   expect_type(output[[ScotEID_movecols$dest_ID]], "character")
   expect_s3_class(output[[ScotEID_movecols$move_date]], "Date") #this also works for wrong date formats though
   expect_true(all(!is.na(output[[ScotEID_movecols$move_date]]))) #tests that all dates are interpretable = no NAs generated
-  expect_type(output[[ScotEID_movecols$nr_pigs]], "integer")
+  expect_type(output[[ScotEID_movecols$nr_pigs]], "double")
   movenetenv$options$movedata_cols$move_ID <- move_ID
 })
 
@@ -35,7 +35,7 @@ test_that("when config has all min cols, indicated as col indices, output is dat
   expect_type(output[[ScotEID_movecols$dest_ID]], "character")
   expect_s3_class(output[[ScotEID_movecols$move_date]], "Date") #this also works for wrong date formats though
   expect_true(all(!is.na(output[[ScotEID_movecols$move_date]]))) #tests that all dates are interpretable = no NAs generated
-  expect_type(output[[ScotEID_movecols$nr_pigs]], "integer")
+  expect_type(output[[ScotEID_movecols$nr_pigs]], "double")
   suppressMessages(load_config("ScotEID"))
 })
 
@@ -49,7 +49,7 @@ test_that("when config has all min cols + extra col, with some of both indicated
   expect_type(output[[ScotEID_movecols$dest_ID]], "character")
   expect_s3_class(output[[ScotEID_movecols$move_date]], "Date") #this also works for wrong date formats though
   expect_true(all(!is.na(output[[ScotEID_movecols$move_date]]))) #tests that all dates are interpretable = no NAs generated
-  expect_type(output[[ScotEID_movecols$nr_pigs]], "integer")
+  expect_type(output[[ScotEID_movecols$nr_pigs]], "double")
   expect_type(output[[ScotEID_movecols$move_ID]], "double")
   expect_type(output[["foreign_reference"]], "character")
   suppressMessages(load_config("ScotEID"))
@@ -85,7 +85,7 @@ test_that("when input datafile misses a requested optional col, a warning is rai
   expect_type(output[[ScotEID_movecols$dest_ID]], "character")
   expect_s3_class(output[[ScotEID_movecols$move_date]], "Date") #this also works for wrong date formats though
   expect_true(all(!is.na(output[[ScotEID_movecols$move_date]]))) #tests that all dates are interpretable = no NAs generated
-  expect_type(output[[ScotEID_movecols$nr_pigs]], "integer")
+  expect_type(output[[ScotEID_movecols$nr_pigs]], "double")
 })
 
 test_that("when config has a min col, indicated as col index, that exceeds the col range of input datafile, an error is raised",{
@@ -106,7 +106,7 @@ test_that("when config has an optional col, indicated as col index, that exceeds
   expect_type(output[[ScotEID_movecols$dest_ID]], "character")
   expect_s3_class(output[[ScotEID_movecols$move_date]], "Date") #this also works for wrong date formats though
   expect_true(all(!is.na(output[[ScotEID_movecols$move_date]]))) #tests that all dates are interpretable = no NAs generated
-  expect_type(output[[ScotEID_movecols$nr_pigs]], "integer")
+  expect_type(output[[ScotEID_movecols$nr_pigs]], "double")
   expect_type(output[["foreign_reference"]], "character")
   suppressMessages(load_config("ScotEID"))
 })
@@ -161,12 +161,14 @@ test_that("error is raised, when date column in datafile contains one or more in
                "Can\\'t parse column `departure_date` as date\\.\nThe date format specification given through the option `date_format` \\(value `%Y%m%d`\\) and the actual format of column `departure_date` don't appear to match\\.\nAlternatively, column `departure_date` contains one or more invalid dates\\.")
 })
 
-test_that("error is raised, when 'number of pigs' column in datafile contains numbers with decimals", {
-  expect_error(reformat_move_data("test_input_files/ScotEID_testdata_pigsdecimal.csv"), "Column `qty_pigs` must be an integer")
+test_that("no warning or error is raised, when 'number of pigs' column in datafile contains numbers with decimals", {
+  output <- expect_warning(reformat_move_data("test_input_files/ScotEID_testdata_pigsdecimal.csv"), NA)
+  expect_error(reformat_move_data("test_input_files/ScotEID_testdata_pigsdecimal.csv"), NA)
+  expect_type(output[[ScotEID_movecols$nr_pigs]], "double")
 })
 
 test_that("error is raised, when 'number of pigs' column in datafile contains numbers with grouping marks", {
-  expect_error(reformat_move_data("test_input_files/ScotEID_testdata_pigsgrouping.csv"), "Column `qty_pigs` must be an integer")
+  expect_error(reformat_move_data("test_input_files/ScotEID_testdata_pigsgrouping.csv"), "Column `qty_pigs` must be numeric and can't contain a grouping mark")
 })
 
 movenetenv$options<-old_config
