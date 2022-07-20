@@ -54,6 +54,9 @@ Network order (number of edges): `r ecount(g_moves_summed)`
 plot(degree_distribution(g, mode = "all", cumulative = TRUE)[-1], log="xy", ylab = "CCDF", xlab = "Degree") #[-1] to exclude degree = 0, and make "index" (original x axis, starting with 1 = degree 0) equal to degree
 plot(degree_distribution(g, mode = "in", cumulative = TRUE)[-1], log="xy", ylab = "CCDF", xlab = "Indegree")
 plot(degree_distribution(g, mode = "out", cumulative = TRUE)[-1], log="xy", ylab = "CCDF", xlab = "Outdegree")
+median(degree(g, mode = "all"))
+median(degree(g, mode = "in")) #may need a filtering step for indegree >0
+median(degree(g, mode = "out")) #may need a filtering step for outdegree >0
 ```
 
 ### Closeness centrality (all)
@@ -64,12 +67,41 @@ hist(closeness(g, mode = "all"))
 ### Betweenness centrality (weighted by nr pigs - prob wrong way)
 ```{r betweenness, echo = FALSE}
 hist(betweenness(g))
+betweenness(g, weights=NULL, normalized=TRUE) #relative betweenness - NOT weighted by nr_pigs
+
 ```
 
 ## Components
 Whether the graph is strongly connected?
 ```{r components, echo = FALSE}
 is_connected(g) 
-components(g)
+weak_components <- components(g, mode = "weak") #weakly connected components
+weak_components$no #Number of weakly connected components
+max(weak_components$csize) #Max size of weakly connected components
+median(weak_components$csize) #Median size of weakly connected components
+quantile(weak_components$csize, 0.99) #size of weakly connected components: 99th percentile 
+strong_components <- components(g, mode = "strong") #strongly connected components
+strong_components$no #Number of strongly connected components
+max(strong_components$csize) #Max size of strongly connected components
+median(strong_components$csize) #Median size of strongly connected components
+quantile(strong_components$csize, 0.99) #size of strongly connected components: 99th percentile 
+
+#reachability and range
+#I don't understand how these relate to strongly connected components.
+#Do I really need to loop over all vertices?
+subcomponent(g, vertex, mode = "in") #list of vertices from which vertex is reachable.
+#Max reachability: I don't understand if this is the same as max size of components ?
 ```
 
+## Other
+```{r other, echo = FALSE}
+edge_density(g) #"Note that this function may return strange results for graph with multiple edges, density is ill-defined for graphs with multiple edges."
+diameter(g, weights = NULL)
+assortativity_degree(g, directed = TRUE) #uses vertex degree (minus one) as vertex values [why?]
+reciprocity(g, mode = "default") #not sure whether we'd want default or ratio mode
+transitivity(g, type = "global") #not sure about type. Automatically weighted if nr_pigs is set as weight -> need to change this
+mean_distance(g, weights = NA) #NA calculates unweighted even if weight attribute is set
+Jac_coeff <- similarity(g, method = "jaccard" ) #Jaccard similarity coefficient - result = matrix. 
+length(colMeans(Jac_coeff)[which(colMeans(Jac_coeff)==0)])/vcount(g) #"Prop of nodes w/ave JacSimCoeff == 0"
+
+```
