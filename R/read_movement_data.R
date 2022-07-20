@@ -22,9 +22,6 @@ reformat_move_data <- function(move_data_file){
   }
 
   min_move_keys <- c("origin_ID", "dest_ID", "move_date", "nr_pigs")
-  if (!all(min_move_keys %in% names(movenetenv$options$movedata_cols))){
-    stop(sprintf("Unexpected config structure. Missing mandatory movedata_cols keys: %s", paste0(min_move_keys[!min_move_keys %in% names(movenetenv$options$movedata_cols)],collapse=", ")))
-  }
 
   #read in datafile (all columns), with col type initially character for all columns
   all_data <- read_delim(move_data_file,

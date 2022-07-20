@@ -55,14 +55,6 @@ test_that("when config has all min cols + extra col, with some of both indicated
   suppressMessages(load_config("ScotEID"))
 })
 
-#remove if dealt with at the change_config stage, otherwise add similar test/behaviour for non-char/non-int values
-test_that("when config misses a min col, an error is raised", {
-  origin_ID <- movenetenv$options$movedata_cols$origin_ID
-  movenetenv$options$movedata_cols$origin_ID<-NULL
-  expect_error(reformat_move_data("test_input_files/ScotEID_testdata.csv"), "Unexpected config structure. Missing mandatory movedata_cols keys")
-  movenetenv$options$movedata_cols$origin_ID <- origin_ID
-})
-
 test_that("when input datafile is missing, an error is raised", {
   expect_error(reformat_move_data(), 'argument "move_data_file" is missing, with no default')
 })
