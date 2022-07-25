@@ -120,13 +120,39 @@ movenet.options <- function(...){
       opts <- opts[-which(optnames=="date_format")]
       optnames <- optnames[-which(optnames=="date_format")]
     }
-    charint_opts <- opts[which(optnames %in% c("origin_ID","dest_ID","move_date","nr_pigs"))]
+    charint_opts <- opts[which(optnames %in% names(movenetenv$options$movedata_cols))]
     if(any(!sapply(charint_opts,function(x){is.character(x) | is.integer(x)}))){
-      charint_names <- optnames[which(optnames %in% c("origin_ID","dest_ID","move_date","nr_pigs"))]
+      charint_names <- optnames[which(optnames %in% names(movenetenv$options$movedata_cols))]
       noncharint_names <- charint_names[which(!sapply(charint_opts,function(x){is.character(x) | is.integer(x)}))]
       warning(paste("Ignoring option(s) of which the value(s) do(es) not have the required format (character or integer):", paste(noncharint_names, collapse=", ")), call. = FALSE)
       opts <- opts[-which(optnames %in% noncharint_names)]
       optnames <- optnames[-which(optnames %in% noncharint_names)]
+    }
+    movecol_opts <- opts[which(optnames %in% names(movenetenv$options$movedata_cols))]
+    if(anyDuplicated(movecol_opts) != 0){
+      movecol_names <- optnames[which(optnames %in% names(movenetenv$options$movedata_cols))]
+      dupl_names <- movecol_names[which(movecol_opts %in% movecol_opts[duplicated(movecol_opts)])]
+      warning(paste("Values for movedata_cols options must be unique. Ignoring options with duplicate values:", paste(dupl_names, collapse=", ")), call. = FALSE)
+      opts <- opts[-which(optnames %in% dupl_names)]
+      optnames <- optnames[-which(optnames %in% dupl_names)]
+    }
+    movecol_opts <- opts[which(optnames %in% names(movenetenv$options$movedata_cols))]
+    if(any(movecol_opts %in% movenetenv$options$movedata_cols)){
+      movecol_names <- optnames[which(optnames %in% names(movenetenv$options$movedata_cols))]
+      valinoldopts_opts <- movecol_opts[which(movecol_opts %in% movenetenv$options$movedata_cols)]
+      valinoldopts_names <- movecol_names[which(movecol_opts %in% movenetenv$options$movedata_cols)]
+      #disallow any movecol_opts with values that are also in movenetenv$options$movedata_cols (resulting in duplicates)
+      #except in cases of "option values being switched": where the name of the potential duplicate option in movenetenv$.. is also in opts where it is associated with a DIFFERENT value
+      notallowed_names <- valinoldopts_names[which(!sapply(valinoldopts_opts,function(x){
+        if(names(movenetenv$options$movedata_cols)[which(movenetenv$options$movedata_cols == x)] %in% movecol_names){
+          movecol_opts[which(movecol_names == names(movenetenv$options$movedata_cols)[which(movenetenv$options$movedata_cols == x)])] != x
+        } else {FALSE}
+      }))]
+      if(length(notallowed_names) > 0){
+        warning(paste("Values for movedata_cols options must be unique. Ignoring options that would result in duplicate values:", paste(notallowed_names, collapse=", ")), call. = FALSE)
+        opts <- opts[-which(optnames %in% notallowed_names)]
+        optnames <- optnames[-which(optnames %in% notallowed_names)]
+      }
     }
 
     if(length(optnames)>0) for(i in 1:length(optnames)){
