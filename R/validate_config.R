@@ -83,13 +83,18 @@ validate_config_moveopts <- function(yamlfile){
 }
 
 validate_config_movecols <- function(yamlfile){
+  msg <- NULL
   move_keys_obs <- names(yamlfile[["movedata_cols"]])
   move_keys_exp <- c("origin_ID", "dest_ID", "move_date", "nr_pigs")
   move_notmissing <- length(move_keys_obs) > 3 && all(move_keys_exp %in% move_keys_obs) #tests that required move keys are present; but file may have more keys
+  move_notdupl <- anyDuplicated(yamlfile[["movedata_cols"]]) == 0
   if (!move_notmissing){
-    sprintf("Unexpected config file structure. Missing mandatory second-level (movedata_cols) key(s): %s", paste0(move_keys_exp[!move_keys_exp %in% move_keys_obs],collapse=", "))
-  } #Does this need to be invisible?
-
+    msg <- append(msg, sprintf("Unexpected config file structure. Missing mandatory second-level (movedata_cols) key(s): %s", paste0(move_keys_exp[!move_keys_exp %in% move_keys_obs],collapse=", ")))
+  }
+  if (!move_notdupl){
+    msg <- append(msg, sprintf("Values for movedata_cols options must be unique. The following options have duplicate values: %s", paste0(names(yamlfile[["movedata_cols"]])[which(yamlfile[["movedata_cols"]] %in% yamlfile[["movedata_cols"]][duplicated(yamlfile[["movedata_cols"]])])],collapse=", ")))
+  }
+  msg #Does this need to be invisible?
   #validate_config_movecols generates the missing message, when keys are present but not at appropriate level.
   #Can change this behaviour if needed but this gets a bit complicated
 }

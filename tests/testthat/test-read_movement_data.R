@@ -103,6 +103,13 @@ test_that("when config has an optional col, indicated as col index, that exceeds
   suppressMessages(load_config("ScotEID"))
 })
 
+test_that("when config has a movedata_cols option indicated as col index, but that upon translation to colname reveals to be a duplicate col, an error is raised",{
+  suppressMessages(movenet.options(origin_ID=19L))
+  expect_error(reformat_move_data("test_input_files/ScotEID_testdata.csv"),
+               "Values for movedata_cols options must be unique\\. Translation of column indices to column headers identified the following options with duplicate values\\: origin_ID, dest_ID")
+  suppressMessages(load_config("ScotEID"))
+})
+
 test_that("date is interpreted correctly, when config has a correct dateformat string, but some dates are missing (NAs)", {
   output <- expect_warning(reformat_move_data("test_input_files/ScotEID_testdata_NAdate.csv"), NA) #test lack of warning/error
   expect_error(reformat_move_data("test_input_files/ScotEID_testdata_NAdate.csv"), NA)

@@ -78,6 +78,10 @@ colindex2name <- function(data, minvars, extra){
     withinrange_extra <- extra[which(sapply(extra, function(x) (is.integer(x) & x <= length(data))))]
     extra[names(extra[which(extra %in% withinrange_extra)])] <- colnames(data)[unlist(withinrange_extra)]
   }
+  if(anyDuplicated(c(minvars,extra)) != 0){
+    dupl_names <- names(c(minvars,extra))[which(c(minvars,extra) %in% c(minvars,extra)[duplicated(c(minvars,extra))])]
+    stop(paste("Values for movedata_cols options must be unique. Translation of column indices to column headers identified the following options with duplicate values:", paste(dupl_names, collapse=", ")), call. = FALSE)
+  }
   return(list(minvars,extra))
 }
 

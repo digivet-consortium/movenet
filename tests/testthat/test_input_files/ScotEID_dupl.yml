@@ -1,0 +1,12 @@
+movedata_fileopts:
+  separator: ","   #Separator (delimiter) character used in movement datafile
+  encoding: "UTF-8"    #Encoding used in movement datafile
+  decimal: "."  #Decimal mark used in movement datafile
+  date_format: "%Y%m%d" #Date format specification used in movement datafile (empty string "" for ISO8601 format, or see ?readr::parse_date for guidance)
+
+movedata_cols:
+  move_ID: "movement_reference" #Column name or number for Transport identifier
+  origin_ID: "movement_reference" #Column name or number for Identifier of origin holding/establishment/..
+  dest_ID: "dest_cph" #Column name or number for Identifier of destination holding/establishment/..
+  move_date: "departure_date" #Column name or number for Date of transport (if multiple date types are available, use the one deemed most appropriate)
+  nr_pigs: "qty_pigs" #Column name or number for Number of pigs transported

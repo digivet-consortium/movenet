@@ -246,6 +246,24 @@ test_that("validate_config.R returns ERROR with informative message when an extr
 
 })
 
+test_that("validate_config.R returns ERROR with informative message when faced with duplicate movedata_cols values",{
+
+  dupl_cols <- "test_input_files/ScotEID_dupl.yml"
+  dupl_cols_yaml <- yaml.load_file(dupl_cols)
+
+  expect_condition(validate_config_movecols(dupl_cols_yaml), NA)
+  expect_match(validate_config_movecols(dupl_cols_yaml), "Values for movedata_cols options must be unique.", fixed = TRUE)
+
+  expect_condition(internal_validate_config(dupl_cols), NA)
+  expect_length(internal_validate_config(dupl_cols), 1)
+  expect_match(internal_validate_config(dupl_cols)[1], "Values for movedata_cols options must be unique.", fixed = TRUE)
+
+  error_msg <- expect_error(validate_config(dupl_cols))
+  expect_match(error_msg$message, "is not a valid movenet config file", fixed = TRUE)
+  expect_match(error_msg$message, "Values for movedata_cols options must be unique.", fixed = TRUE)
+
+})
+
 test_that("validate_config.R accepts config file with expected structure, with integer movedata_cols keys",{
 
   numeric_data <- "test_input_files/ScotEID_testint.yml"
