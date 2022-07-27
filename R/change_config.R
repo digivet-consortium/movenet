@@ -58,6 +58,7 @@ new_config <- function(){
 #' @rdname change_config
 #' @export
 get_config <- function(...){
+  #Set alias to get_option, get_options?
   #This is a mixture of runjags.options and runjags.getOption,
   #Allows for querying of multiple options simultaneously
   #Works with get_config("option1","option2"), get_config(c("option1","option2")), and get_config(list("option1","option2"))
@@ -81,8 +82,9 @@ get_config <- function(...){
 #' @rdname change_config
 #' @export
 movenet.options <- function(...){
-  #doesnt work with named list (allowed in R options())
-  #doesn't print options when called without argument
+  #rename to set_config, set_option, set_options
+  #remove behaviour to invisibly return old options [no longer trying to copy base R options system]?
+
   old_opts <- movenetenv$options
   options_no_structure <- flatten(movenetenv$options)
   opts <- flatten(list(...))
@@ -98,6 +100,21 @@ movenet.options <- function(...){
       opts <- opts[!is.na(recognised)]
     }
     optnames <- names(options_no_structure)[recognised[!is.na(recognised)]]
+
+    if(any(opts %in% options_no_structure)){
+      valinoldopts_opts <- opts[which(opts %in% options_no_structure)]
+      valinoldopts_names <- optnames[which(opts %in% options_no_structure)]
+      unchanged_names <- valinoldopts_names[which(sapply(valinoldopts_opts,function(x){
+        if(names(options_no_structure)[which(options_no_structure == x)] %in% optnames){
+          opts[which(optnames == names(options_no_structure)[which(options_no_structure == x)])] == x
+        } else {FALSE}
+      }))]
+      if(length(unchanged_names) > 0){
+        warning(paste("Ignoring unchanged option(s):", paste(unchanged_names, collapse=", ")), call. = FALSE)
+        opts <- opts[-which(optnames %in% unchanged_names)]
+        optnames <- optnames[-which(optnames %in% unchanged_names)]
+      }
+    }
 
     char_opts <- opts[which(optnames %in% c("separator","encoding","decimal","date_format"))]
     if(any(!sapply(char_opts,is.character))){
@@ -166,17 +183,5 @@ movenet.options <- function(...){
     return(options_no_structure)
   }
   }
-
-
-#' @rdname change_config
-#' @export
-movenet.getOption <- function(name){
-  if(length(name)!=1) stop("Only 1 option can be retrieved at a time")
-  options <- flatten(movenetenv$options)
-  opt <- pmatch(name,names(options))
-  if(is.na(opt)) stop(paste("Unmatched or ambiguous option '", name, "'", sep=""))
-  return(options[[opt]])
-}
-
 
 

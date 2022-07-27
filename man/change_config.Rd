@@ -7,7 +7,6 @@
 \alias{new_config}
 \alias{get_config}
 \alias{movenet.options}
-\alias{movenet.getOption}
 \title{Change configurations}
 \usage{
 load_config(configname)
@@ -19,8 +18,6 @@ new_config()
 get_config(...)
 
 movenet.options(...)
-
-movenet.getOption(name)
 }
 \arguments{
 \item{configname}{some description}
