@@ -6,11 +6,18 @@ test_that("load_config() loads options from existing, valid config file w quotes
   expect_mapequal(movenetenv$options$movedata_fileopts, yaml.load_file(system.file("configurations", "Denmark.yml", package="movenet"))$movedata_fileopts)
 })
 
-test_that("load_config() loads options from existing, valid config file wo quotes",{
-  #This does not work. Any special characters like . or , or % need to be part of quoted string.
-  #Caught by validate_config as "not valid yaml format" but could be more informative...
+test_that("load_config() raises error when called without argument",{
+  expect_error(load_config(),"Argument `configname` is missing\\. Please provide the name of the config file you wish to load\\.")
+})
+
+test_that("load_config() raises error when faced with invalid config file (config file with unquoted special chars)",{
+  expect_error(load_config("ScotEID_noquotationmarks"),"is not a valid movenet config file")
+  expect_error(load_config("ScotEID_noquotationmarks"),"is not valid yaml format")
+})
+
+test_that("load_config() loads options from existing, valid config file with unquoted movedata_cols options",{
   expect_message(load_config("ScotEID_noquotationmarks"),"Successfully loaded config file:")
-  load_config("ScotEID_noquotationmarks")
+  load_config("ScotEID_noquotationmarks2")
   expect_mapequal(movenetenv$options, yaml.load_file(system.file("configurations", "ScotEID.yml", package="movenet")))
   expect_mapequal(movenetenv$options$movedata_cols, yaml.load_file(system.file("configurations", "ScotEID.yml", package="movenet"))$movedata_cols)
   expect_mapequal(movenetenv$options$movedata_fileopts, yaml.load_file(system.file("configurations", "ScotEID.yml", package="movenet"))$movedata_fileopts)
@@ -19,9 +26,7 @@ test_that("load_config() loads options from existing, valid config file wo quote
 test_that("load_config() raises error when requested config file does not exist",{
   expect_error(load_config("doesnotexist"), "Specified config file not found:")
 })
-
-# ? want error if not valid config file ?
-# If so need to call validate_config() from load_config() -> expect_error
+#Also when path, or filename with extension, is given.
 
 local_save_config <- function(configname){
   #this helper function runs save_config and then deletes the resulting file when the parent env is left
@@ -45,6 +50,13 @@ local({
     expect_error(local_save_config(""), "is not a valid configname")
     })
 })
+local({
+  local_test_context()
+  test_that("save_config() raises error when called without argument",{
+    expect_error(local_save_config(),"Argument `configname` is missing\\. Please provide a name for the config file you wish to save\\.")
+  })
+})
+
 
 #Any edge / error cases to test for save_config? (no writing permission?)
 

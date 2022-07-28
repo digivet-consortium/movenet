@@ -10,9 +10,9 @@
 #' @rdname change_config
 #' @export
 load_config <- function(configname){
-
+  if(missing(configname)) stop("Argument `configname` is missing. Please provide the name of the config file you wish to load.", call. = FALSE)
   yamlfile <- system.file("configurations", paste0(configname, ".yml"), package="movenet")
-  if(yamlfile=="") stop(paste("Specified config file not found:", configname))
+  if(yamlfile=="") stop(paste("Specified config file not found:", configname), call. = FALSE)
 
   if(validate_config(yamlfile) == TRUE){
     movenetenv$options <- yaml.load_file(yamlfile) # Change options to contents of yaml file
@@ -29,8 +29,8 @@ movenetenv <- new.env()
 #' @rdname change_config
 #' @export
 save_config <- function(configname){
-
-  if(configname=="") stop('"" is not a valid configname')
+  if(missing(configname)) stop("Argument `configname` is missing. Please provide a name for the config file you wish to save.", call. = FALSE)
+  if(configname=="") stop('"" is not a valid configname', call. = FALSE)
   outfile <- paste0(system.file("configurations", package = "movenet"),"/",configname,".yml")
 
   write_yaml(x = movenetenv$options, file = outfile)
