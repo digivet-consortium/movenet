@@ -16,6 +16,8 @@ coarsen_date <- function(data, level, aggregate_data = TRUE, ...){
   # accesses each date on an edge in network, changes to level aggregation
   coarsened_data <- data %>% mutate("{movenetenv$options$movedata_cols$move_date}" := floor_date(.data[[movenetenv$options$movedata_cols$move_date]], level)) # result is date object, rounded down to start of unit (e.g. month)
 
+  #What to do with floor_date's week_start? default = 7 = Sunday.
+
   #Alternatives:
   # format_ISO8601(date_object, precision) from lubridate -> character vector matching ISO format to certain precision
   # format(date_object, format_string) from base R -> character vector matching format_string (e.g %Y-%m)
