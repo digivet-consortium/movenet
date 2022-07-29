@@ -23,6 +23,7 @@ LinkingTo:
 Imports: 
     dplyr,
     igraph,
+    lubridate,
     magrittr,
     purrr,
     Rcpp,
