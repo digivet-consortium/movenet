@@ -18,6 +18,8 @@ coarsen_date <- function(data, level, aggregate_data = TRUE, ...){
 
   #What to do with floor_date's week_start? default = 7 = Sunday.
 
+  #what to do to allow user to coarsen other date fields? build in column argument like for coarsen_weight?
+
   #Alternatives:
   # format_ISO8601(date_object, precision) from lubridate -> character vector matching ISO format to certain precision
   # format(date_object, format_string) from base R -> character vector matching format_string (e.g %Y-%m)
