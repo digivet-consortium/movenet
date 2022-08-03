@@ -16,7 +16,7 @@ test_that("load_config() raises error when faced with invalid config file (confi
 })
 
 test_that("load_config() loads options from existing, valid config file with unquoted movedata_cols options",{
-  expect_message(load_config("ScotEID_noquotationmarks"),"Successfully loaded config file:")
+  expect_message(load_config("ScotEID_noquotationmarks2"),"Successfully loaded config file:")
   load_config("ScotEID_noquotationmarks2")
   expect_mapequal(movenetenv$options, yaml.load_file(system.file("configurations", "ScotEID.yml", package="movenet")))
   expect_mapequal(movenetenv$options$movedata_cols, yaml.load_file(system.file("configurations", "ScotEID.yml", package="movenet"))$movedata_cols)
@@ -157,6 +157,7 @@ test_that("get_config() returns all options, if an empty list is given",{
 
 
 test_that("movenet.options() returns value of a single option, if this is requested by its full name",{
+  #This results in nothing. What do I want output for this to be?
   expect_vector(movenet.options("origin_ID"), ptype=list(), size =1)
   expect_named(movenet.options("origin_ID"), c("origin_ID"))
   expect_mapequal(movenet.options("origin_ID"), movenetenv$options$movedata_cols["origin_ID"])
