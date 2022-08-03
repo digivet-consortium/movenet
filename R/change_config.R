@@ -9,20 +9,23 @@
 
 #' @rdname change_config
 #' @export
-load_config <- function(configname){
-  if(missing(configname)) stop("Argument `configname` is missing. Please provide the name of the config file you wish to load.", call. = FALSE)
-  yamlfile <- system.file("configurations", paste0(configname, ".yml"), package="movenet")
-  if(yamlfile=="") stop(paste("Specified config file not found:", configname), call. = FALSE)
+load_config <- function(configfile){
+  if(missing(configfile)) stop("Argument `configfile` is missing. Please provide either the name of a preinstalled config file, or the path of the config file you wish to load.", call. = FALSE)
+  if(file.exists(configfile)){
+    yamlfile <- configfile
+  } else {
+    if(grepl(".yml",configfile)==TRUE){
+      yamlfile <- system.file("configurations", configfile, package="movenet")
+    } else {
+      yamlfile <- system.file("configurations", paste0(configfile, ".yml"), package="movenet")
+    }
+    if(yamlfile=="") stop(paste("Specified config file not found:", configfile), call. = FALSE)
+  }
 
   if(validate_config(yamlfile) == TRUE){
     movenetenv$options <- yaml.load_file(yamlfile) # Change options to contents of yaml file
-    message(paste("Successfully loaded config file:", configname))
+    message(paste("Successfully loaded config file:", configfile))
   }
-
-  # Suggestions to allow reading of any configfile (but not worry about config path):
-  # 1) two arguments: name & path
-  # 2) guess whether name or path from form
-  # See https://github.com/digivet-consortium/movenet/issues/9
 }
 movenetenv <- new.env()
 

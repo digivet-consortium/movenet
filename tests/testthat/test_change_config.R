@@ -1,4 +1,4 @@
-test_that("load_config() loads options from existing, valid config file w quotes",{
+test_that("load_config() loads options from existing, valid config file w quotes, if given as name of preinstalled config, without file extension",{
   expect_message(load_config("Denmark"), "Successfully loaded config file:")
   load_config("Denmark")
   expect_mapequal(movenetenv$options, yaml.load_file(system.file("configurations", "Denmark.yml", package="movenet")))
@@ -6,8 +6,24 @@ test_that("load_config() loads options from existing, valid config file w quotes
   expect_mapequal(movenetenv$options$movedata_fileopts, yaml.load_file(system.file("configurations", "Denmark.yml", package="movenet"))$movedata_fileopts)
 })
 
+test_that("load_config() loads options from existing, valid config file w quotes, if given as name of preinstalled config, with file extension",{
+  expect_message(load_config("Denmark.yml"), "Successfully loaded config file:")
+  load_config("Denmark.yml")
+  expect_mapequal(movenetenv$options, yaml.load_file(system.file("configurations", "Denmark.yml", package="movenet")))
+  expect_mapequal(movenetenv$options$movedata_cols, yaml.load_file(system.file("configurations", "Denmark.yml", package="movenet"))$movedata_cols)
+  expect_mapequal(movenetenv$options$movedata_fileopts, yaml.load_file(system.file("configurations", "Denmark.yml", package="movenet"))$movedata_fileopts)
+})
+
+test_that("load_config() loads options from existing, valid config file, if given as path",{
+  expect_message(load_config("C:/Users/cboga/OneDrive - University of Glasgow/CS3-ASF/movenet/tests/testthat/test_input_files/ScotEID_testmore.yml"), "Successfully loaded config file:")
+  load_config("C:/Users/cboga/OneDrive - University of Glasgow/CS3-ASF/movenet/tests/testthat/test_input_files/ScotEID_testmore.yml")
+  expect_mapequal(movenetenv$options, yaml.load_file("C:/Users/cboga/OneDrive - University of Glasgow/CS3-ASF/movenet/tests/testthat/test_input_files/ScotEID_testmore.yml"))
+  expect_mapequal(movenetenv$options$movedata_cols, yaml.load_file("C:/Users/cboga/OneDrive - University of Glasgow/CS3-ASF/movenet/tests/testthat/test_input_files/ScotEID_testmore.yml")$movedata_cols)
+  expect_mapequal(movenetenv$options$movedata_fileopts, yaml.load_file("C:/Users/cboga/OneDrive - University of Glasgow/CS3-ASF/movenet/tests/testthat/test_input_files/ScotEID_testmore.yml")$movedata_fileopts)
+})
+
 test_that("load_config() raises error when called without argument",{
-  expect_error(load_config(),"Argument `configname` is missing\\. Please provide the name of the config file you wish to load\\.")
+  expect_error(load_config(),"Argument `configfile` is missing\\. Please provide either the name of a preinstalled config file, or the path of the config file you wish to load\\.")
 })
 
 test_that("load_config() raises error when faced with invalid config file (config file with unquoted special chars)",{
@@ -46,7 +62,7 @@ local({
 })
 local({
   local_test_context()
-  test_that("save_config() gives an error when configname is an empty string",{
+  test_that("save_config() gives an error when outfile is an empty string",{
     expect_error(local_save_config(""), "is not a valid value for `outfile`\\. Please provide a path to which to save the config file to\\.")
     })
 })
