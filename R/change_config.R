@@ -28,19 +28,16 @@ movenetenv <- new.env()
 
 #' @rdname change_config
 #' @export
-save_config <- function(configname){
-  if(missing(configname)) stop("Argument `configname` is missing. Please provide a name for the config file you wish to save.", call. = FALSE)
-  if(configname=="") stop('"" is not a valid configname', call. = FALSE)
-  outfile <- paste0(system.file("configurations", package = "movenet"),"/",configname,".yml")
+save_config <- function(outfile){
+  if(missing(outfile)) stop("Argument `outfile` is missing. Please provide a path to which to save the config file to.", call. = FALSE)
+  if(outfile=="") stop('"" is not a valid value for `outfile`. Please provide a path to which to save the config file to.', call. = FALSE)
 
   write_yaml(x = movenetenv$options, file = outfile)
 
-  message(paste("Successfully saved config file:", configname,"\nIt can be found at:", outfile))
+  message(paste("Successfully saved configurations to:", outfile))
 }
 
 # This leaves strings/fields unquoted, but that should be fine.
-
-# Idea: argument save_to_configurations_dir = TRUE/FALSE (or similar), to save to directory with pre-installed config files rather than working directory
 
 
 #' @rdname change_config
@@ -90,7 +87,7 @@ movenet.options <- function(...){
   opts <- flatten(list(...))
   if(has_element(list(...), NULL)){
     #The following should really only be for mandatory options. Should somehow allow functionality to remove optional options with NULL
-    #But the assign/relist statement in line 111 doesnt deal well with NULLs -> ??
+    #But the assign/relist statement in line 178 doesnt deal well with NULLs -> ??
     warning(paste("Option values can't be NULL. Ignoring option(s) with value NULL:", paste(names(list(...))[which(sapply(list(...),is.null))],collapse=", ")), call. = FALSE)
   }
   if(length(opts)>0){

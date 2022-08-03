@@ -28,32 +28,32 @@ test_that("load_config() raises error when requested config file does not exist"
 })
 #Also when path, or filename with extension, is given.
 
-local_save_config <- function(configname){
+local_save_config <- function(outfile){
   #this helper function runs save_config and then deletes the resulting file when the parent env is left
-  save_config(configname)
-  withr::defer_parent(unlink(paste0(system.file("configurations", package = "movenet"),"/",configname,".yml")))
+  save_config(outfile)
+  withr::defer_parent(unlink(outfile))
 }
 
 local({
   local_test_context()
   test_that("save_config() correctly saves file containing current movenetenv options",{
-    expect_message(local_save_config("test_save_config"), "Successfully saved config file:")
-    local_save_config("test_save_config")
-    expect_mapequal(movenetenv$options, yaml.load_file(system.file("configurations", "test_save_config.yml", package="movenet")))
-    expect_mapequal(movenetenv$options$movedata_cols, yaml.load_file(system.file("configurations", "test_save_config.yml", package="movenet"))$movedata_cols)
-    expect_mapequal(movenetenv$options$movedata_fileopts, yaml.load_file(system.file("configurations", "test_save_config.yml", package="movenet"))$movedata_fileopts)
+    expect_message(local_save_config("test_save_config.yml"), "Successfully saved configurations to:")
+    local_save_config("test_save_config.yml")
+    expect_mapequal(movenetenv$options, yaml.load_file("test_save_config.yml"))
+    expect_mapequal(movenetenv$options$movedata_cols, yaml.load_file("test_save_config.yml")$movedata_cols)
+    expect_mapequal(movenetenv$options$movedata_fileopts, yaml.load_file("test_save_config.yml")$movedata_fileopts)
   })
 })
 local({
   local_test_context()
   test_that("save_config() gives an error when configname is an empty string",{
-    expect_error(local_save_config(""), "is not a valid configname")
+    expect_error(local_save_config(""), "is not a valid value for `outfile`\\. Please provide a path to which to save the config file to\\.")
     })
 })
 local({
   local_test_context()
   test_that("save_config() raises error when called without argument",{
-    expect_error(local_save_config(),"Argument `configname` is missing\\. Please provide a name for the config file you wish to save\\.")
+    expect_error(local_save_config(),"Argument `outfile` is missing\\. Please provide a path to which to save the config file to\\.")
   })
 })
 
