@@ -1,17 +1,43 @@
-#Would it be possible to have anonymised Danish data of the type:
-#farm1, farm2, move_date, nr_pigs?
-#or is that not anonymous enough?
-
 library("igraph")
 library("lubridate")
 
+#Synthetic data, on Carlijn's work computer
+#datafile<-"C:/Users/carlijn/OneDrive - University of Glasgow/CS3-ASF/Pig movement data structure/sample_pigs_UK_with_dep_arr_dates.csv"
+#Synthetic data, on Carlijn's laptop
+#datafile<-"C:/Users/cboga/OneDrive - University of Glasgow/CS3-ASF/Pig movement data structure/sample_pigs_UK_with_dep_arr_dates.csv"
+
+
+
 #want to compare different coarsen_dates
 load_all()
-load_config("Denmark") # Check options in inst/configurations/Denmark.yml
-#datafile<-"C:/Users/carlijn/OneDrive - University of Glasgow/CS3-ASF/Pig movement data structure/sample_pigs_UK_with_dep_arr_dates.csv"
-#datafile<-"C:/Users/cboga/OneDrive - University of Glasgow/CS3-ASF/Pig movement data structure/sample_pigs_UK_with_dep_arr_dates.csv"
-data <- reformat_move_data(datafile)
-# concatenate data for a few years, if possible please?
+load_config("Denmark") # Please Check options in inst/configurations/Denmark.yml!
+
+# NB from Matt's Danish data summaries I gather that the date format string is different for each year
+# i.e. that option needs changing between reformats for different years!
+
+#movenet.options(date_format="") - please change "" to correct format string
+datafile <- "2020/20210816_CHRN_1005_svin_indenlandske_svineflytninger_maaned_01_06.txt"
+data.1 <- reformat_move_data(datafile)
+datafile <- "2020/20210816_CHRN_1005_svin_indenlandske_svineflytninger_maaned_07_12.txt"
+data.2 <- reformat_move_data(datafile)
+#movenet.options(date_format="") - please change "" to correct format string
+datafile <- "2019/20200116-01_SVINN-293_2019_indenlandske_flytninger-del_1.csv"
+data.3 <- reformat_move_data(datafile)
+datafile <- "2019/20200116-01_SVINN-293_2019_indenlandske_flytninger-del_2.csv"
+data.4 <- reformat_move_data(datafile)
+#movenet.options(date_format="") - please change "" to correct format string
+datafile <- "2018/20190125_CHRN_261_svin_indenlandske_svineflytninger_maaned_01_06.txt"
+data.5 <- reformat_move_data(datafile)
+datafile <- "2018/20190125_CHRN_261_svin_indenlandske_svineflytninger_maaned_07_12.txt"
+data.6 <- reformat_move_data(datafile)
+
+#Not including international movements for now
+#What to do with missing ANTAL_FLYT_DYR? Remove?
+
+# concatenate data for a few years, if possible please
+data <- merge(data.1, data.2) %>% merge(data.3) %>% merge(data.4) %>% merge(data.5) %>% merge(data.6)
+
+#anonymise
 data <- anonymise(data, "holding")
 
 #static graph
