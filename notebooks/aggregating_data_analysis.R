@@ -6,6 +6,8 @@ library("lubridate")
 #Synthetic data, on Carlijn's laptop
 #datafile<-"C:/Users/cboga/OneDrive - University of Glasgow/CS3-ASF/Pig movement data structure/sample_pigs_UK_with_dep_arr_dates.csv"
 
+# Danish data, available to Matt only:
+# datafile <- "/Users/matthewdenwood/Documents/Research/Projects/DigiVet/CS2/DK_pig_movements/flyt.csv"
 
 
 #want to compare different coarsen_dates
@@ -14,6 +16,8 @@ load_config("Denmark") # Please Check options in inst/configurations/Denmark.yml
 
 # NB from Matt's Danish data summaries I gather that the date format string is different for each year
 # i.e. that option needs changing between reformats for different years!
+## Yes, that is super annoying but unfortunately true :(
+## Another (possibly better) option is for me to reformat and harmonise the different years of data before reading with movenet
 
 #movenet.options(date_format="") - please change "" to correct format string
 datafile <- "2020/20210816_CHRN_1005_svin_indenlandske_svineflytninger_maaned_01_06.txt"
@@ -44,6 +48,7 @@ data <- anonymise(data, "holding")
 g_static <- igraph::graph_from_data_frame(data, directed=TRUE)
 
 #daily snapshots
+movenetenv <- movenet:::movenetenv
 daily_data <- tibble::tibble(dates = as.numeric(seq(from=min(data[[movenetenv$options$movedata_cols$move_date]]),to=max(data[[movenetenv$options$movedata_cols$move_date]]),by=1)),
                              active_nodes = sapply(as.numeric(seq(from=min(data[[movenetenv$options$movedata_cols$move_date]]),to=max(data[[movenetenv$options$movedata_cols$move_date]]),by=1)),
                                                      function(x){vcount(subgraph.edges(g_static, E(g_static)[eval(parse(text=movenetenv$options$movedata_cols$move_date))==x], delete.vertices = TRUE))}),
@@ -58,6 +63,7 @@ daily_data <- tibble::tibble(dates = as.numeric(seq(from=min(data[[movenetenv$op
                                                 }))
 
 #aggregrated data
+tosave <- character(0)
 for (level in c("week","month","bimonth","quarter","halfyear","year")){
   # create graph for aggregate data
   g <- coarsen_date(data, level, aggregate_data = TRUE) %>%
@@ -97,7 +103,13 @@ for (level in c("week","month","bimonth","quarter","halfyear","year")){
                                                 edge_densities = edge_densities,
                                                 median_degree = median_degree,
                                                 GSCC_size = GSCC_size))
+
+  tosave <- c(tosave, paste0(level,"ly_data"))
 }
+
+save(list=tosave, file="summaries_DK.rda")
+
+pdf("movenet_plots_DK.pdf")
 
 #Fraction of nodes active plot
 plot(as_date(daily_data$dates), daily_data$active_nodes/vcount(g_static),
@@ -163,3 +175,5 @@ points(as_date(quarterly_data$dates), quarterly_data$GSCC_size,
        col = "tan")
 points(as_date(yearly_data$dates), yearly_data$GSCC_size,
        col = "black")
+
+dev.off()

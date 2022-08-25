@@ -4,21 +4,14 @@
 \alias{reformat_move_data}
 \title{Reading and reformatting of animal movement data}
 \usage{
-reformat_move_data(move_data_file, delim = NULL, datetime_format = "")
+reformat_move_data(move_data_file)
 }
 \arguments{
 \item{move_data_file}{Path to a delimited file with movement data (alternatively: literal data or a connection).}
-
-\item{delim}{Character used as delimiter between fields (optional). The default value (NULL) results in an automatic guess based on the first 1000 lines of data.}
-
-\item{datetime_format}{Datetime format specification, as described for readr::parse_datetime. The default value ("") results in datetimes being parsed as ISO8601. The format specification must match the complete string.}
 }
 \value{
 reformatted movement data (selected & renamed columns)
 }
 \description{
 Reformats movement data from a delimited file into a common intermediate format (extracts and renames selected columns)
-}
-\examples{
-
 }
