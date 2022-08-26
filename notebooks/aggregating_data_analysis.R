@@ -1,45 +1,38 @@
 library("igraph")
 library("lubridate")
 
+library("pbapply")
+library("tidyverse")
+
 #Synthetic data, on Carlijn's work computer
 #datafile<-"C:/Users/carlijn/OneDrive - University of Glasgow/CS3-ASF/Pig movement data structure/sample_pigs_UK_with_dep_arr_dates.csv"
 #Synthetic data, on Carlijn's laptop
 #datafile<-"C:/Users/cboga/OneDrive - University of Glasgow/CS3-ASF/Pig movement data structure/sample_pigs_UK_with_dep_arr_dates.csv"
 
 # Danish data, available to Matt only:
-# datafile <- "/Users/matthewdenwood/Documents/Research/Projects/DigiVet/CS2/DK_pig_movements/flyt.csv"
+datafile <- "/Users/matthewdenwood/Documents/Research/Projects/DigiVet/CS2/DK_pig_movements/svine_flytninger_2018_2020.csv"
 
 
 #want to compare different coarsen_dates
-load_all()
-load_config("Denmark") # Please Check options in inst/configurations/Denmark.yml!
+# load_all()
+library("movenet")
+load_config("Denmark_processed") # Please Check options in inst/configurations/Denmark.yml!
 
 # NB from Matt's Danish data summaries I gather that the date format string is different for each year
 # i.e. that option needs changing between reformats for different years!
 ## Yes, that is super annoying but unfortunately true :(
 ## Another (possibly better) option is for me to reformat and harmonise the different years of data before reading with movenet
 
-#movenet.options(date_format="") - please change "" to correct format string
-datafile <- "2020/20210816_CHRN_1005_svin_indenlandske_svineflytninger_maaned_01_06.txt"
-data.1 <- reformat_move_data(datafile)
-datafile <- "2020/20210816_CHRN_1005_svin_indenlandske_svineflytninger_maaned_07_12.txt"
-data.2 <- reformat_move_data(datafile)
-#movenet.options(date_format="") - please change "" to correct format string
-datafile <- "2019/20200116-01_SVINN-293_2019_indenlandske_flytninger-del_1.csv"
-data.3 <- reformat_move_data(datafile)
-datafile <- "2019/20200116-01_SVINN-293_2019_indenlandske_flytninger-del_2.csv"
-data.4 <- reformat_move_data(datafile)
-#movenet.options(date_format="") - please change "" to correct format string
-datafile <- "2018/20190125_CHRN_261_svin_indenlandske_svineflytninger_maaned_01_06.txt"
-data.5 <- reformat_move_data(datafile)
-datafile <- "2018/20190125_CHRN_261_svin_indenlandske_svineflytninger_maaned_07_12.txt"
-data.6 <- reformat_move_data(datafile)
+data <- reformat_move_data(datafile)
 
 #Not including international movements for now
 #What to do with missing ANTAL_FLYT_DYR? Remove?
+## I have removed them from part of this data (they are movement of dead pigs / containers)
 
 # concatenate data for a few years, if possible please
-data <- merge(data.1, data.2) %>% merge(data.3) %>% merge(data.4) %>% merge(data.5) %>% merge(data.6)
+# data <- bind_rows(data.1, data.2)
+## There are 3 years of data in the single file
+data <- data # |> filter(DATO_FLYTNING >= "2019-01-01")
 
 #anonymise
 data <- anonymise(data, "holding")
@@ -50,13 +43,13 @@ g_static <- igraph::graph_from_data_frame(data, directed=TRUE)
 #daily snapshots
 movenetenv <- movenet:::movenetenv
 daily_data <- tibble::tibble(dates = as.numeric(seq(from=min(data[[movenetenv$options$movedata_cols$move_date]]),to=max(data[[movenetenv$options$movedata_cols$move_date]]),by=1)),
-                             active_nodes = sapply(as.numeric(seq(from=min(data[[movenetenv$options$movedata_cols$move_date]]),to=max(data[[movenetenv$options$movedata_cols$move_date]]),by=1)),
+                             active_nodes = pbsapply(as.numeric(seq(from=min(data[[movenetenv$options$movedata_cols$move_date]]),to=max(data[[movenetenv$options$movedata_cols$move_date]]),by=1)),
                                                      function(x){vcount(subgraph.edges(g_static, E(g_static)[eval(parse(text=movenetenv$options$movedata_cols$move_date))==x], delete.vertices = TRUE))}),
-                             edge_densities = sapply(as.numeric(seq(from=min(data[[movenetenv$options$movedata_cols$move_date]]),to=max(data[[movenetenv$options$movedata_cols$move_date]]),by=1)),
+                             edge_densities = pbsapply(as.numeric(seq(from=min(data[[movenetenv$options$movedata_cols$move_date]]),to=max(data[[movenetenv$options$movedata_cols$move_date]]),by=1)),
                                                      function(x){edge_density(subgraph.edges(g_static, E(g_static)[eval(parse(text=movenetenv$options$movedata_cols$move_date))==x], delete.vertices = FALSE))}),
-                             median_degree = sapply(as.numeric(seq(from=min(data[[movenetenv$options$movedata_cols$move_date]]),to=max(data[[movenetenv$options$movedata_cols$move_date]]),by=1)),
+                             median_degree = pbsapply(as.numeric(seq(from=min(data[[movenetenv$options$movedata_cols$move_date]]),to=max(data[[movenetenv$options$movedata_cols$move_date]]),by=1)),
                                                     function(x){median(degree(subgraph.edges(g_static, E(g_static)[eval(parse(text=movenetenv$options$movedata_cols$move_date))==x], delete.vertices = FALSE),mode="all"))}),
-                             GSCC_size = sapply(as.numeric(seq(from=min(data[[movenetenv$options$movedata_cols$move_date]]),to=max(data[[movenetenv$options$movedata_cols$move_date]]),by=1)),
+                             GSCC_size = pbsapply(as.numeric(seq(from=min(data[[movenetenv$options$movedata_cols$move_date]]),to=max(data[[movenetenv$options$movedata_cols$move_date]]),by=1)),
                                                 function(x){
                                                   subgraph <- subgraph.edges(g_static, E(g_static)[eval(parse(text=movenetenv$options$movedata_cols$move_date))==x], delete.vertices = FALSE)
                                                   max(components(subgraph, mode = "strong")$csize)/vcount(subgraph)
@@ -107,9 +100,9 @@ for (level in c("week","month","bimonth","quarter","halfyear","year")){
   tosave <- c(tosave, paste0(level,"ly_data"))
 }
 
-save(list=tosave, file="summaries_DK.rda")
+save(list=tosave, file="summaries_DK_3yr.rda")
 
-pdf("movenet_plots_DK.pdf")
+pdf("movenet_plots_DK_3yr.pdf")
 
 #Fraction of nodes active plot
 plot(as_date(daily_data$dates), daily_data$active_nodes/vcount(g_static),
