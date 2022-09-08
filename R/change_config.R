@@ -81,8 +81,8 @@ get_config <- function(...){
 
 #' @rdname change_config
 #' @export
-movenet.options <- function(...){
-  #rename to set_config, set_option, set_options
+change_config <- function(...){
+  #set aliases: set_config, set_option, set_options?
   #remove behaviour to invisibly return old options [no longer trying to copy base R options system]?
 
   old_opts <- movenetenv$options

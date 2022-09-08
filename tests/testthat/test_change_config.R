@@ -172,34 +172,34 @@ test_that("get_config() returns all options, if an empty list is given",{
 })
 
 
-test_that("movenet.options() returns value of a single option, if this is requested by its full name",{
+test_that("change_config() returns value of a single option, if this is requested by its full name",{
   #This results in nothing. What do I want output for this to be?
-  expect_vector(movenet.options("origin_ID"), ptype=list(), size =1)
-  expect_named(movenet.options("origin_ID"), c("origin_ID"))
-  expect_mapequal(movenet.options("origin_ID"), movenetenv$options$movedata_cols["origin_ID"])
+  expect_vector(change_config("origin_ID"), ptype=list(), size =1)
+  expect_named(change_config("origin_ID"), c("origin_ID"))
+  expect_mapequal(change_config("origin_ID"), movenetenv$options$movedata_cols["origin_ID"])
 })
-test_that("movenet.options() returns value of a single option, if this is requested by a correct partial match",{
-  expect_vector(movenet.options("origin_I"), ptype=list(), size =1)
-  expect_named(movenet.options("origin_I"), c("origin_ID"))
-  expect_mapequal(movenet.options("origin_I"), movenetenv$options$movedata_cols["origin_ID"])
+test_that("change_config() returns value of a single option, if this is requested by a correct partial match",{
+  expect_vector(change_config("origin_I"), ptype=list(), size =1)
+  expect_named(change_config("origin_I"), c("origin_ID"))
+  expect_mapequal(change_config("origin_I"), movenetenv$options$movedata_cols["origin_ID"])
 })
-test_that("movenet.options() returns value of multiple options, if requested by their full names as separate character strings",{
-  expect_vector(movenet.options("origin_ID", "nr_pigs"), ptype=list(), size = 2)
-  expect_named(movenet.options("origin_ID", "nr_pigs"), c("origin_ID", "nr_pigs"))
-  expect_mapequal(movenet.options("origin_ID", "nr_pigs"), movenetenv$options$movedata_cols[c("origin_ID","nr_pigs")])
+test_that("change_config() returns value of multiple options, if requested by their full names as separate character strings",{
+  expect_vector(change_config("origin_ID", "nr_pigs"), ptype=list(), size = 2)
+  expect_named(change_config("origin_ID", "nr_pigs"), c("origin_ID", "nr_pigs"))
+  expect_mapequal(change_config("origin_ID", "nr_pigs"), movenetenv$options$movedata_cols[c("origin_ID","nr_pigs")])
 })
-test_that("movenet.options() returns value of multiple options, if requested by their full names as a single character vector",{
-  expect_vector(movenet.options(c("origin_ID", "nr_pigs")), ptype=list(), size = 2)
-  expect_named(movenet.options(c("origin_ID", "nr_pigs")), c("origin_ID", "nr_pigs"))
-  expect_mapequal(movenet.options(c("origin_ID", "nr_pigs")), movenetenv$options$movedata_cols[c("origin_ID","nr_pigs")])
+test_that("change_config() returns value of multiple options, if requested by their full names as a single character vector",{
+  expect_vector(change_config(c("origin_ID", "nr_pigs")), ptype=list(), size = 2)
+  expect_named(change_config(c("origin_ID", "nr_pigs")), c("origin_ID", "nr_pigs"))
+  expect_mapequal(change_config(c("origin_ID", "nr_pigs")), movenetenv$options$movedata_cols[c("origin_ID","nr_pigs")])
 })
-test_that("movenet.options() returns all options, if no argument is given",{
-  expect_vector(movenet.options(), ptype=list(), size = length(flatten(movenetenv$options)))
-  expect_mapequal(movenet.options(), flatten(movenetenv$options))
+test_that("change_config() returns all options, if no argument is given",{
+  expect_vector(change_config(), ptype=list(), size = length(flatten(movenetenv$options)))
+  expect_mapequal(change_config(), flatten(movenetenv$options))
 })
-test_that("movenet.options() returns all options, if an empty list is given",{
-  expect_vector(movenet.options(list()), ptype=list(), size = length(flatten(movenetenv$options)))
-  expect_mapequal(movenet.options(list()), flatten(movenetenv$options))
+test_that("change_config() returns all options, if an empty list is given",{
+  expect_vector(change_config(list()), ptype=list(), size = length(flatten(movenetenv$options)))
+  expect_mapequal(change_config(list()), flatten(movenetenv$options))
 })
 
 
