@@ -57,23 +57,21 @@ coarsen_weight <- function(data, column = movenetenv$options$movedata_cols$nr_pi
   # might want user to be able to just jitter, just round, or have both
   # sensible default values?
 
+  # Add argument checks with checkmate:
   # The below requires column to be a single column.
-  # NB jitter may result in negative numbers - what then?
-  # NB jitter adds decimal numbers
-  # to not need factor, need amount to be >0
-  # Add argument checks with checkmate
+  # round & jitter should be positive numbers or FALSE
 
-  #round & jitter should be positive numbers or FALSE
+  # Most suitable distribution? Currently uniform, but can change
+
 
   if (!identical(jitter, FALSE)){
-    data[column] <- jitter(data[[column]], amount = jitter) # what about factor?
-    if (identical(round, FALSE)){
-      #if rounding is NOT applied, need to turn data =< 0 into positives
-      #if round IS applied, can keep data =< 0 as they'll be set to the minimum round anyway
-      data[column][which(!data[column] > 0),] <- jitter(data[[column]][which(!data[column] > 0),], amount = jitter) #this just repeats the jitter process
-      # Use abs() for absolute values or find a better algorithm / distribution to turn negatives positive
-      }
+    replacement_data <- data[[column]] + runif(length(data[[column]]), -jitter, +jitter)
+    while (any(replacement_data <= 0)){
+      replacement_data[which(replacement_data <= 0)] <- data[[column]][which(replacement_data <= 0)] + runif(sum(replacement_data <= 0), -jitter, +jitter)
+    }
+    data[column] <- replacement_data
   }
+
   if (!identical(round, FALSE)){
     data[column] <- round_any(data[[column]], accuracy = round)
     data[column][which(data[column] < round),] <- round
