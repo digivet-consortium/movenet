@@ -25,6 +25,7 @@ Imports:
     igraph,
     lubridate,
     magrittr,
+    plyr,
     purrr,
     Rcpp,
     readr,

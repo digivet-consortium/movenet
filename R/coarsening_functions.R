@@ -10,8 +10,10 @@
 #' @importFrom dplyr group_by mutate summarise ungroup
 #' @importFrom lubridate floor_date
 #' @importFrom magrittr %>%
+#' @importFrom plyr round_any
 #'
 #' @examples
+#' @export
 coarsen_date <- function(data, level, aggregate_data = TRUE, ...){
   # accesses each date on an edge in network, changes to level aggregation
   coarsened_data <- data %>% mutate("{movenetenv$options$movedata_cols$move_date}" := floor_date(.data[[movenetenv$options$movedata_cols$move_date]], level)) # result is date object, rounded down to start of unit (e.g. month)
@@ -61,11 +63,21 @@ coarsen_weight <- function(data, column = movenetenv$options$movedata_cols$nr_pi
   # to not need factor, need amount to be >0
   # Add argument checks with checkmate
 
+  #round & jitter should be positive numbers or FALSE
+
   if (!identical(jitter, FALSE)){
     data[column] <- jitter(data[[column]], amount = jitter) # what about factor?
+    if (identical(round, FALSE)){
+      #if rounding is NOT applied, need to turn data =< 0 into positives
+      #if round IS applied, can keep data =< 0 as they'll be set to the minimum round anyway
+      data[column][which(!data[column] > 0),] <- jitter(data[[column]][which(!data[column] > 0),], amount = jitter) #this just repeats the jitter process
+      # Use abs() for absolute values or find a better algorithm / distribution to turn negatives positive
+      }
   }
   if (!identical(round, FALSE)){
-    data[column] <- round(data[[column]], digits = -(round))
+    data[column] <- round_any(data[[column]], accuracy = round)
+    data[column][which(data[column] < round),] <- round
+    #is it more efficient to filter first, and only round if data[column] > round, or to just round everything?
   }
   return(data)
 }
