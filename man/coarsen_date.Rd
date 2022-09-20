@@ -9,6 +9,9 @@ coarsen_date(data, level, aggregate_data = TRUE, ...)
 \arguments{
 \item{aggregate_data}{}
 }
+\value{
+
+}
 \description{
 Title
 }
