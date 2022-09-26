@@ -27,7 +27,7 @@ test_that("when config has min cols + extra move_ID col, and input has numeric m
   })
 
 test_that("when config has all min cols, indicated as col indices, output is data.frame with correct colnames & coltypes",{
-  suppressMessages(load_config("ScotEID_mincolnrs"))
+  suppressMessages(load_config("test_input_files/ScotEID_mincolnrs.yml"))
   output <- expect_condition(reformat_move_data("test_input_files/ScotEID_testdata.csv"), NA)
   expect_s3_class(output,"data.frame")
   expect_named(output,ScotEID_colnames[c(1:4)])
@@ -40,7 +40,7 @@ test_that("when config has all min cols, indicated as col indices, output is dat
 })
 
 test_that("when config has all min cols + extra col, with some of both indicated as col indices, output is data.frame with correct colnames & coltypes",{
-  suppressMessages(load_config("ScotEID_mixcolnamesnrs"))
+  suppressMessages(load_config("test_input_files/ScotEID_mixcolnamesnrs.yml"))
   output <- expect_warning(reformat_move_data("test_input_files/ScotEID_testdata.csv"), NA)
   expect_error(reformat_move_data("test_input_files/ScotEID_testdata.csv"), NA)
   expect_s3_class(output,"data.frame")
@@ -81,14 +81,14 @@ test_that("when input datafile misses a requested optional col, a warning is rai
 })
 
 test_that("when config has a min col, indicated as col index, that exceeds the col range of input datafile, an error is raised",{
-  suppressMessages(load_config("ScotEID_mincolnrtoolarge"))
+  suppressMessages(load_config("test_input_files/ScotEID_mincolnrtoolarge.yml"))
   expect_error(reformat_move_data("test_input_files/ScotEID_testdata.csv"),
                "Can't find the following mandatory columns in the datafile\\: #20 \\(dest_ID\\)\\.\nThese column indices exceed the number of columns in the datafile\\.")
   suppressMessages(load_config("ScotEID"))
 })
 
 test_that("when config has an optional col, indicated as col index, that exceeds the col range of input datafile, a warning is raised and results are produced without the col",{
-  suppressMessages(load_config("ScotEID_optcolnrtoolarge"))
+  suppressMessages(load_config("test_input_files/ScotEID_optcolnrtoolarge.yml"))
   expect_warning(reformat_move_data("test_input_files/ScotEID_testdata.csv"),
                  "Can't find the following requested optional columns in the datafile\\: #20 \\(move_ID\\)\\.\nThese column indices exceed the number of columns in the datafile\\.\nProceeding without missing optional columns\\.")
   output <- reformat_move_data("test_input_files/ScotEID_testdata.csv")
