@@ -1,5 +1,0 @@
-movedata_cols:
-  from: "#1" #Column name or number for Identifier of origin holding/establishment/..
-  to: "#2" #Column name or number for Identifier of destination holding/establishment/..
-  date: "#3" #Column name or number for Date of transport (if multiple date types are available, use the one deemed most appropriate)
-  weight: "#7" #Column name or number for movement weight (e.g. nr of pigs moved)
