@@ -1,8 +1,8 @@
 load_all()
 delim <- NULL
-min_move_keys <- c("movenet.origin_ID", "movenet.dest_ID", "movenet.move_date", "movenet.nr_pigs")
+min_move_keys <- c("movenet.from", "movenet.to", "movenet.date", "movenet.weight")
 minvars <- movenetenv$options$movement_data[min_move_keys]
-extra <- movenetenv$options$movement_data[is.na(match(names(movenetenv$options$movement_data),c("movenet.origin_ID","movenet.dest_ID","movenet.move_date","movenet.nr_pigs")))]
+extra <- movenetenv$options$movement_data[is.na(match(names(movenetenv$options$movement_data),c("movenet.from","movenet.to","movenet.date","movenet.weight")))]
 minvar_coltypes <- list("c", "c", "c", "c")
 names(minvar_coltypes) <- lapply(unname(minvars),FUN=as.name)
 move_data_file<-"tests/testthat/test_input_files/ScotEID_testdata_colmissing.csv"

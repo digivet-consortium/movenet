@@ -21,7 +21,7 @@ reformat_move_data <- function(move_data_file){
     stop(paste0(move_data_file, ": no such file exists"))
   }
 
-  min_move_keys <- c("origin_ID", "dest_ID", "move_date", "nr_pigs")
+  min_move_keys <- c("from", "to", "date", "weight")
 
   #read in datafile (all columns), with col type initially character for all columns
   all_data <- read_delim(move_data_file,
@@ -45,8 +45,8 @@ reformat_move_data <- function(move_data_file){
   selected_data <- select_cols(data = all_data, minvars = minvars, extra = extra)
 
   #check data & change col types; or raise informative errors
-  selected_data[minvars$nr_pigs] <- reformat_nrpigs(selected_data[minvars$nr_pigs])
-  selected_data[minvars$move_date] <- reformat_date(selected_data[minvars$move_date])
+  selected_data[minvars$weight] <- reformat_nrpigs(selected_data[minvars$weight])
+  selected_data[minvars$date] <- reformat_date(selected_data[minvars$date])
   if (length(selected_data) > 4){
     selected_data[unlist(extra[extra %in% names(selected_data)])] <-
       suppressMessages(type_convert(selected_data[unlist(extra[extra %in% names(selected_data)])], #guess coltype of extra columns
@@ -102,14 +102,14 @@ select_cols <- function(data, minvars, extra){
   data[to_extract]
 }
 
-reformat_nrpigs <- function(nr_pigs_col){
+reformat_nrpigs <- function(weight_col){
   tryCatch(
     error = function(cnd) {
-      cnd$message <- paste0("Column `",colnames(nr_pigs_col),"` must be numeric and can't contain a grouping mark.")
+      cnd$message <- paste0("Column `",colnames(weight_col),"` must be numeric and can't contain a grouping mark.")
       cnd$call <- NULL
       stop(cnd)
     },
-    withr::with_options(list(warn=2),parse_double(nr_pigs_col[[colnames(nr_pigs_col)]],
+    withr::with_options(list(warn=2),parse_double(weight_col[[colnames(weight_col)]],
                                                   locale = locale(decimal_mark = movenetenv$options$movedata_fileopts$decimal)))
   )
 }
@@ -123,7 +123,7 @@ reformat_date <- function(date_col){
       msglist <- c()
       #if a date column contains strings with no numbers (e.g. "foo")
       if(!any(grepl("[0-9]",date_col[[colnames(date_col)]]))){
-         msglist <- c(msglist,paste0("Column `",colnames(date_col),"` does not contain any numbers.\nHave you identified the correct column name under the option `move_date`?"))
+         msglist <- c(msglist,paste0("Column `",colnames(date_col),"` does not contain any numbers.\nHave you identified the correct column name under the option `date`?"))
       }
       #Otherwise (difficult to assess what specific situation applies)
       #- other forms of "date column can simply not be a date" - e.g. 34/345/12

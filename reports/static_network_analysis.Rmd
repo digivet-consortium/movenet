@@ -7,7 +7,7 @@ library(dplyr)
 library(igraph)
 library(magrittr)
 truenames <- colnames(data)
-colnames(data)[1:4]<-c("origin_ID","dest_ID","move_date","nr_pigs")
+colnames(data)[1:4]<-c("from","dest_ID","date","weight")
 #can reset names of edge attributes with names(edge_attr(g))<-truenames[-c(1,2)]
 ```
 
@@ -15,7 +15,7 @@ colnames(data)[1:4]<-c("origin_ID","dest_ID","move_date","nr_pigs")
 
 g <- graph_from_data_frame(data,directed=TRUE)
 
-E(g)$weight <- data$nr_pigs
+E(g)$weight <- data$weight
 
 ```
 
@@ -32,11 +32,11 @@ Network order (number of edges): `r ecount(g)`
 ## Simplified graph: combining all repeated edges (movements)
 
 ```{r simplify graph, echo = FALSE}
-#Overall movement summary (nr_pigs summed over all repeated edges)
-g_moves_summed <- simplify(g, remove.multiple = TRUE, edge.attr.comb = list(nr_pigs = "sum", weight = "sum", "ignore"))
+#Overall movement summary (weight summed over all repeated edges)
+g_moves_summed <- simplify(g, remove.multiple = TRUE, edge.attr.comb = list(weight = "sum", weight = "sum", "ignore"))
 #Mean (or median) number of pigs moved between each set of vertices
-g_moves_mean <- simplify(g, remove.multiple = TRUE, edge.attr.comb = list(nr_pigs = "mean", weight = "mean", "ignore"))
-g_moves_median <- simplify(g, remove.multiple = TRUE, edge.attr.comb = list(nr_pigs = "median", weight = "median", "ignore"))
+g_moves_mean <- simplify(g, remove.multiple = TRUE, edge.attr.comb = list(weight = "mean", weight = "mean", "ignore"))
+g_moves_median <- simplify(g, remove.multiple = TRUE, edge.attr.comb = list(weight = "median", weight = "median", "ignore"))
 ```
 
 ```{r plot simplified graph, echo = FALSE}
@@ -67,7 +67,7 @@ hist(closeness(g, mode = "all"))
 ### Betweenness centrality (weighted by nr pigs - prob wrong way)
 ```{r betweenness, echo = FALSE}
 hist(betweenness(g))
-betweenness(g, weights=NULL, normalized=TRUE) #relative betweenness - NOT weighted by nr_pigs
+betweenness(g, weights=NULL, normalized=TRUE) #relative betweenness - NOT weighted by weight
 
 ```
 
@@ -99,7 +99,7 @@ edge_density(g) #"Note that this function may return strange results for graph w
 diameter(g, weights = NULL)
 assortativity_degree(g, directed = TRUE) #uses vertex degree (minus one) as vertex values [why?]
 reciprocity(g, mode = "default") #not sure whether we'd want default or ratio mode
-transitivity(g, type = "global") #not sure about type. Automatically weighted if nr_pigs is set as weight -> need to change this
+transitivity(g, type = "global") #not sure about type. Automatically weighted if weight is set as weight -> need to change this
 mean_distance(g, weights = NA) #NA calculates unweighted even if weight attribute is set
 Jac_coeff <- similarity(g, method = "jaccard" ) #Jaccard similarity coefficient - result = matrix. 
 length(colMeans(Jac_coeff)[which(colMeans(Jac_coeff)==0)])/vcount(g) #"Prop of nodes w/ave JacSimCoeff == 0"

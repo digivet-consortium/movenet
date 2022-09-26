@@ -6,7 +6,7 @@ movedata_fileopts:
 
 movedata_cols:
   move_ID: "hh_idstring" #Column name or number for Transport identifier
-  origin_ID: "hh_fra_id" #Column name or number for Identifier of origin holding/establishment/..
-  dest_ID: "hh_til_id" #Column name or number for Identifier of destination holding/establishment/..
-  move_date: "hh_skjedde" #Column name or number for Date of transport (if multiple date types are available, use the one deemed most appropriate)
-  nr_pigs: "hh_antalldyrflyttet" #Column name or number for Number of pigs transported
+  from: "hh_fra_id" #Column name or number for Identifier of origin holding/establishment/..
+  to: "hh_til_id" #Column name or number for Identifier of destination holding/establishment/..
+  date: "hh_skjedde" #Column name or number for Date of transport (if multiple date types are available, use the one deemed most appropriate)
+  weight: "hh_antalldyrflyttet" #Column name or number for movement weight (e.g. nr of pigs moved)

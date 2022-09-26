@@ -39,7 +39,7 @@ valid_yaml <- function(infile){
   if (root_valid){
 
     move_keys_obs <- names(yamlfile[["movement_data"]])
-    move_keys_exp <- c("move_ID", "origin_ID", "dest_ID", "dep_date", "arr_date", "nr_pigs")
+    move_keys_exp <- c("move_ID", "from", "to", "dep_date", "arr_date", "weight")
     move_notmissing <- length(move_keys_obs) > 5 && all(move_keys_exp %in% move_keys_obs) #tests that required move keys are present; but file may have more keys
     move_allchar <- all(sapply(yamlfile[["movement_data"]][move_keys_exp],is.character)) #tests that required move values are all characters (may need adapting for DK dates))
     move_valid <- all(move_notmissing && move_allchar)
