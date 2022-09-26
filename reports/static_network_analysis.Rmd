@@ -7,7 +7,7 @@ library(dplyr)
 library(igraph)
 library(magrittr)
 truenames <- colnames(data)
-colnames(data)[1:4]<-c("from","dest_ID","date","weight")
+colnames(data)[1:4]<-c("from","to","date","weight")
 #can reset names of edge attributes with names(edge_attr(g))<-truenames[-c(1,2)]
 ```
 

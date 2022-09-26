@@ -2,7 +2,7 @@ old_config<-movenetenv$options
 suppressMessages(load_config("ScotEID"))
 ScotEID_config <- yaml.load_file(system.file("configurations", "ScotEID.yml", package="movenet"))
 ScotEID_movecols <- ScotEID_config$movedata_cols
-ScotEID_colnames <- unlist(unname(ScotEID_movecols[c("from","dest_ID","date","weight","move_ID")]))
+ScotEID_colnames <- unlist(unname(ScotEID_movecols[c("from","to","date","weight","move_ID")]))
 
 test_that("when config has all min cols only, and input has correct dateformat + int weight, output is data.frame with correct colnames & coltypes", {
   move_ID <- movenetenv$options$movedata_cols$move_ID
@@ -11,7 +11,7 @@ test_that("when config has all min cols only, and input has correct dateformat +
   expect_s3_class(output,"data.frame")
   expect_named(output,ScotEID_colnames[c(1:4)])
   expect_type(output[[ScotEID_movecols$from]], "character")
-  expect_type(output[[ScotEID_movecols$dest_ID]], "character")
+  expect_type(output[[ScotEID_movecols$to]], "character")
   expect_s3_class(output[[ScotEID_movecols$date]], "Date") #this also works for wrong date formats though
   expect_true(all(!is.na(output[[ScotEID_movecols$date]]))) #tests that all dates are interpretable = no NAs generated
   expect_type(output[[ScotEID_movecols$weight]], "double")
@@ -32,7 +32,7 @@ test_that("when config has all min cols, indicated as col indices, output is dat
   expect_s3_class(output,"data.frame")
   expect_named(output,ScotEID_colnames[c(1:4)])
   expect_type(output[[ScotEID_movecols$from]], "character")
-  expect_type(output[[ScotEID_movecols$dest_ID]], "character")
+  expect_type(output[[ScotEID_movecols$to]], "character")
   expect_s3_class(output[[ScotEID_movecols$date]], "Date") #this also works for wrong date formats though
   expect_true(all(!is.na(output[[ScotEID_movecols$date]]))) #tests that all dates are interpretable = no NAs generated
   expect_type(output[[ScotEID_movecols$weight]], "double")
@@ -46,7 +46,7 @@ test_that("when config has all min cols + extra col, with some of both indicated
   expect_s3_class(output,"data.frame")
   expect_named(output,c(ScotEID_colnames,"foreign_reference"))
   expect_type(output[[ScotEID_movecols$from]], "character")
-  expect_type(output[[ScotEID_movecols$dest_ID]], "character")
+  expect_type(output[[ScotEID_movecols$to]], "character")
   expect_s3_class(output[[ScotEID_movecols$date]], "Date") #this also works for wrong date formats though
   expect_true(all(!is.na(output[[ScotEID_movecols$date]]))) #tests that all dates are interpretable = no NAs generated
   expect_type(output[[ScotEID_movecols$weight]], "double")
@@ -74,7 +74,7 @@ test_that("when input datafile misses a requested optional col, a warning is rai
   expect_s3_class(output,"data.frame")
   expect_named(output,ScotEID_colnames[c(1:4)])
   expect_type(output[[ScotEID_movecols$from]], "character")
-  expect_type(output[[ScotEID_movecols$dest_ID]], "character")
+  expect_type(output[[ScotEID_movecols$to]], "character")
   expect_s3_class(output[[ScotEID_movecols$date]], "Date") #this also works for wrong date formats though
   expect_true(all(!is.na(output[[ScotEID_movecols$date]]))) #tests that all dates are interpretable = no NAs generated
   expect_type(output[[ScotEID_movecols$weight]], "double")
@@ -83,7 +83,7 @@ test_that("when input datafile misses a requested optional col, a warning is rai
 test_that("when config has a min col, indicated as col index, that exceeds the col range of input datafile, an error is raised",{
   suppressMessages(load_config("test_input_files/ScotEID_mincolnrtoolarge.yml"))
   expect_error(reformat_move_data("test_input_files/ScotEID_testdata.csv"),
-               "Can't find the following mandatory columns in the datafile\\: #20 \\(dest_ID\\)\\.\nThese column indices exceed the number of columns in the datafile\\.")
+               "Can't find the following mandatory columns in the datafile\\: #20 \\(to\\)\\.\nThese column indices exceed the number of columns in the datafile\\.")
   suppressMessages(load_config("ScotEID"))
 })
 
@@ -95,7 +95,7 @@ test_that("when config has an optional col, indicated as col index, that exceeds
   expect_s3_class(output,"data.frame")
   expect_named(output,c(ScotEID_colnames[c(1:4)],"foreign_reference"))
   expect_type(output[[ScotEID_movecols$from]], "character")
-  expect_type(output[[ScotEID_movecols$dest_ID]], "character")
+  expect_type(output[[ScotEID_movecols$to]], "character")
   expect_s3_class(output[[ScotEID_movecols$date]], "Date") #this also works for wrong date formats though
   expect_true(all(!is.na(output[[ScotEID_movecols$date]]))) #tests that all dates are interpretable = no NAs generated
   expect_type(output[[ScotEID_movecols$weight]], "double")
@@ -106,7 +106,7 @@ test_that("when config has an optional col, indicated as col index, that exceeds
 test_that("when config has a movedata_cols option indicated as col index, but that upon translation to colname reveals to be a duplicate col, an error is raised",{
   suppressMessages(change_config(from=19L))
   expect_error(reformat_move_data("test_input_files/ScotEID_testdata.csv"),
-               "Values for movedata_cols options must be unique\\. Translation of column indices to column headers identified the following options with duplicate values\\: from, dest_ID")
+               "Values for movedata_cols options must be unique\\. Translation of column indices to column headers identified the following options with duplicate values\\: from, to")
   suppressMessages(load_config("ScotEID"))
 })
 

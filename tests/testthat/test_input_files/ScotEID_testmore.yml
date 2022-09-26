@@ -6,10 +6,10 @@ movedata_fileopts:
 
 movedata_cols:
   move_ID: "movement_reference" #Column name or number for Transport identifier
-  origin_ID: "departure_cph" #Column name or number for Identifier of origin holding/establishment/..
-  dest_ID: "dest_cph" #Column name or number for Identifier of destination holding/establishment/..
-  move_date: "departure_date" #Column name or number for Date of transport (if multiple date types are available, use the one deemed most appropriate)
-  nr_pigs: "qty_pigs" #Column name or number for movement weight (e.g. nr of pigs moved)
+  from: "departure_cph" #Column name or number for Identifier of origin holding/establishment/..
+  to: "dest_cph" #Column name or number for Identifier of destination holding/establishment/..
+  date: "departure_date" #Column name or number for Date of transport (if multiple date types are available, use the one deemed most appropriate)
+  weight: "qty_pigs" #Column name or number for movement weight (e.g. nr of pigs moved)
   foo: "bar"
   bar: 5
 
