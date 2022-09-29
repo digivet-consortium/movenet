@@ -15,6 +15,3 @@ reformatted movement data (selected & renamed columns)
 \description{
 Reformats movement data from a delimited file into a common intermediate format (extracts and renames selected columns)
 }
-\examples{
-
-}
