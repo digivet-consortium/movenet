@@ -1,0 +1,19 @@
+holdingdata_fileopts:
+  separator:   #Separator (delimiter) character used in holding datafile
+  encoding:    #Encoding used in holding datafile
+  decimal:     #Decimal mark used in holding datafile
+
+holdingdata_dataopts:
+  start_date:       #Date from which holding datafile is valid (yyyy-mm-dd)
+  end_date:         #Last date for which holding datafile is valid (yyyy-mm-dd)
+  coord_projection: #Projection for geographical coordinates
+  coord_format:     #Format of geographical coordinates (decimal vs degree/min/sec)
+
+holdingdata_cols:
+  id:           #Identifier of holding - need to match from/to in movement data!
+  coords:       #Geographical coordinates of holding
+  coord_x:      #Geographical coordinate (x) of holding
+  coord_y:      #Geographical coordinate (y) of holding
+  holding_type: #Type of holding
+  herd_type:    #Type of herd
+  herd_size:    #Size of herd
