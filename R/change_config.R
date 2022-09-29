@@ -9,38 +9,38 @@
 
 #' @rdname change_config
 #' @export
-load_config <- function(configname){
-
-  yamlfile <- system.file("configurations", paste0(configname, ".yml"), package="movenet")
-  if(yamlfile=="") stop(paste("Specified config file not found:", configname))
+load_config <- function(configfile){
+  if(missing(configfile)) stop("Argument `configfile` is missing. Please provide either the name of a preinstalled config file, or the path of the config file you wish to load.", call. = FALSE)
+  if(file.exists(configfile)){
+    yamlfile <- configfile
+  } else {
+    if(grepl(".yml",configfile)==TRUE){
+      yamlfile <- system.file("configurations", configfile, package="movenet")
+    } else {
+      yamlfile <- system.file("configurations", paste0(configfile, ".yml"), package="movenet")
+    }
+    if(yamlfile=="") stop(paste("Specified config file not found:", configfile), call. = FALSE)
+  }
 
   if(validate_config(yamlfile) == TRUE){
     movenetenv$options <- yaml.load_file(yamlfile) # Change options to contents of yaml file
-    message(paste("Successfully loaded config file:", configname))
+    message(paste("Successfully loaded config file:", configfile))
   }
-
-  # Suggestions to allow reading of any configfile (but not worry about config path):
-  # 1) two arguments: name & path
-  # 2) guess whether name or path from form
-  # See https://github.com/digivet-consortium/movenet/issues/9
 }
 movenetenv <- new.env()
 
 #' @rdname change_config
 #' @export
-save_config <- function(configname){
-
-  if(configname=="") stop('"" is not a valid configname')
-  outfile <- paste0(system.file("configurations", package = "movenet"),"/",configname,".yml")
+save_config <- function(outfile){
+  if(missing(outfile)) stop("Argument `outfile` is missing. Please provide a path to which to save the config file to.", call. = FALSE)
+  if(outfile=="") stop('"" is not a valid value for `outfile`. Please provide a path to which to save the config file to.', call. = FALSE)
 
   write_yaml(x = movenetenv$options, file = outfile)
 
-  message(paste("Successfully saved config file:", configname,"\nIt can be found at:", outfile))
+  message(paste("Successfully saved configurations to:", outfile))
 }
 
 # This leaves strings/fields unquoted, but that should be fine.
-
-# Idea: argument save_to_configurations_dir = TRUE/FALSE (or similar), to save to directory with pre-installed config files rather than working directory
 
 
 #' @rdname change_config
@@ -58,6 +58,7 @@ new_config <- function(){
 #' @rdname change_config
 #' @export
 get_config <- function(...){
+  #Set alias to get_option, get_options?
   #This is a mixture of runjags.options and runjags.getOption,
   #Allows for querying of multiple options simultaneously
   #Works with get_config("option1","option2"), get_config(c("option1","option2")), and get_config(list("option1","option2"))
@@ -80,15 +81,16 @@ get_config <- function(...){
 
 #' @rdname change_config
 #' @export
-movenet.options <- function(...){
-  #doesnt work with named list (allowed in R options())
-  #doesn't print options when called without argument
+change_config <- function(...){
+  #set aliases: set_config, set_option, set_options?
+  #remove behaviour to invisibly return old options [no longer trying to copy base R options system]?
+
   old_opts <- movenetenv$options
   options_no_structure <- flatten(movenetenv$options)
   opts <- flatten(list(...))
   if(has_element(list(...), NULL)){
     #The following should really only be for mandatory options. Should somehow allow functionality to remove optional options with NULL
-    #But the assign/relist statement in line 111 doesnt deal well with NULLs -> ??
+    #But the assign/relist statement in line 178 doesnt deal well with NULLs -> ??
     warning(paste("Option values can't be NULL. Ignoring option(s) with value NULL:", paste(names(list(...))[which(sapply(list(...),is.null))],collapse=", ")), call. = FALSE)
   }
   if(length(opts)>0){
@@ -98,6 +100,21 @@ movenet.options <- function(...){
       opts <- opts[!is.na(recognised)]
     }
     optnames <- names(options_no_structure)[recognised[!is.na(recognised)]]
+
+    if(any(opts %in% options_no_structure)){
+      valinoldopts_opts <- opts[which(opts %in% options_no_structure)]
+      valinoldopts_names <- optnames[which(opts %in% options_no_structure)]
+      unchanged_names <- valinoldopts_names[which(sapply(valinoldopts_opts,function(x){
+        if(names(options_no_structure)[which(options_no_structure == x)] %in% optnames){
+          opts[which(optnames == names(options_no_structure)[which(options_no_structure == x)])] == x
+        } else {FALSE}
+      }))]
+      if(length(unchanged_names) > 0){
+        warning(paste("Ignoring unchanged option(s):", paste(unchanged_names, collapse=", ")), call. = FALSE)
+        opts <- opts[-which(optnames %in% unchanged_names)]
+        optnames <- optnames[-which(optnames %in% unchanged_names)]
+      }
+    }
 
     char_opts <- opts[which(optnames %in% c("separator","encoding","decimal","date_format"))]
     if(any(!sapply(char_opts,is.character))){
@@ -166,17 +183,5 @@ movenet.options <- function(...){
     return(options_no_structure)
   }
   }
-
-
-#' @rdname change_config
-#' @export
-movenet.getOption <- function(name){
-  if(length(name)!=1) stop("Only 1 option can be retrieved at a time")
-  options <- flatten(movenetenv$options)
-  opt <- pmatch(name,names(options))
-  if(is.na(opt)) stop(paste("Unmatched or ambiguous option '", name, "'", sep=""))
-  return(options[[opt]])
-}
-
 
 

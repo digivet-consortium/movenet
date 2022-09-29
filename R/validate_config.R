@@ -85,7 +85,7 @@ validate_config_moveopts <- function(yamlfile){
 validate_config_movecols <- function(yamlfile){
   msg <- NULL
   move_keys_obs <- names(yamlfile[["movedata_cols"]])
-  move_keys_exp <- c("origin_ID", "dest_ID", "move_date", "nr_pigs")
+  move_keys_exp <- c("from", "to", "date", "weight")
   move_notmissing <- length(move_keys_obs) > 3 && all(move_keys_exp %in% move_keys_obs) #tests that required move keys are present; but file may have more keys
   move_notdupl <- anyDuplicated(yamlfile[["movedata_cols"]]) == 0
   if (!move_notmissing){

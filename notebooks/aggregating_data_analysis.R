@@ -42,9 +42,10 @@ g_static <- igraph::graph_from_data_frame(data, directed=TRUE)
 
 #daily snapshots
 movenetenv <- movenet:::movenetenv
+e_g_static <- E(g_static)
 daily_data <- tibble::tibble(dates = as.numeric(seq(from=min(data[[movenetenv$options$movedata_cols$move_date]]),to=max(data[[movenetenv$options$movedata_cols$move_date]]),by=1)),
                              active_nodes = pbsapply(as.numeric(seq(from=min(data[[movenetenv$options$movedata_cols$move_date]]),to=max(data[[movenetenv$options$movedata_cols$move_date]]),by=1)),
-                                                     function(x){vcount(subgraph.edges(g_static, E(g_static)[eval(parse(text=movenetenv$options$movedata_cols$move_date))==x], delete.vertices = TRUE))}),
+                                                     function(x){vcount(subgraph.edges(g_static, e_g_static[eval(parse(text=movenetenv$options$movedata_cols$move_date))==x], delete.vertices = TRUE))}),
                              edge_densities = pbsapply(as.numeric(seq(from=min(data[[movenetenv$options$movedata_cols$move_date]]),to=max(data[[movenetenv$options$movedata_cols$move_date]]),by=1)),
                                                      function(x){edge_density(subgraph.edges(g_static, E(g_static)[eval(parse(text=movenetenv$options$movedata_cols$move_date))==x], delete.vertices = FALSE))}),
                              median_degree = pbsapply(as.numeric(seq(from=min(data[[movenetenv$options$movedata_cols$move_date]]),to=max(data[[movenetenv$options$movedata_cols$move_date]]),by=1)),

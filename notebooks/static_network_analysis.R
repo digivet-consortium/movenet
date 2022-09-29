@@ -16,8 +16,8 @@ reformatted_data <- reformat_move_data("C:/Users/cboga/OneDrive - University of 
 
 # reformat data into edgelist
 edgelist<-reformatted_data %>%
-  select(origin_ID, dest_ID, nr_pigs, dep_date, move_ID) %>% #need first 2 columns to be the nodes, others are edge attributes
-  rename(weight = nr_pigs) # turns nr_pigs into weights
+  select(from, to, weight, dep_date, move_ID) %>% #need first 2 columns to be the nodes, others are edge attributes
+  rename(weight = weight) # turns weight into weights
 
 mygraph <- graph_from_data_frame(edgelist,directed=TRUE)
 
