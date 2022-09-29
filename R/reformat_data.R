@@ -124,7 +124,7 @@ reformat_nrpigs <- function(weight_col){
       stop(cnd)
     },
     withr::with_options(list(warn=2),parse_double(weight_col[[colnames(weight_col)]],
-                                                  locale = locale(decimal_mark = fileopts$decimal)))
+                                                  locale = locale(decimal_mark = movenetenv$options$movedata_fileopts$decimal)))
   )
 }
 
@@ -144,7 +144,7 @@ reformat_date <- function(date_col){
       #- if date format string is missing (format is incorrectly interpreted as iso)
       #- if a date column contains some invalid dates - e.g. 30 Feb
       if(length(msglist)==0){
-        msglist <- c(msglist,paste0("The date format specification given through the option `date_format` (value `",fileopts$date_format,"`) and the actual format of column `",colnames(date_col),"` don't appear to match.\nAlternatively, column `",colnames(date_col),
+        msglist <- c(msglist,paste0("The date format specification given through the option `date_format` (value `",movenetenv$options$movedata_fileopts$date_format,"`) and the actual format of column `",colnames(date_col),"` don't appear to match.\nAlternatively, column `",colnames(date_col),
                                     "` contains one or more invalid dates.\nSee `readr::?parse_date` for guidance on readr date format specifications.\nOriginal readr warning message:\n",old_message))
       }
       cnd$message <- paste0(msg, paste0(msglist,collapse="\nIn addition:\n"))
@@ -152,7 +152,7 @@ reformat_date <- function(date_col){
       stop(cnd)
     },
     withr::with_options(list(warn=2),
-                        parse_date(date_col[[colnames(date_col)]], format = fileopts$date_format))
+                        parse_date(date_col[[colnames(date_col)]], format = movenetenv$options$movedata_fileopts$date_format))
     )
 }
 
