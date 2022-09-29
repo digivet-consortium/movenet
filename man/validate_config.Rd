@@ -9,6 +9,12 @@ validate_config(file)
 \arguments{
 \item{file}{config file (yml format) to validate}
 }
+\value{
+
+}
 \description{
 Validate a movenet config file
+}
+\examples{
+
 }
