@@ -2,23 +2,23 @@ old_config<-movenetenv$options
 suppressMessages(load_config("ScotEID"))
 ScotEID_config <- yaml.load_file(system.file("configurations", "ScotEID.yml", package="movenet"))
 ScotEID_movecols <- ScotEID_config$movedata_cols
-ScotEID_colnames <- unlist(unname(ScotEID_movecols[c("origin_ID","dest_ID","move_date","nr_pigs","move_ID")]))
+ScotEID_colnames <- unlist(unname(ScotEID_movecols[c("from","to","date","weight","move_ID")]))
 
-test_that("when config has all min cols only, and input has correct dateformat + int nr_pigs, output is data.frame with correct colnames & coltypes", {
+test_that("when config has all min cols only, and input has correct dateformat + int weight, output is data.frame with correct colnames & coltypes", {
   move_ID <- movenetenv$options$movedata_cols$move_ID
   movenetenv$options$movedata_cols$move_ID<-NULL
   output <- expect_condition(reformat_move_data("test_input_files/ScotEID_testdata.csv"), NA)
   expect_s3_class(output,"data.frame")
   expect_named(output,ScotEID_colnames[c(1:4)])
-  expect_type(output[[ScotEID_movecols$origin_ID]], "character")
-  expect_type(output[[ScotEID_movecols$dest_ID]], "character")
-  expect_s3_class(output[[ScotEID_movecols$move_date]], "Date") #this also works for wrong date formats though
-  expect_true(all(!is.na(output[[ScotEID_movecols$move_date]]))) #tests that all dates are interpretable = no NAs generated
-  expect_type(output[[ScotEID_movecols$nr_pigs]], "double")
+  expect_type(output[[ScotEID_movecols$from]], "character")
+  expect_type(output[[ScotEID_movecols$to]], "character")
+  expect_s3_class(output[[ScotEID_movecols$date]], "Date") #this also works for wrong date formats though
+  expect_true(all(!is.na(output[[ScotEID_movecols$date]]))) #tests that all dates are interpretable = no NAs generated
+  expect_type(output[[ScotEID_movecols$weight]], "double")
   movenetenv$options$movedata_cols$move_ID <- move_ID
 })
 
-test_that("when config has min cols + extra move_ID col, and input has numeric move_ID (+ correct dateformat + int nr_pigs), output data.frame has extra column with correct name and type AFTER minimum cols", {
+test_that("when config has min cols + extra move_ID col, and input has numeric move_ID (+ correct dateformat + int weight), output data.frame has extra column with correct name and type AFTER minimum cols", {
   output <- expect_warning(reformat_move_data("test_input_files/ScotEID_testdata.csv"), NA)
   expect_error(reformat_move_data("test_input_files/ScotEID_testdata.csv"), NA)
   expect_s3_class(output,"data.frame")
@@ -27,29 +27,29 @@ test_that("when config has min cols + extra move_ID col, and input has numeric m
   })
 
 test_that("when config has all min cols, indicated as col indices, output is data.frame with correct colnames & coltypes",{
-  suppressMessages(load_config("ScotEID_mincolnrs"))
+  suppressMessages(load_config("test_input_files/ScotEID_mincolnrs.yml"))
   output <- expect_condition(reformat_move_data("test_input_files/ScotEID_testdata.csv"), NA)
   expect_s3_class(output,"data.frame")
   expect_named(output,ScotEID_colnames[c(1:4)])
-  expect_type(output[[ScotEID_movecols$origin_ID]], "character")
-  expect_type(output[[ScotEID_movecols$dest_ID]], "character")
-  expect_s3_class(output[[ScotEID_movecols$move_date]], "Date") #this also works for wrong date formats though
-  expect_true(all(!is.na(output[[ScotEID_movecols$move_date]]))) #tests that all dates are interpretable = no NAs generated
-  expect_type(output[[ScotEID_movecols$nr_pigs]], "double")
+  expect_type(output[[ScotEID_movecols$from]], "character")
+  expect_type(output[[ScotEID_movecols$to]], "character")
+  expect_s3_class(output[[ScotEID_movecols$date]], "Date") #this also works for wrong date formats though
+  expect_true(all(!is.na(output[[ScotEID_movecols$date]]))) #tests that all dates are interpretable = no NAs generated
+  expect_type(output[[ScotEID_movecols$weight]], "double")
   suppressMessages(load_config("ScotEID"))
 })
 
 test_that("when config has all min cols + extra col, with some of both indicated as col indices, output is data.frame with correct colnames & coltypes",{
-  suppressMessages(load_config("ScotEID_mixcolnamesnrs"))
+  suppressMessages(load_config("test_input_files/ScotEID_mixcolnamesnrs.yml"))
   output <- expect_warning(reformat_move_data("test_input_files/ScotEID_testdata.csv"), NA)
   expect_error(reformat_move_data("test_input_files/ScotEID_testdata.csv"), NA)
   expect_s3_class(output,"data.frame")
   expect_named(output,c(ScotEID_colnames,"foreign_reference"))
-  expect_type(output[[ScotEID_movecols$origin_ID]], "character")
-  expect_type(output[[ScotEID_movecols$dest_ID]], "character")
-  expect_s3_class(output[[ScotEID_movecols$move_date]], "Date") #this also works for wrong date formats though
-  expect_true(all(!is.na(output[[ScotEID_movecols$move_date]]))) #tests that all dates are interpretable = no NAs generated
-  expect_type(output[[ScotEID_movecols$nr_pigs]], "double")
+  expect_type(output[[ScotEID_movecols$from]], "character")
+  expect_type(output[[ScotEID_movecols$to]], "character")
+  expect_s3_class(output[[ScotEID_movecols$date]], "Date") #this also works for wrong date formats though
+  expect_true(all(!is.na(output[[ScotEID_movecols$date]]))) #tests that all dates are interpretable = no NAs generated
+  expect_type(output[[ScotEID_movecols$weight]], "double")
   expect_type(output[[ScotEID_movecols$move_ID]], "double")
   expect_type(output[["foreign_reference"]], "character")
   suppressMessages(load_config("ScotEID"))
@@ -73,33 +73,40 @@ test_that("when input datafile misses a requested optional col, a warning is rai
   output <- reformat_move_data("test_input_files/ScotEID_testdata_optcolmissing.csv")
   expect_s3_class(output,"data.frame")
   expect_named(output,ScotEID_colnames[c(1:4)])
-  expect_type(output[[ScotEID_movecols$origin_ID]], "character")
-  expect_type(output[[ScotEID_movecols$dest_ID]], "character")
-  expect_s3_class(output[[ScotEID_movecols$move_date]], "Date") #this also works for wrong date formats though
-  expect_true(all(!is.na(output[[ScotEID_movecols$move_date]]))) #tests that all dates are interpretable = no NAs generated
-  expect_type(output[[ScotEID_movecols$nr_pigs]], "double")
+  expect_type(output[[ScotEID_movecols$from]], "character")
+  expect_type(output[[ScotEID_movecols$to]], "character")
+  expect_s3_class(output[[ScotEID_movecols$date]], "Date") #this also works for wrong date formats though
+  expect_true(all(!is.na(output[[ScotEID_movecols$date]]))) #tests that all dates are interpretable = no NAs generated
+  expect_type(output[[ScotEID_movecols$weight]], "double")
 })
 
 test_that("when config has a min col, indicated as col index, that exceeds the col range of input datafile, an error is raised",{
-  suppressMessages(load_config("ScotEID_mincolnrtoolarge"))
+  suppressMessages(load_config("test_input_files/ScotEID_mincolnrtoolarge.yml"))
   expect_error(reformat_move_data("test_input_files/ScotEID_testdata.csv"),
-               "Can't find the following mandatory columns in the datafile\\: #20 \\(dest_ID\\)\\.\nThese column indices exceed the number of columns in the datafile\\.")
+               "Can't find the following mandatory columns in the datafile\\: #20 \\(to\\)\\.\nThese column indices exceed the number of columns in the datafile\\.")
   suppressMessages(load_config("ScotEID"))
 })
 
 test_that("when config has an optional col, indicated as col index, that exceeds the col range of input datafile, a warning is raised and results are produced without the col",{
-  suppressMessages(load_config("ScotEID_optcolnrtoolarge"))
+  suppressMessages(load_config("test_input_files/ScotEID_optcolnrtoolarge.yml"))
   expect_warning(reformat_move_data("test_input_files/ScotEID_testdata.csv"),
                  "Can't find the following requested optional columns in the datafile\\: #20 \\(move_ID\\)\\.\nThese column indices exceed the number of columns in the datafile\\.\nProceeding without missing optional columns\\.")
   output <- reformat_move_data("test_input_files/ScotEID_testdata.csv")
   expect_s3_class(output,"data.frame")
   expect_named(output,c(ScotEID_colnames[c(1:4)],"foreign_reference"))
-  expect_type(output[[ScotEID_movecols$origin_ID]], "character")
-  expect_type(output[[ScotEID_movecols$dest_ID]], "character")
-  expect_s3_class(output[[ScotEID_movecols$move_date]], "Date") #this also works for wrong date formats though
-  expect_true(all(!is.na(output[[ScotEID_movecols$move_date]]))) #tests that all dates are interpretable = no NAs generated
-  expect_type(output[[ScotEID_movecols$nr_pigs]], "double")
+  expect_type(output[[ScotEID_movecols$from]], "character")
+  expect_type(output[[ScotEID_movecols$to]], "character")
+  expect_s3_class(output[[ScotEID_movecols$date]], "Date") #this also works for wrong date formats though
+  expect_true(all(!is.na(output[[ScotEID_movecols$date]]))) #tests that all dates are interpretable = no NAs generated
+  expect_type(output[[ScotEID_movecols$weight]], "double")
   expect_type(output[["foreign_reference"]], "character")
+  suppressMessages(load_config("ScotEID"))
+})
+
+test_that("when config has a movedata_cols option indicated as col index, but that upon translation to colname reveals to be a duplicate col, an error is raised",{
+  suppressMessages(change_config(from=19L))
+  expect_error(reformat_move_data("test_input_files/ScotEID_testdata.csv"),
+               "Values for movedata_cols options must be unique\\. Translation of column indices to column headers identified the following options with duplicate values\\: from, to")
   suppressMessages(load_config("ScotEID"))
 })
 
@@ -108,8 +115,8 @@ test_that("date is interpreted correctly, when config has a correct dateformat s
   expect_error(reformat_move_data("test_input_files/ScotEID_testdata_NAdate.csv"), NA)
   expect_s3_class(output,"data.frame")
   expect_named(output,ScotEID_colnames)
-  expect_s3_class(output[[ScotEID_movecols$move_date]], "Date") #this also works for wrong date formats though
-  expect_false(all(!is.na(output[[ScotEID_movecols$move_date]]))) #tests some dates are NA
+  expect_s3_class(output[[ScotEID_movecols$date]], "Date") #this also works for wrong date formats though
+  expect_false(all(!is.na(output[[ScotEID_movecols$date]]))) #tests some dates are NA
 })
 
 test_that("date is interpreted correctly, when using implicit iso format date, that is correct for all data", {
@@ -119,17 +126,17 @@ test_that("date is interpreted correctly, when using implicit iso format date, t
   expect_error(reformat_move_data("test_input_files/ScotEID_testdata_isodate.csv"), NA)
   expect_s3_class(output,"data.frame")
   expect_named(output,ScotEID_colnames)
-  expect_s3_class(output[[ScotEID_movecols$move_date]], "Date") #this also works for wrong date formats though
-  expect_true(all(!is.na(output[[ScotEID_movecols$move_date]]))) #tests that all dates are interpretable = no NAs generated
+  expect_s3_class(output[[ScotEID_movecols$date]], "Date") #this also works for wrong date formats though
+  expect_true(all(!is.na(output[[ScotEID_movecols$date]]))) #tests that all dates are interpretable = no NAs generated
   movenetenv$options$movedata_fileopts$date_format <- old_dateformat
 })
 
 test_that("error is raised, when date column in datafile contains entries that can't be dates (no numbers)", {
-  move_date <- movenetenv$options$movedata_cols$move_date
-  movenetenv$options$movedata_cols$move_date<-"foreign_reference" #this column contains chr vectors w only letters
+  date <- movenetenv$options$movedata_cols$date
+  movenetenv$options$movedata_cols$date<-"foreign_reference" #this column contains chr vectors w only letters
   expect_error(reformat_move_data("test_input_files/ScotEID_testdata.csv"),
-               "Can\\'t parse column `foreign_reference` as date\\.\nColumn `foreign_reference` does not contain any numbers\\.\nHave you identified the correct column name under the option `move_date`\\?")
-  movenetenv$options$movedata_cols$move_date <- move_date
+               "Can\\'t parse column `foreign_reference` as date\\.\nColumn `foreign_reference` does not contain any numbers\\.\nHave you identified the correct column name under the option `date`\\?")
+  movenetenv$options$movedata_cols$date <- date
 })
 
 test_that("error is raised, when date format string is invalid (format does not match data)", {
@@ -156,7 +163,7 @@ test_that("error is raised, when date column in datafile contains one or more in
 test_that("no warning or error is raised, when 'number of pigs' column in datafile contains numbers with decimals", {
   output <- expect_warning(reformat_move_data("test_input_files/ScotEID_testdata_pigsdecimal.csv"), NA)
   expect_error(reformat_move_data("test_input_files/ScotEID_testdata_pigsdecimal.csv"), NA)
-  expect_type(output[[ScotEID_movecols$nr_pigs]], "double")
+  expect_type(output[[ScotEID_movecols$weight]], "double")
 })
 
 test_that("error is raised, when 'number of pigs' column in datafile contains numbers with grouping marks", {

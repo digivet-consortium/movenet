@@ -5,7 +5,7 @@ movedata_fileopts:
   date_format: "" #Date format specification used in movement datafile (empty string "" for ISO8601 format, or see ?readr::parse_date for guidance)
 
 movedata_cols:
-  origin_ID: "Fr\u00E5nppn" #Column name or number for Identifier of origin holding/establishment/..
-  dest_ID: "Tillppn" #Column name or number for Identifier of destination holding/establishment/..
-  move_date: "Avf\u00E4rdsdatum" #Column name or number for Date of transport (if multiple date types are available, use the one deemed most appropriate)
-  nr_pigs: "Djurantal" #Column name or number for Number of pigs transported
+  from: "Fr\u00E5nppn" #Column name or number for Identifier of origin holding/establishment/..
+  to: "Tillppn" #Column name or number for Identifier of destination holding/establishment/..
+  date: "Avf\u00E4rdsdatum" #Column name or number for Date of transport (if multiple date types are available, use the one deemed most appropriate)
+  weight: "Djurantal" #Column name or number for movement weight (e.g. nr of pigs moved)
