@@ -57,13 +57,28 @@ reformat_data <- function(datafile, type){
 
   #check data & change col types; or raise informative errors
   if (type == "movement"){
-    selected_data[minvars$weight] <- reformat_nrpigs(selected_data[minvars$weight])
-    selected_data[minvars$date] <- reformat_date(selected_data[minvars$date])
+    selected_data[minvars$weight] <- reformat_numeric(selected_data[minvars$weight], fileopts$decimal)
+    selected_data[minvars$date] <- reformat_date(selected_data[minvars$date], fileopts$date_format)
 
     if (length(selected_data) > 4){ #set col types of any extra columns by using a guesser algorithm
       selected_data[unlist(extra[extra %in% names(selected_data)])] <-
         suppressMessages(type_convert(selected_data[unlist(extra[extra %in% names(selected_data)])],
-                                      locale = locale(date_format = fileopts$date_format,
+                                      locale = locale(date_format = ifelse("date_format" %in% names(fileopts),fileopts$date_format,"%AD"),
+                                                      decimal_mark = fileopts$decimal)))
+    }
+  }
+  else {
+    if ("coord_x" %in% names(extra)){ #requires making sure that coord_x comes with coord_y and EPSG code
+      selected_data[extra$coord_x] <- reformat_numeric(selected_data[extra$coord_x], fileopts$decimal)
+      selected_data[extra$coord_y] <- reformat_numeric(selected_data[extra$coord_y], fileopts$decimal)
+    }
+    if ("herd_size" %in% names(extra)){
+      selected_data[extra$herd_size] <- reformat_numeric(selected_data[extra$herd_size], fileopts$decimal)
+    }
+    if (any(!(names(extra) %in% c("coord_x","coord_y","herd_size")))){ #set col types of any additional extra columns by using a guesser algorithm
+      selected_data[unlist(extra[!(names(extra) %in% c("coord_x","coord_y","herd_size"))])] <-
+        suppressMessages(type_convert(selected_data[unlist(extra[!(names(extra) %in% c("coord_x","coord_y","herd_size"))])],
+                                      locale = locale(date_format = ifelse("date_format" %in% names(fileopts),fileopts$date_format,"%AD"),
                                                       decimal_mark = fileopts$decimal)))
     }
   }
@@ -116,19 +131,19 @@ select_cols <- function(data, minvars, extra){
   data[to_extract]
 }
 
-reformat_nrpigs <- function(weight_col){
+reformat_numeric <- function(numeric_col, decimal){
   tryCatch(
     error = function(cnd) {
-      cnd$message <- paste0("Column `",colnames(weight_col),"` must be numeric and can't contain a grouping mark.")
+      cnd$message <- paste0("Column `",colnames(numeric_col),"` must be numeric and can't contain a grouping mark.")
       cnd$call <- NULL
       stop(cnd)
     },
-    withr::with_options(list(warn=2),parse_double(weight_col[[colnames(weight_col)]],
-                                                  locale = locale(decimal_mark = movenetenv$options$movedata_fileopts$decimal)))
+    withr::with_options(list(warn=2),parse_double(numeric_col[[colnames(numeric_col)]],
+                                                  locale = locale(decimal_mark = decimal)))
   )
 }
 
-reformat_date <- function(date_col){
+reformat_date <- function(date_col, date_format){
   tryCatch(
     error = function(cnd) {
       old_message <- cnd$message
@@ -144,7 +159,7 @@ reformat_date <- function(date_col){
       #- if date format string is missing (format is incorrectly interpreted as iso)
       #- if a date column contains some invalid dates - e.g. 30 Feb
       if(length(msglist)==0){
-        msglist <- c(msglist,paste0("The date format specification given through the option `date_format` (value `",movenetenv$options$movedata_fileopts$date_format,"`) and the actual format of column `",colnames(date_col),"` don't appear to match.\nAlternatively, column `",colnames(date_col),
+        msglist <- c(msglist,paste0("The date format specification given through the option `date_format` (value `",date_format,"`) and the actual format of column `",colnames(date_col),"` don't appear to match.\nAlternatively, column `",colnames(date_col),
                                     "` contains one or more invalid dates.\nSee `readr::?parse_date` for guidance on readr date format specifications.\nOriginal readr warning message:\n",old_message))
       }
       cnd$message <- paste0(msg, paste0(msglist,collapse="\nIn addition:\n"))
@@ -152,11 +167,9 @@ reformat_date <- function(date_col){
       stop(cnd)
     },
     withr::with_options(list(warn=2),
-                        parse_date(date_col[[colnames(date_col)]], format = movenetenv$options$movedata_fileopts$date_format))
+                        parse_date(date_col[[colnames(date_col)]], format = date_format))
     )
 }
-
-
 
 
 
