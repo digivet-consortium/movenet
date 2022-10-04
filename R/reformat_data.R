@@ -53,7 +53,7 @@ reformat_data <- function(datafile, type){
     minvars <- opt_w_names[[1]]
     extra <- opt_w_names[[2]]
   }
-  selected_data <- select_cols(data = all_data, minvars = minvars, extra = extra)
+  selected_data <- select_cols(data = all_data, minvars = unlist(minvars), extra = unlist(extra))
 
   #check data & change col types; or raise informative errors
   if (type == "movement"){
@@ -61,8 +61,9 @@ reformat_data <- function(datafile, type){
     selected_data[minvars$date] <- reformat_date(selected_data[minvars$date], fileopts$date_format)
 
     if (length(selected_data) > 4){ #set col types of any extra columns by using a guesser algorithm
-      selected_data[unlist(extra[extra %in% names(selected_data)])] <-
-        suppressMessages(type_convert(selected_data[unlist(extra[extra %in% names(selected_data)])],
+      selected_extra <- unlist(extra[extra %in% names(selected_data)])
+      selected_data[selected_extra] <-
+        suppressMessages(type_convert(selected_data[selected_extra],
                                       locale = locale(date_format = ifelse("date_format" %in% names(fileopts),fileopts$date_format,"%AD"),
                                                       decimal_mark = fileopts$decimal)))
     }
@@ -75,9 +76,10 @@ reformat_data <- function(datafile, type){
     if ("herd_size" %in% names(extra)){
       selected_data[extra$herd_size] <- reformat_numeric(selected_data[extra$herd_size], fileopts$decimal)
     }
-    if (any(!(names(extra) %in% c("coord_x","coord_y","herd_size")))){ #set col types of any additional extra columns by using a guesser algorithm
-      selected_data[unlist(extra[!(names(extra) %in% c("coord_x","coord_y","herd_size"))])] <-
-        suppressMessages(type_convert(selected_data[unlist(extra[!(names(extra) %in% c("coord_x","coord_y","herd_size"))])],
+    other_extra <- !(names(extra) %in% c("coord_x","coord_y","herd_size"))
+    if (any(other_extra)){ #set col types of any additional extra columns by using a guesser algorithm
+      selected_data[unlist(extra[other_extra])] <-
+        suppressMessages(type_convert(selected_data[unlist(extra[other_extra])],
                                       locale = locale(date_format = ifelse("date_format" %in% names(fileopts),fileopts$date_format,"%AD"),
                                                       decimal_mark = fileopts$decimal)))
     }
@@ -115,18 +117,18 @@ colindex2name <- function(data, minvars, extra){
 }
 
 select_cols <- function(data, minvars, extra){
-  if (!(all(unlist(minvars) %in% colnames(data)))){
-    missing_minvars <- unname(unlist(minvars))[which(!(unlist(minvars) %in% colnames(data)))]
+  if (!(all(minvars %in% colnames(data)))){
+    missing_minvars <- unname(minvars)[which(!(minvars %in% colnames(data)))]
     stop(sprintf("Can't find the following mandatory columns in the datafile: %s.", paste0(missing_minvars, collapse=", ")), call. = FALSE)
   }
-  if (!(all(unlist(extra) %in% colnames(data)))){
-    missing_extra <- unname(unlist(extra))[which(!(unlist(extra) %in% colnames(data)))]
+  if (!(all(extra %in% colnames(data)))){
+    missing_extra <- unname(extra)[which(!(extra %in% colnames(data)))]
     warning(sprintf("Can't find the following requested optional columns in the datafile: %s.\nProceeding without missing optional columns.",
                     paste0(missing_extra, collapse=", ")),
             call. = FALSE)
-    to_extract <- unname(unlist(c(minvars,extra)))[-which(unname(unlist(c(minvars,extra))) %in% missing_extra)]
+    to_extract <- unname(c(minvars,extra))[-which(unname(c(minvars,extra)) %in% missing_extra)]
   }else{
-    to_extract <- unname(unlist(c(minvars,extra)))
+    to_extract <- unname(c(minvars,extra))
   }
   data[to_extract]
 }
