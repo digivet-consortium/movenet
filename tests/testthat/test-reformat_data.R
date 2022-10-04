@@ -4,6 +4,14 @@ ScotEID_config <- yaml.load_file(system.file("configurations", "ScotEID.yml", pa
 ScotEID_movecols <- ScotEID_config$movedata_cols
 ScotEID_colnames <- unlist(unname(ScotEID_movecols[c("from","to","date","weight","move_ID")]))
 
+test_that("when argument `type` (datatype) is missing, an error is raised with an informative message", {
+  expect_error(reformat_data("test_input_files/ScotEID_testdata.csv"), 'argument "type" is missing, with no default')
+})
+
+test_that("when argument `type` (datatype) is an unexpected value, an error is raised with an informative message", {
+  expect_error(reformat_data("test_input_files/ScotEID_testdata.csv"), "Argument `type` must be either 'movement' or 'holding'")
+})
+
 test_that("when config has all min cols only, and input has correct dateformat + int weight, output is data.frame with correct colnames & coltypes", {
   move_ID <- movenetenv$options$movedata_cols$move_ID
   movenetenv$options$movedata_cols$move_ID<-NULL
