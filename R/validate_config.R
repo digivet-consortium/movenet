@@ -34,7 +34,7 @@ internal_validate_config <- function(file){
     invisible(validate_yaml(file)$msg)
   }else{
     yamlfile <- yaml.load_file(file)
-    config_type <- regmatches(names(yamlfile),regexpr("move|holding",names(yamlfile)))[1]
+    config_type <- sub("data", "", regmatches(names(yamlfile),regexpr("(move|holding)data",names(yamlfile)))[1])
     msg <- c(
       validate_config_root(yamlfile, config_type),
       validate_config_fileopts(yamlfile, config_type),
