@@ -4,10 +4,10 @@ encoding: "UTF-8"    #Encoding used in movement datafile
 decimal: "."  #Decimal mark used in movement datafile
 date_format: "%Y%m%d" #Date format specification used in movement datafile (empty string "" for ISO8601 format, or see ?readr::parse_date for guidance)
 
-
-move_ID: "movement_reference" #Column name or number for Transport identifier
-from: "departure_cph" #Column name or number for Identifier of origin holding/establishment/..
-to: "dest_cph" #Column name or number for Identifier of destination holding/establishment/..
-date: "departure_date" #Column name or number for Date of transport (if multiple date types are available, use the one deemed most appropriate)
-weight: "qty_pigs" #Column name or number for movement weight (e.g. nr of pigs moved)
+movedata_cols:
+  move_ID: "movement_reference" #Column name or number for Transport identifier
+  from: "departure_cph" #Column name or number for Identifier of origin holding/establishment/..
+  to: "dest_cph" #Column name or number for Identifier of destination holding/establishment/..
+  date: "departure_date" #Column name or number for Date of transport (if multiple date types are available, use the one deemed most appropriate)
+  weight: "qty_pigs" #Column name or number for movement weight (e.g. nr of pigs moved)
 
