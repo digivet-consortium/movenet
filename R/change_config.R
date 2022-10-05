@@ -45,12 +45,16 @@ save_config <- function(outfile){
 
 #' @rdname change_config
 #' @export
-new_config <- function(){
+new_config <- function(config_type){
+
+  if (!has_element(c("move","holding"),config_type)){
+    stop("Argument `config_type` must be either 'move' or 'holding'")
+  }
 
   # Option to save the template for editing:
-  file.copy(system.file("configurations", "template.yml", package = "movenet"), getwd())
+  file.copy(system.file("configurations", paste0(config_type,"config_template.yml"), package = "movenet"), getwd())
 
-  message(paste0("Successfully saved config template to working directory. It can be found at: ",getwd(),"/template.yml"))
+  message(paste0("Successfully saved ", config_type, " config template to working directory. It can be found at: ", getwd(), "/", config_type, "config_template.yml"))
 
 }
 

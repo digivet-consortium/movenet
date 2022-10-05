@@ -76,24 +76,42 @@ local({
 
 #Any edge / error cases to test for save_config? (no writing permission?)
 
-local_new_config <- function(){
+local_new_config <- function(config_type){
   #this helper function runs new_config and then deletes the resulting file when the parent env is left
-  new_config()
-  withr::defer_parent(unlink("template.yml"))
+  new_config(config_type)
+  withr::defer_parent(unlink(paste0(config_type,"config_template.yml")))
 }
 
 local({
   local_test_context()
-  test_that("new_config() correctly copies template to working directory",{
-    expect_message(local_new_config(), "Successfully saved config template")
-    local_new_config()
-    expect_mapequal(yaml.load_file("template.yml"), yaml.load_file(system.file("configurations", "template.yml", package="movenet")))
-    expect_mapequal(yaml.load_file("template.yml")$movedata_cols, yaml.load_file(system.file("configurations", "template.yml", package="movenet"))$movedata_cols)
-    expect_mapequal(yaml.load_file("template.yml")$movedata_fileopts, yaml.load_file(system.file("configurations", "template.yml", package="movenet"))$movedata_fileopts)
+  test_that("new_config() correctly copies move config template to working directory",{
+    expect_message(local_new_config("move"), paste("Successfully saved move config template"))
+    local_new_config("move")
+    expect_mapequal(yaml.load_file("moveconfig_template.yml"), yaml.load_file(system.file("configurations", "moveconfig_template.yml", package="movenet")))
+    expect_mapequal(yaml.load_file("moveconfig_template.yml")$movedata_cols, yaml.load_file(system.file("configurations", "moveconfig_template.yml", package="movenet"))$movedata_cols)
+    expect_mapequal(yaml.load_file("moveconfig_template.yml")$movedata_fileopts, yaml.load_file(system.file("configurations", "moveconfig_template.yml", package="movenet"))$movedata_fileopts)
     #expect_mapequal seems a bit excessive here, I do not need to test copy(), but I don't really know how best to test
   })
 })
 
+local({
+  local_test_context()
+  test_that("new_config() correctly copies holding config template to working directory",{
+    expect_message(local_new_config("holding"), paste("Successfully saved holding config template"))
+    local_new_config("holding")
+    expect_mapequal(yaml.load_file("holdingconfig_template.yml"), yaml.load_file(system.file("configurations", "holdingconfig_template.yml", package="movenet")))
+    expect_mapequal(yaml.load_file("holdingconfig_template.yml")$holdingdata_cols, yaml.load_file(system.file("configurations", "holdingconfig_template.yml", package="movenet"))$holdingdata_cols)
+    expect_mapequal(yaml.load_file("holdingconfig_template.yml")$holdingdata_fileopts, yaml.load_file(system.file("configurations", "holdingconfig_template.yml", package="movenet"))$holdingdata_fileopts)
+    #expect_mapequal seems a bit excessive here, I do not need to test copy(), but I don't really know how best to test
+  })
+})
+
+local({
+  local_test_context()
+  test_that("new_config() gives an error when a wrong argument is passed",{
+    expect_error(local_new_config("foo"), "Argument `config_type` must be either 'move' or 'holding'")
+  })
+})
 #Any edge / error cases to test for new_config? (no writing permission? shouldn't happen in wd?)
 
 test_that("get_config() returns value of a single option, if this is requested by its full name",{
