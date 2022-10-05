@@ -61,7 +61,7 @@ validate_yaml <- function(file){
 
 validate_config_root <- function(yamlfile, config_type){
   if (!has_element(c("move","holding"),config_type)){
-    print("Unexpected config file structure. Top-level keys must include either `movedata_fileopts` and `movedata_cols`, or `holdingdata_fileopts` and `holdingdata_cols`")
+    return("Unexpected config file structure. Top-level keys must include either `movedata_fileopts` and `movedata_cols`, or `holdingdata_fileopts` and `holdingdata_cols`")
   } else {
     root_keys_obs <- names(yamlfile)
     if(config_type == "move"){root_keys_exp <- c("movedata_fileopts", "movedata_cols")} else {root_keys_exp <- c("holdingdata_fileopts", "holdingdata_cols")}
