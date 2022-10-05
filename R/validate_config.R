@@ -104,26 +104,30 @@ validate_config_cols <- function(yamlfile, config_type){
 
 validate_config_datatype <- function(yamlfile, config_type){
   msg <- NULL
-  fileopts_obs <- yamlfile[[paste0(config_type,"data_fileopts")]]
-  if(length(fileopts_obs) > 0){
-    opts_char <- sapply(fileopts_obs,is.character) #tests that fileopts option values are characters
-    if (!all(opts_char)){
-      msg <- append(msg, sprintf("Data field(s) not in expected character format: %s", paste0(names(which(opts_char==FALSE)),collapse=", ")))
+  fileopts <- yamlfile[[paste0(config_type,"data_fileopts")]]
+  if(length(fileopts) > 0){
+    if(config_type == "move"){ opts_char_exp <- fileopts }else{ opts_char_exp <- fileopts[which(names(fileopts)!="coord_EPSG_code")]}
+    opts_char_obs <- sapply(opts_char_exp,is.character) #tests that appropriate fileopts option values are characters
+    if (!all(opts_char_obs)){
+      msg <- append(msg, sprintf("Data field(s) not in expected character format: %s", paste0(names(which(opts_char_obs==FALSE)),collapse=", ")))
     }
-    if (!nchar(fileopts_obs[["separator"]]) == 1){
+    if (!nchar(fileopts[["separator"]]) == 1){
       msg <- append(msg, "Data field `separator` doesn't have the expected format of a single character")
     }
-    if (!nchar(fileopts_obs[["decimal"]]) == 1){
+    if (!nchar(fileopts[["decimal"]]) == 1){
       msg <- append(msg, "Data field `decimal` doesn't have the expected format of a single character")
     }
-    if (has_element(names(fileopts_obs),"date_format") && !grepl("%(Y|y|AD|D|F|x|s)|^$",fileopts_obs[["date_format"]])){
-      msg <- append(msg,paste0("Data field `date_format` doesn't match readr date format specifications.\nSee `?readr::parse_date` for guidance."))
+    if (has_element(names(fileopts),"date_format") && !grepl("%(Y|y|AD|D|F|x|s)|^$",fileopts[["date_format"]])){
+      msg <- append(msg, paste0("Data field `date_format` doesn't match readr date format specifications.\nSee `?readr::parse_date` for guidance."))
+    }
+    if (has_element(names(fileopts),"coord_EPSG_code") && !is.integer(fileopts[["coord_EPSG_code"]])){
+      msg <- append(msg, "Data field `coord_EPSG_code` not in expected integer format")
     }
   }
-  cols_options_obs <- yamlfile[[paste0(config_type,"data_cols")]]
-  if(length(cols_options_obs) > 0){
-    cols_char <- sapply(cols_options_obs, is.character) #tests that cols values are characters
-    cols_int <- sapply(cols_options_obs, is.integer) #tests that cols values are integers
+  cols_options <- yamlfile[[paste0(config_type,"data_cols")]]
+  if(length(cols_options) > 0){
+    cols_char <- sapply(cols_options, is.character) #tests that cols values are characters
+    cols_int <- sapply(cols_options, is.integer) #tests that cols values are integers
     cols_charint <- (cols_char | cols_int)
     if (!all(cols_charint)){
       msg <- append(msg, sprintf("Data field(s) not in expected character or integer format: %s", paste0(names(which(cols_charint==FALSE)),collapse=", ")))
