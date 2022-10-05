@@ -1,4 +1,4 @@
-test_that("validate_config.R accepts config file with expected structure",{
+test_that("validate_config.R accepts movement config file with expected structure",{
 
   ScotEID_config <- system.file("configurations", paste0("ScotEID", ".yml"),package="movenet")
   ScotEID_yaml <- yaml.load_file(ScotEID_config)
@@ -21,6 +21,39 @@ test_that("validate_config.R accepts config file with expected structure",{
 
   expect_condition(validate_config_datatype(ScotEID_yaml,"move"), NA)
   expect_null(validate_config_datatype(ScotEID_yaml,"move"))
+
+  expect_condition(internal_validate_config(ScotEID_config), NA)
+  expect_null(internal_validate_config(ScotEID_config))
+
+  expect_condition(validate_config(ScotEID_config), NA)
+  expect_true(validate_config(ScotEID_config))
+  expect_invisible(validate_config(ScotEID_config))
+
+})
+
+test_that("validate_config.R accepts holding config file with expected structure",{
+
+  ScotEID_config <- "test_input_files/fakeScotEID_holding.yml"
+  ScotEID_yaml <- yaml.load_file(ScotEID_config)
+
+  expect_type(validate_yaml(ScotEID_config),"list")
+  expect_true(validate_yaml(ScotEID_config)$test)
+  expect_null(validate_yaml(ScotEID_config)$msg)
+  #test expect_visible / invisible / silent for validate_yaml?
+
+  expect_match(sub("data", "", regmatches(names(ScotEID_yaml),regexpr("(move|holding)data",names(ScotEID_yaml)))[1]), "holding", fixed = TRUE)
+
+  expect_condition(validate_config_root(ScotEID_yaml,"holding"), NA)
+  expect_null(validate_config_root(ScotEID_yaml,"holding"))
+
+  expect_condition(validate_config_fileopts(ScotEID_yaml,"holding"), NA)
+  expect_null(validate_config_fileopts(ScotEID_yaml,"holding"))
+
+  expect_condition(validate_config_cols(ScotEID_yaml,"holding"), NA)
+  expect_null(validate_config_cols(ScotEID_yaml,"holding"))
+
+  expect_condition(validate_config_datatype(ScotEID_yaml,"holding"), NA)
+  expect_null(validate_config_datatype(ScotEID_yaml,"holding"))
 
   expect_condition(internal_validate_config(ScotEID_config), NA)
   expect_null(internal_validate_config(ScotEID_config))
@@ -298,7 +331,7 @@ test_that("validate_config.R accepts config file with expected structure, with i
 
 })
 
-test_that("validate_config.R returns ERROR with informative messages when keys are not in expected format",{
+test_that("validate_config.R returns ERROR with informative messages when movement config has keys that are not in expected format",{
 
   wrongformat_data <- "test_input_files/ScotEID_testwrongformat.yml"
   wrongformat_yaml <- yaml.load_file(wrongformat_data)
@@ -331,6 +364,46 @@ test_that("validate_config.R returns ERROR with informative messages when keys a
   expect_match(error_msg$message, "Data field(s) not in expected character format", fixed = TRUE)
   expect_match(error_msg$message, "Data field `decimal` doesn't have the expected format of a single character", fixed = TRUE)
   expect_match(error_msg$message, "Data field `date_format` doesn't match readr date format specifications", fixed = TRUE)
+  expect_match(error_msg$message, "Data field(s) not in expected character or integer format", fixed = TRUE)
+
+})
+
+test_that("validate_config.R returns ERROR with informative messages when holding config has keys that are not in expected format",{
+
+  wrongformat_data <- "test_input_files/fakeScotEID_holdingwrongformat.yml"
+  wrongformat_yaml <- yaml.load_file(wrongformat_data)
+
+  expect_match(sub("data", "", regmatches(names(wrongformat_yaml),regexpr("move|holding",names(wrongformat_yaml)))[1]), "holding", fixed = TRUE)
+
+  expect_condition(validate_config_fileopts(wrongformat_yaml,"holding"), NA)
+  expect_null(validate_config_fileopts(wrongformat_yaml,"holding"))
+
+  expect_condition(validate_config_cols(wrongformat_yaml,"holding"), NA)
+  expect_null(validate_config_cols(wrongformat_yaml,"holding"))
+
+  expect_condition(validate_config_datatype(wrongformat_yaml,"holding"), NA)
+  expect_length(validate_config_datatype(wrongformat_yaml,"holding"), 5)
+  expect_match(validate_config_datatype(wrongformat_yaml,"holding")[1], "Data field(s) not in expected character format", fixed = TRUE)
+  expect_match(validate_config_datatype(wrongformat_yaml,"holding")[2], "Data field `decimal` doesn't have the expected format of a single character", fixed = TRUE)
+  expect_match(validate_config_datatype(wrongformat_yaml,"holding")[3], "Data field `date_format` doesn't match readr date format specifications", fixed = TRUE)
+  expect_match(validate_config_datatype(wrongformat_yaml,"holding")[4], "Data field `coord_EPSG_code` not in expected integer format", fixed = TRUE)
+  expect_match(validate_config_datatype(wrongformat_yaml,"holding")[5], "Data field(s) not in expected character or integer format", fixed = TRUE)
+
+  expect_condition(internal_validate_config(wrongformat_data), NA)
+  expect_invisible(internal_validate_config(wrongformat_data))
+  expect_length(internal_validate_config(wrongformat_data), 5)
+  expect_match(internal_validate_config(wrongformat_data)[1], "Data field(s) not in expected character format", fixed = TRUE)
+  expect_match(internal_validate_config(wrongformat_data)[2], "Data field `decimal` doesn't have the expected format of a single character", fixed = TRUE)
+  expect_match(internal_validate_config(wrongformat_data)[3], "Data field `date_format` doesn't match readr date format specifications", fixed = TRUE)
+  expect_match(internal_validate_config(wrongformat_data)[4], "Data field `coord_EPSG_code` not in expected integer format", fixed = TRUE)
+  expect_match(internal_validate_config(wrongformat_data)[5], "Data field(s) not in expected character or integer format", fixed = TRUE)
+
+  error_msg <- expect_error(validate_config(wrongformat_data))
+  expect_match(error_msg$message, "is not a valid movenet config file", fixed = TRUE)
+  expect_match(error_msg$message, "Data field(s) not in expected character format", fixed = TRUE)
+  expect_match(error_msg$message, "Data field `decimal` doesn't have the expected format of a single character", fixed = TRUE)
+  expect_match(error_msg$message, "Data field `date_format` doesn't match readr date format specifications", fixed = TRUE)
+  expect_match(error_msg$message, "Data field `coord_EPSG_code` not in expected integer format", fixed = TRUE)
   expect_match(error_msg$message, "Data field(s) not in expected character or integer format", fixed = TRUE)
 
 })
