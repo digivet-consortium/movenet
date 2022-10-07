@@ -75,12 +75,19 @@ validate_config_root <- function(yamlfile, config_type){
 
 validate_config_fileopts <- function(yamlfile, config_type){
   if (has_element(c("move","holding"),config_type)){
+    msg <- NULL
     opts_keys_obs <- names(yamlfile[[paste0(config_type,"data_fileopts")]])
     if(config_type == "move"){opts_keys_exp <- c("separator", "encoding", "decimal", "date_format")} else {opts_keys_exp <- c("separator", "encoding", "decimal")}
     opts_notmissing <- length(opts_keys_obs) > 2 && all(opts_keys_exp %in% opts_keys_obs) #tests that required fileopts keys are present; but file may have more keys
     if (!opts_notmissing){
-      paste0("Unexpected config file structure. Missing mandatory second-level (", config_type, "data_fileopts) key(s): ",paste0(opts_keys_exp[!opts_keys_exp %in% opts_keys_obs],collapse=", "))
+      msg <- append(msg, paste0("Unexpected config file structure. Missing mandatory second-level (", config_type, "data_fileopts) key(s): ",paste0(opts_keys_exp[!opts_keys_exp %in% opts_keys_obs],collapse=", ")))
     } #Does this need to be invisible?
+    geo_opts <- c("coord_EPSG_code","country_code")
+    geo_opts_missing <- (!geo_opts %in% opts_keys_obs)
+    if(any(geo_opts_missing) && (any(c("coord_x","coord_y") %in% names(yamlfile[["holdingdata_cols"]])))){
+      msg <- append(msg, paste0("Unexpected config file structure. Missing holdingdata_fileopts key(s) required for inclusion of columns with geographical coordinates: ",paste0(geo_opts[geo_opts_missing],collapse=", ")))
+    }
+    msg #Does this need to be invisible?
   }
 }
 
@@ -97,6 +104,11 @@ validate_config_cols <- function(yamlfile, config_type){
     }
     if (!cols_notdupl){
       msg <- append(msg, paste0("Values for ", config_type, "data_cols options must be unique. The following options have duplicate values: ", paste0(cols_keys_obs[which(cols_options_obs %in% cols_options_obs[duplicated(cols_options_obs)])],collapse=", ")))
+    }
+    coord_present <- c("coord_x","coord_y") %in% cols_keys_obs
+    if (any(coord_present) & any(!coord_present)){
+      coord_missing <- cols_keys_obs[which(!coord_present)]
+      msg <- append(msg, paste0("Unexpected config file structure. Missing holdingdata_cols key required for inclusion of columns with geographical coordinates: ",coord_missing))
     }
     msg #Does this need to be invisible?
   }
@@ -116,6 +128,9 @@ validate_config_datatype <- function(yamlfile, config_type){
     }
     if (!nchar(fileopts[["decimal"]]) == 1){
       msg <- append(msg, "Data field `decimal` doesn't have the expected format of a single character")
+    }
+    if (has_element(names(fileopts),"country_code") && !nchar(fileopts[["country_code"]]) == 2){
+      msg <- append(msg, "Data field `country_code` doesn't have the expected format of two characters")
     }
     if (has_element(names(fileopts),"date_format") && !grepl("%(Y|y|AD|D|F|x|s)|^$",fileopts[["date_format"]])){
       msg <- append(msg, paste0("Data field `date_format` doesn't match readr date format specifications.\nSee `?readr::parse_date` for guidance."))

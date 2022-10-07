@@ -4,6 +4,7 @@ holdingdata_fileopts:
   decimal: ".,"  #Decimal mark used in movement datafile
   date_format: "foo" #Date format specification used in movement datafile (empty string "" for ISO8601 format, or see ?readr::parse_date for guidance)
   coord_EPSG_code: "323" #EPSG code for the Coordinate Reference System used (numeric part only)
+  country_code: "fwq"
 
 holdingdata_cols:
   id: "cph"          #Identifier of holding - need to match from/to in movement data!

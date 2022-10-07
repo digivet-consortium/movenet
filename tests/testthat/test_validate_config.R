@@ -217,6 +217,38 @@ test_that("validate_config.R returns ERROR with informative message when mandato
 
 })
 
+test_that("validate_config.R returns ERROR with informative message when required geographical keys are missing",{
+
+  missing_field <- "test_input_files/fakeScotEID_holdingmissinggeo.yml"
+  missing_field_yaml <- yaml.load_file(missing_field)
+
+  expect_match(sub("data", "", regmatches(names(missing_field_yaml),regexpr("move|holding",names(missing_field_yaml)))[1]), "holding", fixed = TRUE)
+
+  expect_condition(validate_config_root(missing_field_yaml,"holding"), NA)
+  expect_null(validate_config_root(missing_field_yaml,"holding"))
+
+  expect_condition(validate_config_fileopts(missing_field_yaml,"holding"), NA)
+  expect_match(validate_config_fileopts(missing_field_yaml,"holding"), "Missing holdingdata_fileopts key(s) required for inclusion of columns with geographical coordinates", fixed = TRUE)
+
+  expect_condition(validate_config_cols(missing_field_yaml,"holding"), NA)
+  expect_match(validate_config_cols(missing_field_yaml,"holding"), "Missing holdingdata_cols key required for inclusion of columns with geographical coordinates", fixed = TRUE)
+
+  expect_condition(validate_config_datatype(missing_field_yaml,"holding"), NA)
+  expect_null(validate_config_datatype(missing_field_yaml,"holding"))
+
+  expect_condition(internal_validate_config(missing_field), NA)
+  expect_invisible(internal_validate_config(missing_field))
+  expect_length(internal_validate_config(missing_field), 2)
+  expect_match(internal_validate_config(missing_field)[1], "Missing holdingdata_fileopts key(s) required for inclusion of columns with geographical coordinates", fixed = TRUE)
+  expect_match(internal_validate_config(missing_field)[2], "Missing holdingdata_cols key required for inclusion of columns with geographical coordinates", fixed = TRUE)
+
+  error_msg <- expect_error(validate_config(missing_field))
+  expect_match(error_msg$message, "is not a valid movenet config file", fixed = TRUE)
+  expect_match(error_msg$message, "Missing holdingdata_fileopts key(s) required for inclusion of columns with geographical coordinates", fixed = TRUE)
+  expect_match(error_msg$message, "Missing holdingdata_cols key required for inclusion of columns with geographical coordinates", fixed = TRUE)
+
+})
+
 test_that("validate_config.R returns ERROR with informative message when mandatory top-level and movedata_cols keys are missing",{
 
   missing_both <- "test_input_files/ScotEID_testmissing3.yml"
@@ -382,26 +414,29 @@ test_that("validate_config.R returns ERROR with informative messages when holdin
   expect_null(validate_config_cols(wrongformat_yaml,"holding"))
 
   expect_condition(validate_config_datatype(wrongformat_yaml,"holding"), NA)
-  expect_length(validate_config_datatype(wrongformat_yaml,"holding"), 5)
+  expect_length(validate_config_datatype(wrongformat_yaml,"holding"), 6)
   expect_match(validate_config_datatype(wrongformat_yaml,"holding")[1], "Data field(s) not in expected character format", fixed = TRUE)
   expect_match(validate_config_datatype(wrongformat_yaml,"holding")[2], "Data field `decimal` doesn't have the expected format of a single character", fixed = TRUE)
-  expect_match(validate_config_datatype(wrongformat_yaml,"holding")[3], "Data field `date_format` doesn't match readr date format specifications", fixed = TRUE)
-  expect_match(validate_config_datatype(wrongformat_yaml,"holding")[4], "Data field `coord_EPSG_code` not in expected integer format", fixed = TRUE)
-  expect_match(validate_config_datatype(wrongformat_yaml,"holding")[5], "Data field(s) not in expected character or integer format", fixed = TRUE)
+  expect_match(validate_config_datatype(wrongformat_yaml,"holding")[3], "Data field `country_code` doesn't have the expected format of two characters", fixed = TRUE)
+    expect_match(validate_config_datatype(wrongformat_yaml,"holding")[4], "Data field `date_format` doesn't match readr date format specifications", fixed = TRUE)
+  expect_match(validate_config_datatype(wrongformat_yaml,"holding")[5], "Data field `coord_EPSG_code` not in expected integer format", fixed = TRUE)
+  expect_match(validate_config_datatype(wrongformat_yaml,"holding")[6], "Data field(s) not in expected character or integer format", fixed = TRUE)
 
   expect_condition(internal_validate_config(wrongformat_data), NA)
   expect_invisible(internal_validate_config(wrongformat_data))
-  expect_length(internal_validate_config(wrongformat_data), 5)
+  expect_length(internal_validate_config(wrongformat_data), 6)
   expect_match(internal_validate_config(wrongformat_data)[1], "Data field(s) not in expected character format", fixed = TRUE)
   expect_match(internal_validate_config(wrongformat_data)[2], "Data field `decimal` doesn't have the expected format of a single character", fixed = TRUE)
-  expect_match(internal_validate_config(wrongformat_data)[3], "Data field `date_format` doesn't match readr date format specifications", fixed = TRUE)
-  expect_match(internal_validate_config(wrongformat_data)[4], "Data field `coord_EPSG_code` not in expected integer format", fixed = TRUE)
-  expect_match(internal_validate_config(wrongformat_data)[5], "Data field(s) not in expected character or integer format", fixed = TRUE)
+  expect_match(internal_validate_config(wrongformat_data)[3], "Data field `country_code` doesn't have the expected format of two characters", fixed = TRUE)
+  expect_match(internal_validate_config(wrongformat_data)[4], "Data field `date_format` doesn't match readr date format specifications", fixed = TRUE)
+  expect_match(internal_validate_config(wrongformat_data)[5], "Data field `coord_EPSG_code` not in expected integer format", fixed = TRUE)
+  expect_match(internal_validate_config(wrongformat_data)[6], "Data field(s) not in expected character or integer format", fixed = TRUE)
 
   error_msg <- expect_error(validate_config(wrongformat_data))
   expect_match(error_msg$message, "is not a valid movenet config file", fixed = TRUE)
   expect_match(error_msg$message, "Data field(s) not in expected character format", fixed = TRUE)
   expect_match(error_msg$message, "Data field `decimal` doesn't have the expected format of a single character", fixed = TRUE)
+  expect_match(error_msg$message, "Data field `country_code` doesn't have the expected format of two characters", fixed = TRUE)
   expect_match(error_msg$message, "Data field `date_format` doesn't match readr date format specifications", fixed = TRUE)
   expect_match(error_msg$message, "Data field `coord_EPSG_code` not in expected integer format", fixed = TRUE)
   expect_match(error_msg$message, "Data field(s) not in expected character or integer format", fixed = TRUE)
