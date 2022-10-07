@@ -3,6 +3,7 @@ holdingdata_fileopts:
   encoding:    #Encoding used in holding datafile
   decimal:     #Decimal mark used in holding datafile
   coord_EPSG_code: #EPSG code for the Coordinate Reference System used (numeric part only)
+  country_code:   #Two-letter country code (required for geographical jittering)
 
 holdingdata_cols:
   id:           #Identifier of holding - need to match from/to in movement data!
