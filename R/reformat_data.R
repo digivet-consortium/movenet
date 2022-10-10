@@ -1,57 +1,88 @@
-#' @title Reading and reformatting of animal movement data
+#' @title Reading and reformatting of animal movement or holding data
 #'
 #' @description
-#' Reformats movement data from a delimited file into a common intermediate format (extracts and renames selected columns)
+#' Reformats movement or holding data from a delimited file into a common intermediate format (extracts and renames selected columns)
 #'
-#' @param move_data_file Path to a delimited file with movement data (alternatively: literal data or a connection).
+#' @param datafile Path to a delimited file with movement or holding data.
+#' @param type Data type: "movement" or "holding"
 #'
 #' @importFrom dplyr mutate
 #' @importFrom magrittr %>%
 #' @importFrom purrr has_element
 #' @import readr
 #'
-#' @return reformatted movement data (selected & renamed columns)
+#' @return reformatted movement or holding data (selected & renamed columns)
 #' @export
 #'
 #' @examples
 #'
-reformat_move_data <- function(move_data_file){
+reformat_data <- function(datafile, type){
 
-  if (!file.exists(move_data_file)){
-    stop(paste0(move_data_file, ": no such file exists"))
+  if (!file.exists(datafile)){
+    stop(paste0(datafile, ": no such file exists"))
   }
 
-  min_move_keys <- c("from", "to", "date", "weight")
+  if (type == "movement"){
+    min_keys <- c("from", "to", "date", "weight")
+    fileopts <- movenetenv$options$movedata_fileopts
+    cols <- movenetenv$options$movedata_cols
+  } else if (type == "holding"){
+    min_keys <- c("id")
+    fileopts <- movenetenv$options$holdingdata_fileopts
+    cols <- movenetenv$options$holdingdata_cols
+  } else {
+    stop("Argument `type` must be either 'movement' or 'holding'")
+  }
 
   #read in datafile (all columns), with col type initially character for all columns
-  all_data <- read_delim(move_data_file,
-                         delim = movenetenv$options$movedata_fileopts$separator,
-                         locale = locale(date_format = movenetenv$options$movedata_fileopts$date_format,
-                                         decimal_mark = movenetenv$options$movedata_fileopts$decimal,
-                                         encoding = movenetenv$options$movedata_fileopts$encoding),
+  all_data <- read_delim(datafile,
+                         delim = fileopts$separator,
+                         locale = locale(date_format = ifelse("date_format" %in% names(fileopts),fileopts$date_format,"%AD"),
+                                         decimal_mark = fileopts$decimal,
+                                         encoding = fileopts$encoding),
                          col_types = cols(.default = col_character()),
                          lazy = TRUE,
                          name_repair = asciify)
 
   #select columns of interest
-  minvars <- movenetenv$options$movedata_cols[min_move_keys] #mandatory
-  extra <- movenetenv$options$movedata_cols[is.na(match(names(movenetenv$options$movedata_cols),min_move_keys))] #optional
+  minvars <- cols[min_keys] #mandatory
+  extra <- cols[is.na(match(names(cols),min_keys))] #optional
   #convert options with integer values (column indices) to column names
-  if(any(sapply(movenetenv$options$movedata_cols,is.integer))){
+  if(any(sapply(cols,is.integer))){
     opt_w_names <- colindex2name(data = all_data, minvars = minvars, extra = extra)
     minvars <- opt_w_names[[1]]
     extra <- opt_w_names[[2]]
   }
-  selected_data <- select_cols(data = all_data, minvars = minvars, extra = extra)
+  selected_data <- select_cols(data = all_data, minvars = unlist(minvars), extra = unlist(extra))
 
   #check data & change col types; or raise informative errors
-  selected_data[minvars$weight] <- reformat_nrpigs(selected_data[minvars$weight])
-  selected_data[minvars$date] <- reformat_date(selected_data[minvars$date])
-  if (length(selected_data) > 4){
-    selected_data[unlist(extra[extra %in% names(selected_data)])] <-
-      suppressMessages(type_convert(selected_data[unlist(extra[extra %in% names(selected_data)])], #guess coltype of extra columns
-                                    locale = locale(date_format = movenetenv$options$movedata_fileopts$date_format,
-                                                    decimal_mark = movenetenv$options$movedata_fileopts$decimal)))
+  if (type == "movement"){
+    selected_data[minvars$weight] <- reformat_numeric(selected_data[minvars$weight], fileopts$decimal)
+    selected_data[minvars$date] <- reformat_date(selected_data[minvars$date], fileopts$date_format)
+
+    if (length(selected_data) > 4){ #set col types of any extra columns by using a guesser algorithm
+      selected_extra <- unlist(extra[extra %in% names(selected_data)])
+      selected_data[selected_extra] <-
+        suppressMessages(type_convert(selected_data[selected_extra],
+                                      locale = locale(date_format = ifelse("date_format" %in% names(fileopts),fileopts$date_format,"%AD"),
+                                                      decimal_mark = fileopts$decimal)))
+    }
+  }
+  else {
+    if ("coord_x" %in% names(extra)){ #requires making sure that coord_x comes with coord_y and EPSG code
+      selected_data[extra$coord_x] <- reformat_numeric(selected_data[extra$coord_x], fileopts$decimal)
+      selected_data[extra$coord_y] <- reformat_numeric(selected_data[extra$coord_y], fileopts$decimal)
+    }
+    if ("herd_size" %in% names(extra)){
+      selected_data[extra$herd_size] <- reformat_numeric(selected_data[extra$herd_size], fileopts$decimal)
+    }
+    other_extra <- !(names(extra) %in% c("coord_x","coord_y","herd_size"))
+    if (any(other_extra)){ #set col types of any additional extra columns by using a guesser algorithm
+      selected_data[unlist(extra[other_extra])] <-
+        suppressMessages(type_convert(selected_data[unlist(extra[other_extra])],
+                                      locale = locale(date_format = ifelse("date_format" %in% names(fileopts),fileopts$date_format,"%AD"),
+                                                      decimal_mark = fileopts$decimal)))
+    }
   }
   return(selected_data)
 }
@@ -80,42 +111,41 @@ colindex2name <- function(data, minvars, extra){
   }
   if(anyDuplicated(c(minvars,extra)) != 0){
     dupl_names <- names(c(minvars,extra))[which(c(minvars,extra) %in% c(minvars,extra)[duplicated(c(minvars,extra))])]
-    stop(paste("Values for movedata_cols options must be unique. Translation of column indices to column headers identified the following options with duplicate values:", paste(dupl_names, collapse=", ")), call. = FALSE)
+    stop(paste("Values for movedata_cols/holdingdata_cols options must be unique. Translation of column indices to column headers identified the following options with duplicate values:", paste(dupl_names, collapse=", ")), call. = FALSE)
   }
   return(list(minvars,extra))
 }
 
 select_cols <- function(data, minvars, extra){
-  if (!(all(unlist(minvars) %in% colnames(data)))){
-    missing_minvars <- unname(unlist(minvars))[which(!(unlist(minvars) %in% colnames(data)))]
+  if (!(all(minvars %in% colnames(data)))){
+    missing_minvars <- unname(minvars)[which(!(minvars %in% colnames(data)))]
     stop(sprintf("Can't find the following mandatory columns in the datafile: %s.", paste0(missing_minvars, collapse=", ")), call. = FALSE)
   }
-  if (!(all(unlist(extra) %in% colnames(data)))){
-    missing_extra <- unname(unlist(extra))[which(!(unlist(extra) %in% colnames(data)))]
+  if (!(all(extra %in% colnames(data)))){
+    missing_extra <- unname(extra)[which(!(extra %in% colnames(data)))]
     warning(sprintf("Can't find the following requested optional columns in the datafile: %s.\nProceeding without missing optional columns.",
                     paste0(missing_extra, collapse=", ")),
             call. = FALSE)
-    to_extract <- unname(unlist(c(minvars,extra)))[-which(unname(unlist(c(minvars,extra))) %in% missing_extra)]
+    to_extract <- unname(c(minvars,extra))[-which(unname(c(minvars,extra)) %in% missing_extra)]
   }else{
-    to_extract <- unname(unlist(c(minvars,extra)))
+    to_extract <- unname(c(minvars,extra))
   }
   data[to_extract]
 }
 
-reformat_nrpigs <- function(weight_col){
+reformat_numeric <- function(numeric_col, decimal){
   tryCatch(
     error = function(cnd) {
-      cnd$message <- paste0("Column `",colnames(weight_col),"` must be numeric and can't contain a grouping mark.")
+      cnd$message <- paste0("Column `",colnames(numeric_col),"` must be numeric and can't contain a grouping mark.")
       cnd$call <- NULL
       stop(cnd)
     },
-    withr::with_options(list(warn=2),parse_double(weight_col[[colnames(weight_col)]],
-                                                  locale = locale(decimal_mark = movenetenv$options$movedata_fileopts$decimal)))
+    withr::with_options(list(warn=2),parse_double(numeric_col[[colnames(numeric_col)]],
+                                                  locale = locale(decimal_mark = decimal)))
   )
 }
 
-reformat_date <- function(date_col){
-  date_format <- movenetenv$options$movedata_fileopts$date_format
+reformat_date <- function(date_col, date_format){
   tryCatch(
     error = function(cnd) {
       old_message <- cnd$message
@@ -142,8 +172,6 @@ reformat_date <- function(date_col){
                         parse_date(date_col[[colnames(date_col)]], format = date_format))
     )
 }
-
-
 
 
 

@@ -5,6 +5,7 @@
 #'
 #' @return
 #'
+#' @importFrom purrr has_element
 #' @importFrom yaml yaml.load_file
 #'
 #' @examples
@@ -33,12 +34,12 @@ internal_validate_config <- function(file){
     invisible(validate_yaml(file)$msg)
   }else{
     yamlfile <- yaml.load_file(file)
+    config_type <- sub("data", "", regmatches(names(yamlfile),regexpr("(move|holding)data",names(yamlfile)))[1])
     msg <- c(
-      validate_config_root(yamlfile),
-      validate_config_moveopts(yamlfile),
-      validate_config_movecols(yamlfile),
-     #validate_config_holding(yamlfile),
-      validate_config_datatype(yamlfile)
+      validate_config_root(yamlfile, config_type),
+      validate_config_fileopts(yamlfile, config_type),
+      validate_config_cols(yamlfile, config_type),
+      validate_config_datatype(yamlfile, config_type)
     )
     invisible(msg)
   }
@@ -58,82 +59,95 @@ validate_yaml <- function(file){
   list(test = test, msg = msg) #Does this need to be invisible?
 }
 
-validate_config_root <- function(yamlfile){
-  root_keys_obs <- names(yamlfile)
-  root_keys_exp <- c("movedata_fileopts", "movedata_cols") #"holding_data"
-  root_valid <-  length(root_keys_obs) > 0 && all(root_keys_exp %in% root_keys_obs)
-  if (!root_valid){
-    sprintf("Unexpected config file structure. Missing mandatory top-level key(s): %s", paste0(root_keys_exp[!root_keys_exp %in% root_keys_obs],collapse=", "))
-  } #Does this need to be invisible?
-
-  #validate_config_root generates the missing message, when keys are present but not at appropriate level.
-  #Can change this behaviour if needed but this gets a bit complicated
-}
-
-validate_config_moveopts <- function(yamlfile){
-  opts_keys_obs <- names(yamlfile[["movedata_fileopts"]])
-  opts_keys_exp <- c("separator", "encoding", "decimal", "date_format")
-  opts_notmissing <- length(opts_keys_obs) > 3 && all(opts_keys_exp %in% opts_keys_obs) #tests that required move keys are present; but file may have more keys
-  if (!opts_notmissing){
-    sprintf("Unexpected config file structure. Missing mandatory second-level (movedata_fileopts) key(s): %s", paste0(opts_keys_exp[!opts_keys_exp %in% opts_keys_obs],collapse=", "))
-  } #Does this need to be invisible?
-
-  #validate_config_moveopts generates the missing message, when keys are present but not at appropriate level.
-  #Can change this behaviour if needed but this gets a bit complicated
-}
-
-validate_config_movecols <- function(yamlfile){
-  msg <- NULL
-  move_keys_obs <- names(yamlfile[["movedata_cols"]])
-  move_keys_exp <- c("from", "to", "date", "weight")
-  move_notmissing <- length(move_keys_obs) > 3 && all(move_keys_exp %in% move_keys_obs) #tests that required move keys are present; but file may have more keys
-  move_notdupl <- anyDuplicated(yamlfile[["movedata_cols"]]) == 0
-  if (!move_notmissing){
-    msg <- append(msg, sprintf("Unexpected config file structure. Missing mandatory second-level (movedata_cols) key(s): %s", paste0(move_keys_exp[!move_keys_exp %in% move_keys_obs],collapse=", ")))
-  }
-  if (!move_notdupl){
-    msg <- append(msg, sprintf("Values for movedata_cols options must be unique. The following options have duplicate values: %s", paste0(names(yamlfile[["movedata_cols"]])[which(yamlfile[["movedata_cols"]] %in% yamlfile[["movedata_cols"]][duplicated(yamlfile[["movedata_cols"]])])],collapse=", ")))
-  }
-  msg #Does this need to be invisible?
-  #validate_config_movecols generates the missing message, when keys are present but not at appropriate level.
-  #Can change this behaviour if needed but this gets a bit complicated
-}
-
-#validate_config_holding <- function(yamlfile){
-  #holding_keys_obs <- names(yamlfile[["holding_data"]])
-  #holding_keys_exp <-  # ADD MANDATORY KEYS!
-  #holding_notmissing <- length(move_keys_obs) > x && all(holding_keys_exp %in% holding_keys_obs) # SUBSTITUTE X!  tests that required holding keys are present; but file may have more keys
-  #if (!holding_notmissing){
-  #    sprintf("Unexpected config file structure. Missing mandatory second-level (holding_data) keys: %s", paste0(holding_keys_exp[!holding_keys_exp %in% holding_keys_obs],collapse=", "))
-  #}
-#}
-
-validate_config_datatype <- function(yamlfile){
-  msg <- NULL
-  if(length(yamlfile[["movedata_fileopts"]]) > 0){
-    opts_char <- sapply(yamlfile[["movedata_fileopts"]],is.character) #tests that moveopts values are characters
-    if (!all(opts_char)){
-      msg <- append(msg, sprintf("Data field(s) not in expected character format: %s", paste0(names(which(opts_char==FALSE)),collapse=", ")))
+validate_config_root <- function(yamlfile, config_type){
+  if (!has_element(c("move","holding"),config_type)){
+    return("Unexpected config file structure. Top-level keys must include either `movedata_fileopts` and `movedata_cols`, or `holdingdata_fileopts` and `holdingdata_cols`")
+  } else {
+    root_keys_obs <- names(yamlfile)
+    if(config_type == "move"){root_keys_exp <- c("movedata_fileopts", "movedata_cols")} else {root_keys_exp <- c("holdingdata_fileopts", "holdingdata_cols")}
+    root_valid <-  length(root_keys_obs) > 0 && all(root_keys_exp %in% root_keys_obs)
+    if (!root_valid){
+      sprintf("Unexpected config file structure. Missing mandatory top-level key(s): %s", paste0(root_keys_exp[!root_keys_exp %in% root_keys_obs],collapse=", "))
     }
-    if (!nchar(yamlfile[["movedata_fileopts"]][["separator"]]) == 1){
+  }  #Does this need to be invisible?
+}
+
+
+validate_config_fileopts <- function(yamlfile, config_type){
+  if (has_element(c("move","holding"),config_type)){
+    msg <- NULL
+    opts_keys_obs <- names(yamlfile[[paste0(config_type,"data_fileopts")]])
+    if(config_type == "move"){opts_keys_exp <- c("separator", "encoding", "decimal", "date_format")} else {opts_keys_exp <- c("separator", "encoding", "decimal")}
+    opts_notmissing <- length(opts_keys_obs) > 2 && all(opts_keys_exp %in% opts_keys_obs) #tests that required fileopts keys are present; but file may have more keys
+    if (!opts_notmissing){
+      msg <- append(msg, paste0("Unexpected config file structure. Missing mandatory second-level (", config_type, "data_fileopts) key(s): ",paste0(opts_keys_exp[!opts_keys_exp %in% opts_keys_obs],collapse=", ")))
+    } #Does this need to be invisible?
+    geo_opts <- c("coord_EPSG_code","country_code")
+    geo_opts_missing <- (!geo_opts %in% opts_keys_obs)
+    if(any(geo_opts_missing) && (any(c("coord_x","coord_y") %in% names(yamlfile[["holdingdata_cols"]])))){
+      msg <- append(msg, paste0("Unexpected config file structure. Missing holdingdata_fileopts key(s) required for inclusion of columns with geographical coordinates: ",paste0(geo_opts[geo_opts_missing],collapse=", ")))
+    }
+    msg #Does this need to be invisible?
+  }
+}
+
+validate_config_cols <- function(yamlfile, config_type){
+  if (has_element(c("move","holding"),config_type)){
+    msg <- NULL
+    cols_options_obs <- yamlfile[[paste0(config_type,"data_cols")]]
+    cols_keys_obs <- names(cols_options_obs)
+    if(config_type == "move"){cols_keys_exp <- c("from", "to", "date", "weight")} else {cols_keys_exp <- c("id")}
+    cols_notmissing <- length(cols_keys_obs) > 0 && all(cols_keys_exp %in% cols_keys_obs) #tests that required cols keys are present; but file may have more keys
+    cols_notdupl <- anyDuplicated(cols_options_obs) == 0
+    if (!cols_notmissing){
+      msg <- append(msg, paste0("Unexpected config file structure. Missing mandatory second-level (", config_type, "data_cols) key(s): ", paste0(cols_keys_exp[!cols_keys_exp %in% cols_keys_obs],collapse=", ")))
+    }
+    if (!cols_notdupl){
+      msg <- append(msg, paste0("Values for ", config_type, "data_cols options must be unique. The following options have duplicate values: ", paste0(cols_keys_obs[which(cols_options_obs %in% cols_options_obs[duplicated(cols_options_obs)])],collapse=", ")))
+    }
+    coord_present <- c("coord_x","coord_y") %in% cols_keys_obs
+    if (any(coord_present) & any(!coord_present)){
+      coord_missing <- cols_keys_obs[which(!coord_present)]
+      msg <- append(msg, paste0("Unexpected config file structure. Missing holdingdata_cols key required for inclusion of columns with geographical coordinates: ",coord_missing))
+    }
+    msg #Does this need to be invisible?
+  }
+}
+
+validate_config_datatype <- function(yamlfile, config_type){
+  msg <- NULL
+  fileopts <- yamlfile[[paste0(config_type,"data_fileopts")]]
+  if(length(fileopts) > 0){
+    if(config_type == "move"){ opts_char_exp <- fileopts }else{ opts_char_exp <- fileopts[which(names(fileopts)!="coord_EPSG_code")]}
+    opts_char_obs <- sapply(opts_char_exp,is.character) #tests that appropriate fileopts option values are characters
+    if (!all(opts_char_obs)){
+      msg <- append(msg, sprintf("Data field(s) not in expected character format: %s", paste0(names(which(opts_char_obs==FALSE)),collapse=", ")))
+    }
+    if (!nchar(fileopts[["separator"]]) == 1){
       msg <- append(msg, "Data field `separator` doesn't have the expected format of a single character")
     }
-    if (!nchar(yamlfile[["movedata_fileopts"]][["decimal"]]) == 1){
+    if (!nchar(fileopts[["decimal"]]) == 1){
       msg <- append(msg, "Data field `decimal` doesn't have the expected format of a single character")
     }
-    if(!grepl("%(Y|y|AD|D|F|x|s)|^$",yamlfile[["movedata_fileopts"]][["date_format"]])){
-      msg <- append(msg,paste0("Data field `date_format` doesn't match readr date format specifications.\nSee `?readr::parse_date` for guidance."))
+    if (has_element(names(fileopts),"country_code") && !nchar(fileopts[["country_code"]]) == 2){
+      msg <- append(msg, "Data field `country_code` doesn't have the expected format of two characters")
+    }
+    if (has_element(names(fileopts),"date_format") && !grepl("%(Y|y|AD|D|F|x|s)|^$",fileopts[["date_format"]])){
+      msg <- append(msg, paste0("Data field `date_format` doesn't match readr date format specifications.\nSee `?readr::parse_date` for guidance."))
+    }
+    if (has_element(names(fileopts),"coord_EPSG_code") && !is.integer(fileopts[["coord_EPSG_code"]])){
+      msg <- append(msg, "Data field `coord_EPSG_code` not in expected integer format")
     }
   }
-  if(length(yamlfile[["movedata_cols"]]) > 0){
-    move_char <- sapply(yamlfile[["movedata_cols"]],is.character) #tests that movecol values are characters
-    move_int <- sapply(yamlfile[["movedata_cols"]],is.integer) #tests that movecol values are integers
-    move_charint <- (move_char | move_int)
-    if (!all(move_charint)){
-      msg <- append(msg, sprintf("Data field(s) not in expected character or integer format: %s", paste0(names(which(move_charint==FALSE)),collapse=", ")))
+  cols_options <- yamlfile[[paste0(config_type,"data_cols")]]
+  if(length(cols_options) > 0){
+    cols_char <- sapply(cols_options, is.character) #tests that cols values are characters
+    cols_int <- sapply(cols_options, is.integer) #tests that cols values are integers
+    cols_charint <- (cols_char | cols_int)
+    if (!all(cols_charint)){
+      msg <- append(msg, sprintf("Data field(s) not in expected character or integer format: %s", paste0(names(which(cols_charint==FALSE)),collapse=", ")))
     }
   }
-  # Add checks for holding_data data types
   msg #Does this need to be invisible?
 }
 

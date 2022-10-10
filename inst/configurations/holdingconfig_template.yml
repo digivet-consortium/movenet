@@ -1,0 +1,13 @@
+holdingdata_fileopts:
+  separator:   #Separator (delimiter) character used in holding datafile
+  encoding:    #Encoding used in holding datafile
+  decimal:     #Decimal mark used in holding datafile
+  coord_EPSG_code: #EPSG code for the Coordinate Reference System used (numeric part only)
+  country_code:   #Two-letter country code (required for geographical jittering)
+
+holdingdata_cols:
+  id:           #Identifier of holding - need to match from/to in movement data!
+  coord_x:      #Geographical coordinate (x/longitude) of holding (int or decimal, NOT degree/min/sec)
+  coord_y:      #Geographical coordinate (y/latitude) of holding (int or decimal, NOT degree/min/sec)
+  type:         #Type of holding or herd
+  herd_size:    #Size of herd
