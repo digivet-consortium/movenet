@@ -9,10 +9,10 @@ test_that("when argument `type` (datatype) is missing, an error is raised with a
 })
 
 test_that("when argument `type` (datatype) is an unexpected value, an error is raised with an informative message", {
-  expect_error(reformat_data("test_input_files/ScotEID_testdata.csv"), "Argument `type` must be either 'movement' or 'holding'")
+  expect_error(reformat_data("test_input_files/ScotEID_testdata.csv","foo"), "Argument `type` must be either 'movement' or 'holding'")
 })
 
-test_that("when config has all min cols only, and input has correct dateformat + int weight, output is data.frame with correct colnames & coltypes", {
+test_that("when movement config has all min cols only, and input has correct dateformat + int weight, output is data.frame with correct colnames & coltypes", {
   move_ID <- movenetenv$options$movedata_cols$move_ID
   movenetenv$options$movedata_cols$move_ID<-NULL
   output <- expect_condition(reformat_data("test_input_files/ScotEID_testdata.csv","movement"), NA)
@@ -33,6 +33,19 @@ test_that("when config has min cols + extra move_ID col, and input has numeric m
   expect_named(output,ScotEID_colnames)
   expect_type(output[[ScotEID_movecols$move_ID]], "double")
   })
+
+test_that("when holding config has required & opt col, in correct data formats, output is data.frame with correct colnames & coltypes", {
+  load_config("test_input_files/fakeScotEID_holding.yml")
+  output <- expect_error(reformat_data("test_input_files/test_holdingdata_generic.csv","holding"), NA)
+  expect_s3_class(output,"data.frame")
+  expect_named(output,c("cph","easting","northing","holding_type","herd_size"))
+  expect_type(output[["cph"]], "character")
+  expect_type(output[["easting"]], "double")
+  expect_type(output[["northing"]], "double")
+  expect_type(output[["holding_type"]], "character")
+  expect_type(output[["herd_size"]], "double")
+  load_config("ScotEID")
+})
 
 test_that("when config has all min cols, indicated as col indices, output is data.frame with correct colnames & coltypes",{
   suppressMessages(load_config("test_input_files/ScotEID_mincolnrs.yml"))
@@ -168,14 +181,18 @@ test_that("error is raised, when date column in datafile contains one or more in
                "Can\\'t parse column `departure_date` as date\\.\nThe date format specification given through the option `date_format` \\(value `%Y%m%d`\\) and the actual format of column `departure_date` don't appear to match\\.\nAlternatively, column `departure_date` contains one or more invalid dates\\.")
 })
 
-test_that("no warning or error is raised, when 'number of pigs' column in datafile contains numbers with decimals", {
+test_that("no warning or error is raised, when 'weight' column in datafile contains numbers with decimals", {
   output <- expect_warning(reformat_data("test_input_files/ScotEID_testdata_pigsdecimal.csv","movement"), NA)
   expect_error(reformat_data("test_input_files/ScotEID_testdata_pigsdecimal.csv","movement"), NA)
   expect_type(output[[ScotEID_movecols$weight]], "double")
 })
 
-test_that("error is raised, when 'number of pigs' column in datafile contains numbers with grouping marks", {
+test_that("error is raised, when 'weight' column in datafile contains numbers with grouping marks", {
   expect_error(reformat_data("test_input_files/ScotEID_testdata_pigsgrouping.csv","movement"), "Column `qty_pigs` must be numeric and can't contain a grouping mark")
+})
+
+test_that("error is raised, when 'coord_x' column in datafile contains characters", {
+  expect_error(reformat_data("test_input_files/test_holdingdata_notnumeric.csv","holding"), "Column `easting` must be numeric and can't contain a grouping mark")
 })
 
 movenetenv$options<-old_config
