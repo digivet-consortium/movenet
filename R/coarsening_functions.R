@@ -16,7 +16,7 @@
 #' @export
 coarsen_date <- function(data, level, aggregate_data = TRUE, ...){
   # accesses each date on an edge in network, changes to level aggregation
-  coarsened_data <- data %>% mutate("{movenetenv$options$movedata_cols$move_date}" := floor_date(.data[[movenetenv$options$movedata_cols$move_date]], level)) # result is date object, rounded down to start of unit (e.g. month)
+  coarsened_data <- data %>% mutate("{movenetenv$options$movedata_cols$date}" := floor_date(.data[[movenetenv$options$movedata_cols$date]], level)) # result is date object, rounded down to start of unit (e.g. month)
 
   #What to do with floor_date's week_start? default = 7 = Sunday.
 
@@ -36,8 +36,8 @@ coarsen_date <- function(data, level, aggregate_data = TRUE, ...){
   } else {
     aggregated_data <-
       coarsened_data %>%
-      group_by(.data[[movenetenv$options$movedata_cols$origin_ID]], .data[[movenetenv$options$movedata_cols$dest_ID]], .data[[movenetenv$options$movedata_cols$move_date]]) %>%
-      summarise("{movenetenv$options$movedata_cols$nr_pigs}" := sum(.data[[movenetenv$options$movedata_cols$nr_pigs]]), ...) %>%
+      group_by(.data[[movenetenv$options$movedata_cols$from]], .data[[movenetenv$options$movedata_cols$to]], .data[[movenetenv$options$movedata_cols$date]]) %>%
+      summarise("{movenetenv$options$movedata_cols$weight}" := sum(.data[[movenetenv$options$movedata_cols$weight]]), ...) %>%
       ungroup
     return(aggregated_data)
   }
@@ -52,7 +52,7 @@ coarsen_date <- function(data, level, aggregate_data = TRUE, ...){
 #' @param round
 #'
 #' @export
-coarsen_weight <- function(data, column = movenetenv$options$movedata_cols$nr_pigs, jitter, round){
+coarsen_weight <- function(data, column = movenetenv$options$movedata_cols$weight, jitter, round){
   # for each weight on an edge in network, apply ± jitter in range jitter, then round to nearest round
   # might want user to be able to just jitter, just round, or have both
   # sensible default values?
@@ -86,9 +86,9 @@ coarsen_weight <- function(data, column = movenetenv$options$movedata_cols$nr_pi
 #'
 #' @export
 anonymise <- function(data, prefix){
-  holding_IDs <- unique(c(data[[movenetenv$options$movedata_cols$origin_ID]], data[[movenetenv$options$movedata_cols$dest_ID]]))
+  holding_IDs <- unique(c(data[[movenetenv$options$movedata_cols$from]], data[[movenetenv$options$movedata_cols$to]]))
   holding_IDs <- setNames(paste0(prefix,1:length(holding_IDs)), holding_IDs)
-  data[movenetenv$options$movedata_cols$origin_ID] <- holding_IDs[data[[movenetenv$options$movedata_cols$origin_ID]]]
-  data[movenetenv$options$movedata_cols$dest_ID] <- holding_IDs[data[[movenetenv$options$movedata_cols$dest_ID]]]
+  data[movenetenv$options$movedata_cols$from] <- holding_IDs[data[[movenetenv$options$movedata_cols$from]]]
+  data[movenetenv$options$movedata_cols$to] <- holding_IDs[data[[movenetenv$options$movedata_cols$to]]]
   return(data)
 }
