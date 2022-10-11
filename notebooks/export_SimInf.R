@@ -20,8 +20,8 @@ events <- data.frame(
 
 #SimInf spatial models use distance matrices
 
-data("nodes", package = "SimInf") #Example dataset. This is just 2 columns, x and y, with projected coordinates
-distance_matrix(nodes$x, nodes$y, cutoff = 2500, min_dist = NULL) #This is how distance matrices are calculated, between nodes
+data("nodes", package = "SimInf") #Example nodes dataset - just 2 columns, x and y, with projected coordinates
+distance_matrix(nodes$x, nodes$y, cutoff = 2500, min_dist = NULL) #This is how SimInf calculates distance matrices between nodes
 
 
 ###############################################################################
