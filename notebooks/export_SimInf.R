@@ -1,5 +1,5 @@
 ###############################################################################
-### Example input format for SimInf
+### Example movement input format for SimInf
 #from: https://rdrr.io/cran/SimInf/f/vignettes/scheduled-events.Rmd
 #more info: https://rdrr.io/cran/SimInf/man/SimInf_events.html
 ###############################################################################
@@ -11,9 +11,18 @@ events <- data.frame(
   dest       = c(4, 2, 3, 3, 2, 2), ## Which node is the destination node  Integer. -> to  [anonymise with prefix = '', turn into int]
   n          = c(9, 2, 8, 3, 5, 4), ## How many individuals are moved  -> if weight is int [what if it isnt?]
   proportion = c(0, 0, 0, 0, 0, 0), ## This is not used when n > 0
-  select     = c(4, 4, 4, 4, 4, 4), ## Use the 4th column in
-                                    ## the model select matrix
+  select     = c(4, 4, 4, 4, 4, 4), ## Use the 4th column in the model select matrix
   shift      = c(0, 0, 0, 0, 0, 0)) ## Not used in this example
+
+###############################################################################
+### Node coords in SimInf
+###############################################################################
+
+#SimInf spatial models use distance matrices
+
+data("nodes", package = "SimInf") #Example dataset. This is just 2 columns, x and y, with projected coordinates
+distance_matrix(nodes$x, nodes$y, cutoff = 2500, min_dist = NULL) #This is how distance matrices are calculated, between nodes
+
 
 ###############################################################################
 ### Questions
@@ -25,20 +34,20 @@ events <- data.frame(
 # What is select? Should this always be 4 or set as user-defined argument?
 # What is shift? Should this always be 0 or set as user-defined argument?
 
-#Is there a mechanism of adding node data, incl. coordinates, to SimInf?
-#Or only a distance matrix?
+#Is there a mechanism of adding node data to SimInf? Or only a distance matrix?
 
 ###############################################################################
 ### Transform Movenet movement data to SimInf event format
 ###############################################################################
+
 library(dplyr) #for arrange and transmute
 load_all()
-data <- reformat_data("C:/Users/cboga/OneDrive - University of Glasgow/CS3-ASF/Pig movement data structure/sample_pigs_UK_with_dep_arr_dates.csv",
+movement_data <- reformat_data("C:/Users/cboga/OneDrive - University of Glasgow/CS3-ASF/Pig movement data structure/sample_pigs_UK_with_dep_arr_dates.csv",
                       "movement")
 events <-
-  data |>
-    arrange(departure_date) |>  # Sort movements by date. May be redundant
-    anonymise("") |>            # Change holding identifier to number only
+  movement_data |>
+    arrange(departure_date) |>  # This sorting step may not be necessary
+    anonymise("") |>
     transmute(event="extTrans",
            time=departure_date,
            node=as.integer(.data[[movenetenv$options$movedata_cols$from]]),
@@ -48,4 +57,23 @@ events <-
            select=4,
            shift=0)
 
-#Need to update anonymise() to also output key for original_id:anonymised_id transformation
+###############################################################################
+### Transform Movenet holding data to SimInf nodes format
+###############################################################################
+
+load_all()
+load_config("tests/testthat/test_input_files/fakeScotEID_holding.yml")
+holding_data <- reformat_data("tests/testthat/test_input_files/test_holdingdata_generic.csv",
+                               "holding")
+nodes <-
+  holding_data |>
+    transmute(x = .data[[movenetenv$options$holdingdata_cols$coord_x]],
+              y = .data[[movenetenv$options$holdingdata_cols$coord_x]])
+
+# This misses an "anonymisation" step that renames farms as numbers, and generates a key that can also be used with movement data
+
+#Need to update anonymise():
+# - to work with holding data
+# - to work with holding AND movement data
+# - to optionally output the key for the original_id:anonymised_id transformation
+# - to take such a key as input
