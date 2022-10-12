@@ -85,10 +85,36 @@ coarsen_weight <- function(data, column = movenetenv$options$movedata_cols$weigh
 #' @param prefix
 #'
 #' @export
-anonymise <- function(data, prefix){
-  holding_IDs <- unique(c(data[[movenetenv$options$movedata_cols$from]], data[[movenetenv$options$movedata_cols$to]]))
-  holding_IDs <- setNames(paste0(prefix,1:length(holding_IDs)), holding_IDs)
-  data[movenetenv$options$movedata_cols$from] <- holding_IDs[data[[movenetenv$options$movedata_cols$from]]]
-  data[movenetenv$options$movedata_cols$to] <- holding_IDs[data[[movenetenv$options$movedata_cols$to]]]
-  return(data)
+anonymise <- function(data, prefix, key = NULL){
+
+  if (has_element(names(movenetenv$options), "movedata_cols") & has_element(names(data), movenetenv$options$movedata_cols$from)){
+    col_to_anonymise <- c(movenetenv$options$movedata_cols$from, movenetenv$options$movedata_cols$to)
+  } else if (has_element(names(movenetenv$options), "holdingdata_cols") & has_element(names(data), movenetenv$options$holdingdata_cols$id)) {
+    col_to_anonymise <- movenetenv$options$holdingdata_cols$id
+  } else {
+    stop("The loaded config file and the type of data (movement or holding data) do not correspond. Please ensure the appropriate config file is loaded.")
+  }
+
+  unique_ids <- unique(unlist(data[col_to_anonymise]))
+
+  if(is.null(key)){
+    key <- generate_anonymisation_key(unique_ids, prefix, n_start = 1)
+  }
+
+  ids_not_in_key <- !(unique_ids %in% names(key))
+  if(any(ids_not_in_key)){
+    warning("The provided key has been expanded to include identifiers that were not found in the original key")
+    key <- c(key,
+             generate_anonymisation_key(unique_ids[which(ids_not_in_key)], prefix, n_start = length(key)+1))
+  }
+
+  data[col_to_anonymise]<-lapply(col_to_anonymise,function(x){key[data[[x]]]})
+
+  return(list(data,key))
+
+}
+
+generate_anonymisation_key <- function(identifiers, prefix, n_start){
+  key <- setNames(paste0(prefix, seq(n_start, length.out = length(identifiers))), identifiers)
+  return(key)
 }
