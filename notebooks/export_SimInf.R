@@ -44,36 +44,41 @@ library(dplyr) #for arrange and transmute
 load_all()
 movement_data <- reformat_data("C:/Users/cboga/OneDrive - University of Glasgow/CS3-ASF/Pig movement data structure/sample_pigs_UK_with_dep_arr_dates.csv",
                       "movement")
-events <-
+anonymised_data <-
   movement_data |>
     arrange(departure_date) |>  # This sorting step may not be necessary
-    anonymise("") |>
+    anonymise("")
+
+events <-
+  anonymised_data$data |>
     transmute(event="extTrans",
-           time=departure_date,
-           node=as.integer(.data[[movenetenv$options$movedata_cols$from]]),
-           dest=as.integer(.data[[movenetenv$options$movedata_cols$to]]),
-           n=.data[[movenetenv$options$movedata_cols$weight]],
-           proportion=0,
-           select=4,
-           shift=0)
+              time=departure_date,
+              node=as.integer(.data[[movenetenv$options$movedata_cols$from]]),
+              dest=as.integer(.data[[movenetenv$options$movedata_cols$to]]),
+              n=.data[[movenetenv$options$movedata_cols$weight]],
+              proportion=0,
+              select=4,
+              shift=0)
 
 ###############################################################################
 ### Transform Movenet holding data to SimInf nodes format
 ###############################################################################
 
-load_all()
 load_config("tests/testthat/test_input_files/fakeScotEID_holding.yml")
 holding_data <- reformat_data("tests/testthat/test_input_files/test_holdingdata_generic.csv",
                                "holding")
-nodes <-
+
+anonymised_holding_data <-
   holding_data |>
+  anonymise("", key=anonymised_data$key)
+
+nodes <-
+  anonymised_holding_data$data |>
+    arrange(as.numeric(cph)) |>
     transmute(x = .data[[movenetenv$options$holdingdata_cols$coord_x]],
-              y = .data[[movenetenv$options$holdingdata_cols$coord_x]])
+              y = .data[[movenetenv$options$holdingdata_cols$coord_y]])
 
-# This misses an "anonymisation" step that renames farms as numbers, and generates a key that can also be used with movement data
 
-#Need to update anonymise():
-# - to work with holding data
-# - to work with holding AND movement data
-# - to optionally output the key for the original_id:anonymised_id transformation
-# - to take such a key as input
+#Might need to update anonymise() to first randomise order of data, before assigning a number
+
+
