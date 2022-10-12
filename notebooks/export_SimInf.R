@@ -46,7 +46,6 @@ movement_data <- reformat_data("C:/Users/cboga/OneDrive - University of Glasgow/
                       "movement")
 anonymised_data <-
   movement_data |>
-    arrange(departure_date) |>  # This sorting step may not be necessary
     anonymise("")
 
 events <-
