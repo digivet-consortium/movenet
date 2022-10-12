@@ -103,7 +103,7 @@ anonymise <- function(data, prefix, key = NULL){
 
   ids_not_in_key <- !(unique_ids %in% names(key))
   if(any(ids_not_in_key)){
-    warning("The provided key has been expanded to include identifiers that were not found in the original key")
+    warning("The key has been expanded to include identifiers that were not found in the (provided) original key")
     key <- c(key,
              generate_anonymisation_key(unique_ids[which(ids_not_in_key)], prefix, n_start = length(key)+1))
   }
