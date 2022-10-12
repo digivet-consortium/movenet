@@ -110,7 +110,7 @@ anonymise <- function(data, prefix, key = NULL){
 
   data[col_to_anonymise]<-lapply(col_to_anonymise,function(x){key[data[[x]]]})
 
-  return(list(data,key))
+  return(list(data=data,key=key))
 
 }
 
