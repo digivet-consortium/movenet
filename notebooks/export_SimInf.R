@@ -79,6 +79,4 @@ nodes <-
               y = .data[[movenetenv$options$holdingdata_cols$coord_y]])
 
 
-#Might need to update anonymise() to first randomise order of data, before assigning a number
-
 

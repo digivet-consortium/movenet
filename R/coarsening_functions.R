@@ -115,6 +115,7 @@ anonymise <- function(data, prefix, key = NULL){
 }
 
 generate_anonymisation_key <- function(identifiers, prefix, n_start){
-  key <- setNames(paste0(prefix, seq(n_start, length.out = length(identifiers))), identifiers)
+  ids_in_random_order <- sample(identifiers,size=length(identifiers),replace=FALSE)
+  key <- setNames(paste0(prefix, seq(n_start, length.out = length(ids_in_random_order))), ids_in_random_order)
   return(key)
 }
