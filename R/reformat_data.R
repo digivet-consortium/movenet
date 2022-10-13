@@ -52,6 +52,7 @@ reformat_data <- function(datafile, type){
     opt_w_names <- colindex2name(data = all_data, minvars = minvars, extra = extra)
     minvars <- opt_w_names[[1]]
     extra <- opt_w_names[[2]]
+    suppressWarnings(change_config(c(minvars,extra)))
   }
   selected_data <- select_cols(data = all_data, minvars = unlist(minvars), extra = unlist(extra))
 
@@ -91,13 +92,17 @@ reformat_data <- function(datafile, type){
 asciify <- function(x) make.names(stringi::stri_trans_general(x, 'Latin-ASCII'), unique=TRUE)
 
 colindex2name <- function(data, minvars, extra){
+  msg <- "The following options have been changed from column indices to column headers within the loaded configurations:\n - "
   if (any(sapply(minvars, is.integer))){
+    int_minvars <- minvars[which(sapply(minvars, is.integer))]
     if (any(sapply(minvars, function(x) (is.integer(x) & x > length(data))))){
       outofrange_minvars <- minvars[which(sapply(minvars, function(x) (is.integer(x) & x > length(data))))]
       stop(sprintf("Can't find the following mandatory columns in the datafile: %s.\nThese column indices exceed the number of columns in the datafile.",
                    paste0("#",outofrange_minvars," (",names(outofrange_minvars),")", collapse = ", ")), call. = FALSE)
     }
-    minvars[names(minvars[which(sapply(minvars, is.integer))])] <- colnames(data)[unlist(minvars[which(sapply(minvars, is.integer))])]
+    changes_minvar <- paste0(names(int_minvars),": #", int_minvars, " -> '", colnames(data)[unlist(int_minvars)],"'", collapse = "\n - ")
+    msg <- paste0(msg, changes_minvar)
+    minvars[names(int_minvars)]  <- colnames(data)[unlist(int_minvars)]
   }
   if (any(sapply(extra, is.integer))){
     if (any(sapply(extra, function(x) (is.integer(x) & x > length(data))))){
@@ -107,12 +112,17 @@ colindex2name <- function(data, minvars, extra){
       extra[which(extra %in% outofrange_extra)] <- NULL
     }
     withinrange_extra <- extra[which(sapply(extra, function(x) (is.integer(x) & x <= length(data))))]
-    extra[names(extra[which(extra %in% withinrange_extra)])] <- colnames(data)[unlist(withinrange_extra)]
+    if(length(withinrange_extra) > 0){
+      changes_extra <- paste0(names(withinrange_extra),": #", withinrange_extra, " -> '", colnames(data)[unlist(withinrange_extra)],"'", collapse = "\n - ")
+      msg <- paste0(msg, "\n - ", changes_extra)
+      extra[names(extra[which(extra %in% withinrange_extra)])] <- colnames(data)[unlist(withinrange_extra)]
+    }
   }
   if(anyDuplicated(c(minvars,extra)) != 0){
     dupl_names <- names(c(minvars,extra))[which(c(minvars,extra) %in% c(minvars,extra)[duplicated(c(minvars,extra))])]
     stop(paste("Values for movedata_cols/holdingdata_cols options must be unique. Translation of column indices to column headers identified the following options with duplicate values:", paste(dupl_names, collapse=", ")), call. = FALSE)
   }
+  warning(msg, call. = FALSE)
   return(list(minvars,extra))
 }
 

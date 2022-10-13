@@ -47,9 +47,13 @@ test_that("when holding config has required & opt col, in correct data formats, 
   load_config("ScotEID")
 })
 
-test_that("when config has all min cols, indicated as col indices, output is data.frame with correct colnames & coltypes",{
+test_that("when config has all min cols, indicated as col indices, output is data.frame with correct colnames & coltypes, a warning is raised, and configs are changed",{
   suppressMessages(load_config("test_input_files/ScotEID_mincolnrs.yml"))
-  output <- expect_condition(reformat_data("test_input_files/ScotEID_testdata.csv","movement"), NA)
+  expect_warning(reformat_data("test_input_files/ScotEID_testdata.csv","movement"),
+                 "The following options have been changed from column indices to column headers within the loaded configurations:\n - from: #14 -> 'departure_cph'\n - to: #19 -> 'dest_cph'\n - date: #5 -> 'departure_date'\n - weight: #7 -> 'qty_pigs'", fixed=TRUE)
+  expect_mapequal(get_config("from","to","date","weight"),
+                  list(from = 'departure_cph', to = 'dest_cph', date = 'departure_date', weight = 'qty_pigs'))
+  output <- expect_error(reformat_data("test_input_files/ScotEID_testdata.csv","movement"), NA)
   expect_s3_class(output,"data.frame")
   expect_named(output,ScotEID_colnames[c(1:4)])
   expect_type(output[[ScotEID_movecols$from]], "character")
@@ -60,10 +64,13 @@ test_that("when config has all min cols, indicated as col indices, output is dat
   suppressMessages(load_config("ScotEID"))
 })
 
-test_that("when config has all min cols + extra col, with some of both indicated as col indices, output is data.frame with correct colnames & coltypes",{
+test_that("when config has all min cols + extra col, with some of both indicated as col indices, output is data.frame with correct colnames & coltypes, a warning is raised, and configs are changed",{
   suppressMessages(load_config("test_input_files/ScotEID_mixcolnamesnrs.yml"))
-  output <- expect_warning(reformat_data("test_input_files/ScotEID_testdata.csv","movement"), NA)
-  expect_error(reformat_data("test_input_files/ScotEID_testdata.csv","movement"), NA)
+  expect_warning(reformat_data("test_input_files/ScotEID_testdata.csv","movement"),
+                 "The following options have been changed from column indices to column headers within the loaded configurations:\n - to: #19 -> 'dest_cph'\n - date: #5 -> 'departure_date'\n - weight: #7 -> 'qty_pigs'\n - move_ID: #1 -> 'movement_reference'", fixed=TRUE)
+  expect_mapequal(get_config("to","date","weight","move_ID"),
+                  list(to = 'dest_cph', date = 'departure_date', weight = 'qty_pigs', move_ID = 'movement_reference'))
+  output <- expect_error(reformat_data("test_input_files/ScotEID_testdata.csv","movement"), NA)
   expect_s3_class(output,"data.frame")
   expect_named(output,c(ScotEID_colnames,"foreign_reference"))
   expect_type(output[[ScotEID_movecols$from]], "character")
@@ -112,6 +119,8 @@ test_that("when config has an optional col, indicated as col index, that exceeds
   suppressMessages(load_config("test_input_files/ScotEID_optcolnrtoolarge.yml"))
   expect_warning(reformat_data("test_input_files/ScotEID_testdata.csv","movement"),
                  "Can't find the following requested optional columns in the datafile\\: #20 \\(move_ID\\)\\.\nThese column indices exceed the number of columns in the datafile\\.\nProceeding without missing optional columns\\.")
+  expect_warning(reformat_data("test_input_files/ScotEID_testdata.csv","movement"),
+                 "The following options have been changed from column indices to column headers within the loaded configurations", fixed=TRUE)
   output <- reformat_data("test_input_files/ScotEID_testdata.csv","movement")
   expect_s3_class(output,"data.frame")
   expect_named(output,c(ScotEID_colnames[c(1:4)],"foreign_reference"))
@@ -192,7 +201,9 @@ test_that("error is raised, when 'weight' column in datafile contains numbers wi
 })
 
 test_that("error is raised, when 'coord_x' column in datafile contains characters", {
+  load_config("test_input_files/fakeScotEID_holding.yml")
   expect_error(reformat_data("test_input_files/test_holdingdata_notnumeric.csv","holding"), "Column `easting` must be numeric and can't contain a grouping mark")
+  load_config("ScotEID")
 })
 
 movenetenv$options<-old_config
