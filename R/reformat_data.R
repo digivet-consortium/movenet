@@ -1,7 +1,8 @@
 #' @title Reading and reformatting of animal movement or holding data
 #'
 #' @description
-#' Reformats movement or holding data from a delimited file into a common intermediate format (extracts and renames selected columns)
+#' Reformats movement or holding data from a delimited file into a common
+#' intermediate format (extracts and renames selected columns)
 #'
 #' @param datafile Path to a delimited file with movement or holding data.
 #' @param type Data type: "movement" or "holding"
@@ -16,7 +17,7 @@
 #'
 #' @examples
 #'
-reformat_data <- function(datafile, type){
+reformat_data <- function(datafile, type){ #Could also infer type from the data
 
   if (!file.exists(datafile)){
     stop(paste0(datafile, ": no such file exists"))
@@ -34,55 +35,72 @@ reformat_data <- function(datafile, type){
     stop("Argument `type` must be either 'movement' or 'holding'")
   }
 
-  #read in datafile (all columns), with col type initially character for all columns
+  decimal <- fileopts$decimal
+  encoding <- fileopts$encoding
+  separator <- fileopts$separator
+  date_format <-
+    if("date_format" %in% names(fileopts)) fileopts$date_format else "%AD"
+
+  minvars <- cols[min_keys] #list of mandatory column headers (or indices)
+  extra <- cols[is.na(match(names(cols),min_keys))] #list of opt col headers/ind
+
+
+  #read in datafile (all columns), with col type set as character for all cols
   all_data <- read_delim(datafile,
-                         delim = fileopts$separator,
-                         locale = locale(date_format = ifelse("date_format" %in% names(fileopts),fileopts$date_format,"%AD"),
-                                         decimal_mark = fileopts$decimal,
-                                         encoding = fileopts$encoding),
+                         delim = separator,
+                         locale = locale(date_format = date_format,
+                                         decimal_mark = decimal,
+                                         encoding = encoding),
                          col_types = cols(.default = col_character()),
                          lazy = TRUE,
                          name_repair = asciify)
+  #rationale for reading all data (more expensive) instead of directly selecting
+  #cols of interest: a separate select_cols function allows for easy checking
+  #of presence/absence of mandatory or optional columns, and handling these
+  #differently, without complicated tryCatch loops with custom errors.
+  #Unclear how to tryCatch this while reporting all missing columns at once - as
+  #read_delim's original message (this can be caught with conditionMessage) only
+  #mentions the first missing column it comes across.
 
-  #select columns of interest
-  minvars <- cols[min_keys] #mandatory
-  extra <- cols[is.na(match(names(cols),min_keys))] #optional
   #convert options with integer values (column indices) to column names
   if(any(sapply(cols,is.integer))){
-    opt_w_names <- colindex2name(data = all_data, minvars = minvars, extra = extra)
+    opt_w_names <- colindex2name(all_data, minvars, extra)
     minvars <- opt_w_names[[1]]
     extra <- opt_w_names[[2]]
     suppressWarnings(change_config(c(minvars,extra)))
   }
-  selected_data <- select_cols(data = all_data, minvars = unlist(minvars), extra = unlist(extra))
+
+  #select columns of interest
+  selected_data <- select_cols(all_data, unlist(minvars), unlist(extra))
 
   #check data & change col types; or raise informative errors
   if (type == "movement"){
-    selected_data[minvars$weight] <- reformat_numeric(selected_data[minvars$weight], fileopts$decimal)
-    selected_data[minvars$date] <- reformat_date(selected_data[minvars$date], fileopts$date_format)
+    selected_data[minvars$weight] <- reformat_numeric(selected_data[minvars$weight], decimal)
+    selected_data[minvars$date] <- reformat_date(selected_data[minvars$date], date_format)
 
     if (length(selected_data) > 4){ #set col types of any extra columns by using a guesser algorithm
       selected_extra <- unlist(extra[extra %in% names(selected_data)])
       selected_data[selected_extra] <-
         suppressMessages(type_convert(selected_data[selected_extra],
-                                      locale = locale(date_format = ifelse("date_format" %in% names(fileopts),fileopts$date_format,"%AD"),
-                                                      decimal_mark = fileopts$decimal)))
+                                      locale = locale(date_format = date_format,
+                                                      decimal_mark = decimal)))
     }
   }
   else {
-    if ("coord_x" %in% names(extra)){ #requires making sure that coord_x comes with coord_y and EPSG code
-      selected_data[extra$coord_x] <- reformat_numeric(selected_data[extra$coord_x], fileopts$decimal)
-      selected_data[extra$coord_y] <- reformat_numeric(selected_data[extra$coord_y], fileopts$decimal)
+    if ("coord_x" %in% names(extra)){
+      selected_data[extra$coord_x] <- reformat_numeric(selected_data[extra$coord_x], decimal)
+      selected_data[extra$coord_y] <- reformat_numeric(selected_data[extra$coord_y], decimal)
     }
     if ("herd_size" %in% names(extra)){
-      selected_data[extra$herd_size] <- reformat_numeric(selected_data[extra$herd_size], fileopts$decimal)
+      selected_data[extra$herd_size] <- reformat_numeric(selected_data[extra$herd_size], decimal)
     }
     other_extra <- !(names(extra) %in% c("coord_x","coord_y","herd_size"))
-    if (any(other_extra)){ #set col types of any additional extra columns by using a guesser algorithm
+    if (any(other_extra)){
+    #set col types of any additional extra columns by using a guesser algorithm
       selected_data[unlist(extra[other_extra])] <-
         suppressMessages(type_convert(selected_data[unlist(extra[other_extra])],
-                                      locale = locale(date_format = ifelse("date_format" %in% names(fileopts),fileopts$date_format,"%AD"),
-                                                      decimal_mark = fileopts$decimal)))
+                                      locale = locale(date_format = date_format,
+                                                      decimal_mark = decimal)))
     }
   }
   return(selected_data)
