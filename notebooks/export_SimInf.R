@@ -31,10 +31,22 @@ distance_matrix(nodes$x, nodes$y, cutoff = 2500, min_dist = NULL) #This is how S
 # assume all movements are extTrans
 # Do node numbers need to be in order of movement dates (can first move be from node 432 to 5, or does it need to involve node 1?)?
 # what if weight isn't int?
-# What is select? Should this always be 4 or set as user-defined argument?
-# What is shift? Should this always be 0 or set as user-defined argument?
+# what about a network of probabilities?
 
-#Is there a mechanism of adding node data to SimInf? Or only a distance matrix?
+# Can one build a model with both direct tm + indirect tm (SEIR-Sp)?
+# Does this require explicit definition of an environmental compartment and various
+# rates via mparse?
+# how to add spatial coupling & distance matrix if not via args?
+
+#Use existing DTU-DADS-ASF model (complicated, does not use SimInf) or make own?
+# What structure for modelling within a farm?
+# - susceptible-latent-subclinical-clinical-removed (SLSCR) as in DTU-DADS-ASF
+#   (https://www.sciencedirect.com/science/article/pii/S0378113516302097)
+# - SEID (https://www.sciencedirect.com/science/article/pii/S0022519321002174)
+
+# Add natural births / deaths?
+# Add different holding types? (complicated)
+
 
 ###############################################################################
 ### Transform Movenet movement data to SimInf event format
@@ -50,14 +62,14 @@ anonymised_data <-
 
 events <-
   anonymised_data$data |>
-    transmute(event="extTrans",
-              time=departure_date,
+    transmute(event="extTrans", #for movements between nodes
+              time=.data[[movenetenv$options$movedata_cols$date]],
               node=as.integer(.data[[movenetenv$options$movedata_cols$from]]),
               dest=as.integer(.data[[movenetenv$options$movedata_cols$to]]),
               n=.data[[movenetenv$options$movedata_cols$weight]],
-              proportion=0,
-              select=4,
-              shift=0)
+              proportion=0, #alternative to n (set n as 0)
+              select=3, #col in model select matrix (which comp to sample from)
+              shift=0) #col in model shift matrix (if want to shift compartment)
 
 ###############################################################################
 ### Transform Movenet holding data to SimInf nodes format
@@ -73,9 +85,11 @@ anonymised_holding_data <-
 
 nodes <-
   anonymised_holding_data$data |>
-    arrange(as.numeric(cph)) |>
-    transmute(x = .data[[movenetenv$options$holdingdata_cols$coord_x]],
-              y = .data[[movenetenv$options$holdingdata_cols$coord_y]])
+    arrange(as.numeric(movenetenv$options$holdingdata_cols$id)) |>
+    transmute(id = .data[[movenetenv$options$holdingdata_cols$id]],
+              x = .data[[movenetenv$options$holdingdata_cols$coord_x]],
+              y = .data[[movenetenv$options$holdingdata_cols$coord_y]],
+              size = .data[[movenetenv$options$holdingdata_cols$herd_size]])
 
 
 
