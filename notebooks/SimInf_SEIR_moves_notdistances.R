@@ -2,7 +2,7 @@ library(dplyr) #for arrange and transmute
 library(SimInf)
 load_all()
 
-movement_datafile <- "C:/Users/cboga/OneDrive - University of Glasgow/CS3-ASF/Pig movement data structure/sample_pigs_UK_with_dep_arr_dates.csv"
+movement_datafile <- "tests/testthat/test_input_files/sample_pigs_UK_with_dep_arr_dates.csv"
 movement_configfile <- "ScotEID"
 holding_datafile <- "tests/testthat/test_input_files/test_holdingdata_generic.csv" #needs herd_size
 holding_configfile <- "tests/testthat/test_input_files/fakeScotEID_holding.yml" #needs herd_size
