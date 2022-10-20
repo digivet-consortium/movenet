@@ -4,10 +4,10 @@ load_all()
 
 movement_datafile <- "C:/Users/cboga/OneDrive - University of Glasgow/CS3-ASF/Pig movement data structure/sample_pigs_UK_with_dep_arr_dates.csv"
 movement_configfile <- "ScotEID"
-holding_datafile <- "tests/testthat/test_input_files/test_holdingdata_generic.csv"
-holding_configfile <- "tests/testthat/test_input_files/fakeScotEID_holding.yml"
+holding_datafile <- "tests/testthat/test_input_files/test_holdingdata_generic.csv" #needs herd_size
+holding_configfile <- "tests/testthat/test_input_files/fakeScotEID_holding.yml" #needs herd_size
 
-time_unit <- "month" #every how much time / how many days to report results for
+time_unit <- "week" #every how much time / how many days to report results for
 beta = 0.45 #transmission rate
 #Guinat et al 2016: 0.3 between-pen, 0.6 within-pen;
 #used in Halasa 2016a as low & high tm levels
@@ -37,7 +37,7 @@ events <-
             dest=as.integer(.data[[movenetenv$options$movedata_cols$to]]),
             n=.data[[movenetenv$options$movedata_cols$weight]],
             proportion=0, #alternative to n (set n as 0)
-            select=3, #col in model select matrix (which comp to sample from)
+            select=2, #col in model select matrix (which comp to sample from)
             shift=0) #col in model shift matrix (if want to shift compartment)
 
 load_config(holding_configfile)
@@ -49,7 +49,7 @@ anonymisation_h <-
 
 nodes <-
   anonymisation_h$data |>
-  arrange(as.numeric(movenetenv$options$holdingdata_cols$id)) |>
+  arrange(as.numeric(.data[[movenetenv$options$holdingdata_cols$id]])) |>
   transmute(id = .data[[movenetenv$options$holdingdata_cols$id]],
             size = .data[[movenetenv$options$holdingdata_cols$herd_size]])
 
@@ -72,6 +72,7 @@ tspan <- seq(from = min(events$time),
              to = max(events$time),
              by = time_unit)
 
+
 model <- SEIR(u0 = u0,
               tspan = tspan,
               events = events, #moves between nodes
@@ -79,12 +80,18 @@ model <- SEIR(u0 = u0,
               epsilon = epsilon, #incubation rate (1/incubation period)
               gamma = gamma) #mortality rate
 
-select_matrix(model) <- matrix(c(1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0), nrow = 4)
-#the 3rd column in the matrix selects from S, E and I (but not R) compartments
+#Change the select_matrix of the model so that the 2nd column indicates
+#selection from S, E and I (but not R) compartments
+select_matrix(model) <- matrix(c(1, 0, 0, 0, 1, 1, 1, 0), nrow = 4)
+
 
 #################
 ### Run model ###
 #################
 
-result <- run(model = model)
-plot(result)
+#Summary stats of total outbreak size, for 100 simulations
+summary(replicate(n = 100, {
+  R_at_end <- tail(trajectory(run(model))$R, n)
+  sum(R_at_end)
+}))
+
