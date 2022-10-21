@@ -91,7 +91,7 @@ select_matrix(model) <- matrix(c(1, 0, 0, 0, 1, 1, 1, 0), nrow = 4)
 
 #Summary stats of total outbreak size, for 100 simulations
 summary(replicate(n = 100, {
-  R_at_end <- tail(trajectory(run(model))$R, n)
-  sum(R_at_end)
+  IR_at_end <- tail(trajectory(run(model))[c("I","R")], n)
+  sum(IR_at_end)
 }))
 
