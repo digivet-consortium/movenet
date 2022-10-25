@@ -21,6 +21,7 @@ Language: en-GB
 LinkingTo: 
     Rcpp
 Imports: 
+    checkmate,
     dplyr,
     igraph,
     lubridate,
