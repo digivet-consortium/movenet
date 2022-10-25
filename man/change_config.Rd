@@ -12,7 +12,7 @@ load_config(configfile)
 
 save_config(outfile)
 
-new_config()
+new_config(config_type)
 
 get_config(...)
 

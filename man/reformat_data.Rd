@@ -15,7 +15,8 @@ reformat_data(datafile, type)
 reformatted movement or holding data (selected & renamed columns)
 }
 \description{
-Reformats movement or holding data from a delimited file into a common intermediate format (extracts and renames selected columns)
+Reformats movement or holding data from a delimited file into a common
+intermediate format (extracts and renames selected columns)
 }
 \examples{
 
