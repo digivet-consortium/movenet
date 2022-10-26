@@ -1,20 +1,65 @@
-#' Title
+#' Round down movement dates, and summarise data by time unit
 #'
-#' @param data
-#' @param level
-#' @param aggregate_data
+#' `coarsen_date()` takes a movement data frame, and rounds down movement dates
+#' to the first day of the specified time unit. It optionally summarises
+#' movement data with the same origin and destination by this time unit. By
+#' default, this involves summation of weights, but alternative or additional
+#' summary functions can be provided through `...`.
 #'
-#' @return
+#' @param data A movement data frame.
+#' @param unit A character string specifying a time unit or a multiple of a unit
+#'   for movement dates to be rounded down to. Valid base units are `day`,
+#'   `week`, `month`, `bimonth`, `quarter`, `season`, `halfyear` and `year`.
+#'   Arbitrary unique English abbreviations as in the [lubridate::period()]
+#'   constructor are allowed. Rounding to multiples of units (except weeks) is
+#'   supported.
+#' @param sum_weight If this is `TRUE` (the default), weights are summed over
+#'   the specified `unit`, for all rows with the same origin and destination.
+#'   The name of the weight column will remain the same.
+#' @param ... [<`data-masking`>][dplyr::dplyr_data_masking] Additional or
+#'   alternative summary function(s), of the form name = value. Any summary
+#'   functions will be applied to `data`, grouped by origin, destination, and
+#'   rounded-down date. The specified name will be the column name in the
+#'   resulting data frame. Be careful when using existing names: the
+#'   corresponding columns will be immediately updated with the new data and
+#'   this can affect subsequent operations referring to this name.
+#'   The value can be:
+#'   * A vector of length 1, e.g. `min(x)`, `n()`, or `sum(is.na(y))`.
+#'   * A vector of length n, e.g. `quantile()`.
+#'   * A data frame, to add multiple columns from a single expression.
+#'
+#' @details
+#' Requires that the appropriate movement config file is loaded.
+#'
+#' @returns
+#' A movement data frame with movement dates rounded down to the first day of
+#' the specified `unit`.
+#'
+#' If `sum_weight` is `TRUE`, the weight column (with the same name as the
+#' weight column in `data`) contains weights as summed over all rows in `data`
+#' with the same origin, destination, and rounded-down date.
+#' If any summary functions are provided through `...`, the corresponding
+#' columns (with name specified by the summary function name) contain data
+#' summarised (as specified by the summary function value) over all rows in
+#' `data` with the same origin, destination, and rounded-down date.
+#'
+#' Columns for which a summary function is not provided, are dropped from
+#' the resulting data frame.
+#'
+#' #'
+#' @seealso [lubridate::floor_date()], [dplyr::summarise()] which this function
+#' wraps.
+#'
 #' @export
 #'
 #' @import checkmate
-#' @importFrom dplyr group_by mutate summarise ungroup
+#' @importFrom dplyr group_by mutate rename summarise ungroup
 #' @importFrom lubridate floor_date
 #' @importFrom plyr round_any
 #'
 #' @examples
 #' @export
-coarsen_date <- function(data, level, aggregate_data = TRUE, ...){
+coarsen_date <- function(data, unit, sum_weight = TRUE, ...){
 
   #########################
   ### Config file check ###
@@ -30,17 +75,16 @@ coarsen_date <- function(data, level, aggregate_data = TRUE, ...){
   ### Argument checks ###
   #######################
 
-  assert_tibble(data)
+  assert_data_frame(data)
   assert_names(names(data),
                must.include = movenetenv$options$movedata_cols$date)
   assert_date(data[[movenetenv$options$movedata_cols$date]],
               .var.name =
                 paste0("data[[", movenetenv$options$movedata_cols$date,"]]"))
-
-  assert_logical(aggregate_data, len = 1)
+  assert_logical(sum_weight, len = 1)
 
   # How does one check the other arguments?
-  #   - level (= unit in floor_date)
+  #   - unit (from floor_date)
   #   - ... (var = value pairs, in summarise)
 
 
@@ -48,11 +92,11 @@ coarsen_date <- function(data, level, aggregate_data = TRUE, ...){
   ### Rounding down dates ###
   ###########################
 
-  # round down each date to the first date of the level/unit (e.g. month)
+  # round down each date to the first date of the unit (e.g. month)
   coarsened_data <-
     data |>
     mutate("{movenetenv$options$movedata_cols$date}" :=
-             floor_date(.data[[movenetenv$options$movedata_cols$date]], level))
+             floor_date(.data[[movenetenv$options$movedata_cols$date]], unit))
 
   #What to do with floor_date's week_start? default = 7 = Sunday.
   #what to do to allow user to coarsen other date fields?
@@ -74,29 +118,37 @@ coarsen_date <- function(data, level, aggregate_data = TRUE, ...){
   ### Aggregating by date ###
   ###########################
 
-  if (aggregate_data == FALSE){
-    if(...length() != 0){
-      warning(paste("As aggregate_data == FALSE, requested summarising functions
-                    for the following data columns were ignored:", ...names(),
-                    collapse=", "),
-              call. = FALSE)
-    }
-    return(coarsened_data)
-  } else {
+  if (sum_weight == TRUE){
+
     aggregated_data <-
       coarsened_data |>
       group_by(.data[[movenetenv$options$movedata_cols$from]],
                .data[[movenetenv$options$movedata_cols$to]],
                .data[[movenetenv$options$movedata_cols$date]]) |>
-      summarise("{movenetenv$options$movedata_cols$weight}" :=
-                  sum(.data[[movenetenv$options$movedata_cols$weight]]),
+      summarise(summed_weight =
+                sum(.data[[movenetenv$options$movedata_cols$weight]]),
                 ...) |>
+      ungroup() |>
+      rename("{movenetenv$options$movedata_cols$weight}" := summed_weight)
+
+    return(aggregated_data)
+
+  } else if(...length() == 0){
+
+    return(coarsened_data)
+
+  } else {
+
+    aggregated_data <-
+      coarsened_data |>
+      group_by(.data[[movenetenv$options$movedata_cols$from]],
+               .data[[movenetenv$options$movedata_cols$to]],
+               .data[[movenetenv$options$movedata_cols$date]]) |>
+      summarise(...) |>
       ungroup()
+
     return(aggregated_data)
   }
-
-  #Can't pass an alternative summary function (other than sum) for pigs,
-  #... is for additional columns only
 
   #N.B. this drops columns for which a summary function is not given
 }
@@ -132,10 +184,10 @@ coarsen_weight <- function(data,
   ### Argument checks ###
   #######################
 
-  assert_tibble(data)
+  assert_data_frame(data)
   assert_names(names(data),
                must.include = column)
-  assert_tibble(data[column], type = "numeric", ncols = 1)
+  assert_data_frame(data[column], type = "numeric", ncols = 1)
   assert(
     check_numeric(jitter, lower = 0),
     check_false(jitter, na.ok = FALSE)
@@ -200,7 +252,7 @@ anonymise <- function(data, prefix, key = NULL){
   ### Argument checks ###
   #######################
 
-  assert_tibble(data)
+  assert_data_frame(data)
   assert(
     check_names(names(data),
                 must.include = c(movenetenv$options$movedata_cols$from,

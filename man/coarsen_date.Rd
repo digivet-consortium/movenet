@@ -2,16 +2,66 @@
 % Please edit documentation in R/coarsening_functions.R
 \name{coarsen_date}
 \alias{coarsen_date}
-\title{Title}
+\title{Round down movement dates, and summarise data by time unit}
 \usage{
-coarsen_date(data, level, aggregate_data = TRUE, ...)
+coarsen_date(data, unit, sum_weight = TRUE, ...)
 }
 \arguments{
-\item{aggregate_data}{}
+\item{data}{A movement data frame.}
+
+\item{unit}{A character string specifying a time unit or a multiple of a unit
+for movement dates to be rounded down to. Valid base units are \code{day},
+\code{week}, \code{month}, \code{bimonth}, \code{quarter}, \code{season}, \code{halfyear} and \code{year}.
+Arbitrary unique English abbreviations as in the \code{\link[lubridate:period]{lubridate::period()}}
+constructor are allowed. Rounding to multiples of units (except weeks) is
+supported.}
+
+\item{sum_weight}{If this is \code{TRUE} (the default), weights are summed over
+the specified \code{unit}, for all rows with the same origin and destination.
+The name of the weight column will remain the same.}
+
+\item{...}{\link[dplyr:dplyr_data_masking]{<\code{data-masking}>} Additional or
+alternative summary function(s), of the form name = value. Any summary
+functions will be applied to \code{data}, grouped by origin, destination, and
+rounded-down date. The specified name will be the column name in the
+resulting data frame. Be careful when using existing names: the
+corresponding columns will be immediately updated with the new data and
+this can affect subsequent operations referring to this name.
+The value can be:
+\itemize{
+\item A vector of length 1, e.g. \code{min(x)}, \code{n()}, or \code{sum(is.na(y))}.
+\item A vector of length n, e.g. \code{quantile()}.
+\item A data frame, to add multiple columns from a single expression.
+}}
 }
 \value{
+A movement data frame with movement dates rounded down to the first day of
+the specified \code{unit}.
 
+If \code{sum_weight} is \code{TRUE}, the weight column (with the same name as the
+weight column in \code{data}) contains weights as summed over all rows in \code{data}
+with the same origin, destination, and rounded-down date.
+If any summary functions are provided through \code{...}, the corresponding
+columns (with name specified by the summary function name) contain data
+summarised (as specified by the summary function value) over all rows in
+\code{data} with the same origin, destination, and rounded-down date.
+
+Columns for which a summary function is not provided, are dropped from
+the resulting data frame.
+
+#'
 }
 \description{
-Title
+\code{coarsen_date()} takes a movement data frame, and rounds down movement dates
+to the first day of the specified time unit. It optionally summarises
+movement data with the same origin and destination by this time unit. By
+default, this involves summation of weights, but alternative or additional
+summary functions can be provided through \code{...}.
+}
+\details{
+Requires that the appropriate movement config file is loaded.
+}
+\seealso{
+\code{\link[lubridate:round_date]{lubridate::floor_date()}}, \code{\link[dplyr:summarise]{dplyr::summarise()}} which this function
+wraps.
 }
