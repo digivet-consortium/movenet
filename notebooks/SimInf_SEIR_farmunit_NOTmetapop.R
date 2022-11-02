@@ -10,7 +10,6 @@ holding_configfile <- "tests/testthat/test_input_files/fakeScotEID_holding.yml" 
 epsilon = #farm-level incubation rate (same as for individual?)
 gamma =  #mortality rate (how does this work for farm level?)
 
-
 #####################
 ### Reformat data ###
 #####################
@@ -50,8 +49,9 @@ nodes <-
 ### Set up model ###
 ####################
 
-n <- length(nodes$id)
+n <- length(nodes$id) #number of farms
 
+#Loop over n farms to write char vectors describing compartments and transitions
 transitions <- NULL
 compartments <- NULL
 for (i in 1:n){
@@ -62,17 +62,23 @@ for (i in 1:n){
   I_i <- paste0("I_",i)
   R_i <- paste0("R_",i)
   foi <- paste0(beta_i,j,"*I_",j, collapse = " + ")
-  S2E <- paste0(S_i," -> ",S_i,"*(",foi,") -> ",E_i) #does this need an N somewhere?
+  S2E <- paste0(S_i," -> ",S_i,"*(",foi,") -> ",E_i)
   E2I <- paste0(E_i," -> epsilon*",E_i," -> ",I_i)
   I2R <- paste0(I_i," -> gamma*",I_i," -> ",R_i)
   transitions <- append(transitions,c(S2E,E2I,I2R)) #not efficient
   compartments <- append(compartments,c(S_i,E_i,I_i,R_i)) #not efficient
 }
 
-#gdata <- c(
-#           epsilon = epsilon,
-#           gamma = gamma)
-# Add whole collection of beta's
+#need to construct contact matrix between farms and reformat this into vector
+#format so this can be part of gdata as follows
+
+gdata <- c(beta_1_1 = 0, #contact between farm 1 and itself
+           beta_1_2 = ..., #effective contact from farm 2 to 1
+           beta_1_3 = ...,
+           # etc. for n*n beta's (contact parameters)
+           epsilon = epsilon,
+           gamma = gamma)
+
 
 #define tspan
 
