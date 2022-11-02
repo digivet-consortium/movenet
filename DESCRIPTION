@@ -2,9 +2,13 @@ Package: movenet
 Title: What the Package Does (One Line, Title Case)
 Version: 0.1.0-1
 Authors@R:
-    c(person("Matt", "Denwood", , "md@sund.ku.dk", role = c("aut", "cre")),
-      person("Carlijn", "Bogaardt", , "Carlijn.Bogaardt@glasgow.ac.uk", role = "aut")
-      )
+    c(person(given = "Matt", family = "Denwood",
+             email = "md@sund.ku.dk", role = c("aut", "cre")),
+      person(given = "Carlijn", family = "Bogaardt",
+             email = "Carlijn.Bogaardt@glasgow.ac.uk", role = "aut"),
+      person(given = "Stefan", family = "Widgren",
+             email = "stefan.widgren@sva.se", role = c("aut"),
+             comment = c(ORCID = "0000-0001-5745-2284")))
 Description: What the package does (one paragraph).
 License: GPL (>= 3)
 Encoding: UTF-8
