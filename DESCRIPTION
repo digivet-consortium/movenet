@@ -7,7 +7,7 @@ Authors@R:
       person(given = "Carlijn", family = "Bogaardt",
              email = "Carlijn.Bogaardt@glasgow.ac.uk", role = "aut"),
       person(given = "Stefan", family = "Widgren",
-             email = "stefan.widgren@sva.se", role = c("aut"),
+             email = "stefan.widgren@sva.se", role = "aut",
              comment = c(ORCID = "0000-0001-5745-2284")))
 Description: What the package does (one paragraph).
 License: GPL (>= 3)
