@@ -18,9 +18,7 @@ Suggests:
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Language: en-GB
-LinkingTo: 
-    Rcpp
-Imports: 
+Imports:
     checkmate,
     dplyr,
     igraph,
@@ -28,7 +26,6 @@ Imports:
     magrittr,
     plyr,
     purrr,
-    Rcpp,
     readr,
     rmarkdown,
     yaml
