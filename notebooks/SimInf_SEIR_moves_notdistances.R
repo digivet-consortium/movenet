@@ -27,18 +27,19 @@ load_config(movement_configfile)
 anonymisation_m <-
   movement_datafile |>
   reformat_data("movement") |>
-  anonymise("")
+  anonymise("") #change holding identifiers to numbers only
 
 events <-
   anonymisation_m$data |>
-  transmute(event="extTrans", #for movements between nodes
-            time=.data[[movenetenv$options$movedata_cols$date]],
-            node=as.integer(.data[[movenetenv$options$movedata_cols$from]]),
-            dest=as.integer(.data[[movenetenv$options$movedata_cols$to]]),
-            n=.data[[movenetenv$options$movedata_cols$weight]],
-            proportion=0, #alternative to n (set n as 0)
-            select=2, #col in model select matrix (which comp to sample from)
-            shift=0) #col in model shift matrix (if want to shift compartment)
+  transmute(
+    event = "extTrans", #"extTrans" between nodes (or "intTrans","enter","exit")
+    time = .data[[movenetenv$options$movedata_cols$date]], #date
+    node = as.integer(.data[[movenetenv$options$movedata_cols$from]]), #from
+    dest = as.integer(.data[[movenetenv$options$movedata_cols$to]]), #to
+    n = .data[[movenetenv$options$movedata_cols$weight]], #weight (number pigs)
+    proportion = 0, #alternative to n, if want to move proportion (set n as 0)
+    select = 2, #col in model select matrix (which compartments to sample from)
+    shift = 0) #col in model shift matrix (if want to shift compartment)
 
 load_config(holding_configfile)
 
@@ -57,21 +58,20 @@ nodes <-
 ### Set up model ###
 ####################
 
-n <- length(nodes$id)
-u0 <- data.frame(S = (nodes$size-1),
+n <- length(nodes$id) # number of nodes = number of farms in dataset
+u0 <- data.frame(S = nodes$size, # number of susceptibles = herd size
                  E = rep(0, n),
                  I = rep(0, n),
                  R = rep(0, n))
 
 #Add single infectious individual to a single random node
 infected_node<-sample(n,1)
-u0[infected_node,1] <- u0[infected_node,1]-1
-u0[infected_node,3] <- 1
+u0[infected_node,1] <- u0[infected_node,1]-1 #take 1 individual out of S
+u0[infected_node,3] <- 1 #add 1 individual to I
 
 tspan <- seq(from = min(events$time),
              to = max(events$time),
              by = time_unit)
-
 
 model <- SEIR(u0 = u0,
               tspan = tspan,
@@ -90,7 +90,7 @@ select_matrix(model) <- matrix(c(1, 0, 0, 0, 1, 1, 1, 0), nrow = 4)
 #################
 
 #Summary stats of total outbreak size, for 100 simulations
-summary(replicate(n = 100, {
+summary(replicate(n = 10, {
   IR_at_end <- tail(trajectory(run(model))[c("I","R")], n)
   sum(IR_at_end)
 }))
