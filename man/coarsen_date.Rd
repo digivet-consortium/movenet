@@ -48,8 +48,6 @@ summarised (as specified by the summary function value) over all rows in
 
 Columns for which a summary function is not provided, are dropped from
 the resulting data frame.
-
-#'
 }
 \description{
 \code{coarsen_date()} takes a movement data frame, and rounds down movement dates

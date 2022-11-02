@@ -46,18 +46,13 @@
 #' Columns for which a summary function is not provided, are dropped from
 #' the resulting data frame.
 #'
-#' #'
 #' @seealso [lubridate::floor_date()], [dplyr::summarise()] which this function
 #' wraps.
-#'
-#' @export
 #'
 #' @import checkmate
 #' @importFrom dplyr group_by mutate rename summarise ungroup
 #' @importFrom lubridate floor_date
-#' @importFrom plyr round_any
 #'
-#' @examples
 #' @export
 coarsen_date <- function(data, unit, sum_weight = TRUE, ...){
 
@@ -154,19 +149,58 @@ coarsen_date <- function(data, unit, sum_weight = TRUE, ...){
 }
 
 ################################################################################
-
-#' @param data
+#' Jitter (add noise to) and/or round numeric movement data
 #'
-#' @param column
-#' @param jitter
-#' @param round
+#' `coarsen_weight()` applies jitter to, and/or rounds, a selected numeric
+#' column in a movement data frame. By default, the weight column is selected.
+#'
+#' @param data A movement data frame.
+#' @param column Name of a single numeric column to jitter and/or round. By
+#'   default this is the name of the weight column (as given in the movement
+#'   config file).
+#' @param jitter Either a positive number, indicating the amount of jitter to
+#'   apply (see Details), or `FALSE` to not apply any jitter.
+#' @param round Either a number, or `FALSE` to not apply any rounding. The data
+#'   in the selected column are rounded to the nearest multiple of this number.
+#'   `round` is additionally set as minimum possible value for the column.
+#'
+#' @details
+#' Requires that the appropriate movement config file is loaded.
+#'
+#' If both jitter and rounding are applied, the data in the selected column are
+#' first jittered and then rounded.
+#'
+#' If `jitter > 0`, the data in the selected column are modified by addition of
+#' an amount of noise between `-jitter` and `-jitter`, following a uniform
+#' distribution. If this were to result in a data point becoming `<= 0`, the
+#' amount of jitter for this data point is resampled, until the resulting data
+#' point becomes positive. This is to capture that any movement in a livestock
+#' movement database, is assumed to have a positive weight (quantity of animals
+#' moved).
+#' If `jitter == FALSE` (or `jitter == 0`), no jitter is applied.
+#'
+#' If `round > 0`, the data in the selected column are modified by rounding to
+#' multiples of `round`.
+#' Additionally, any data points `< round` are set to `round`, so that this
+#' becomes the minimum possible value in the column. This is to capture that any
+#' livestock movement, no matter how small, has an inherent risk that is
+#' conceptually closer to that of `round`, than that of no movement at all.
+#' If `round == FALSE` (or `round == 0`), no rounding is applied.
+#'
+#' @returns
+#' A movement data frame like `data`, but with jitter and/or rounding applied to
+#' the selected numeric column.
+#'
+#' @seealso [base::jitter()], [plyr::round_any()] which this function
+#' wraps.
+#'
+#' @import checkmate
+#' @importFrom plyr round_any
 #'
 #' @export
 coarsen_weight <- function(data,
                            column = movenetenv$options$movedata_cols$weight,
                            jitter, round){
-  # for each weight on an edge in network, apply ± jitter in range jitter,
-  # then round to nearest multiple of round
 
   # any sensible default values for jitter and round?
 
