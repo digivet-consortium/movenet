@@ -35,3 +35,4 @@ Imports:
     SimInf(>= 9.3.1),
     yaml
 LinkingTo: SimInf
+NeedsCompilation: yes
