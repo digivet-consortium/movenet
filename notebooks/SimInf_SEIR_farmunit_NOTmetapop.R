@@ -36,8 +36,7 @@ anonymisation_h <-
 nodes <-
   anonymisation_h$data |>
   arrange(as.numeric(.data[[movenetenv$options$holdingdata_cols$id]])) |>
-  transmute(id = .data[[movenetenv$options$holdingdata_cols$id]],
-            size = .data[[movenetenv$options$holdingdata_cols$herd_size]])
+  transmute(id = .data[[movenetenv$options$holdingdata_cols$id]])
 
 
 #############################
