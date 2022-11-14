@@ -4,11 +4,16 @@ load_all()
 
 movement_datafile <- "tests/testthat/test_input_files/sample_pigs_UK_with_dep_arr_dates.csv"
 movement_configfile <- "ScotEID"
-holding_datafile <- "tests/testthat/test_input_files/test_holdingdata_generic.csv" #needs herd_size
-holding_configfile <- "tests/testthat/test_input_files/fakeScotEID_holding.yml" #needs herd_size
+holding_datafile <- "tests/testthat/test_input_files/test_holdingdata_generic.csv"
+holding_configfile <- "tests/testthat/test_input_files/fakeScotEID_holding.yml"
 
+beta = 0 #within-farm transmission; 0 for farm-unit model
 epsilon = #farm-level incubation rate (same as for individual?)
 gamma =  #mortality rate (how does this work for farm level?)
+
+days = 365 #number of days to run the simulation. Default is 365 days.
+stride = 1 #the increment (integer) between days that are recorded in the model
+           #U and V matrices. Default is 1 day, i.e., every day is recorded.
 
 #####################
 ### Reformat data ###
@@ -20,17 +25,6 @@ anonymisation_m <-
   movement_datafile |>
   reformat_data("movement") |>
   anonymise("")
-
-events <-
-  anonymisation_m$data |>
-  transmute(event="extTrans", #for movements between nodes
-            time=.data[[movenetenv$options$movedata_cols$date]],
-            node=as.integer(.data[[movenetenv$options$movedata_cols$from]]),
-            dest=as.integer(.data[[movenetenv$options$movedata_cols$to]]),
-            n=.data[[movenetenv$options$movedata_cols$weight]],
-            proportion=0, #alternative to n (set n as 0)
-            select=2, #col in model select matrix (which comp to sample from)
-            shift=0) #col in model shift matrix (if want to shift compartment)
 
 load_config(holding_configfile)
 
@@ -45,46 +39,47 @@ nodes <-
   transmute(id = .data[[movenetenv$options$holdingdata_cols$id]],
             size = .data[[movenetenv$options$holdingdata_cols$herd_size]])
 
+
+#############################
+### Create contact matrix ###
+#############################
+
+# For now see notebook "data2contactmatrix.R"
+
+
 ####################
 ### Set up model ###
 ####################
 
 n <- length(nodes$id) #number of farms
 
-#Loop over n farms to write char vectors describing compartments and transitions
-transitions <- NULL
-compartments <- NULL
-for (i in 1:n){
-  beta_i <- paste0("beta_",i,"_")
-  j <- 1:n
-  S_i <- paste0("S_",i)
-  E_i <- paste0("E_",i)
-  I_i <- paste0("I_",i)
-  R_i <- paste0("R_",i)
-  foi <- paste0(beta_i,j,"*I_",j, collapse = " + ")
-  S2E <- paste0(S_i," -> ",S_i,"*(",foi,") -> ",E_i)
-  E2I <- paste0(E_i," -> epsilon*",E_i," -> ",I_i)
-  I2R <- paste0(I_i," -> gamma*",I_i," -> ",R_i)
-  transitions <- append(transitions,c(S2E,E2I,I2R)) #not efficient
-  compartments <- append(compartments,c(S_i,E_i,I_i,R_i)) #not efficient
-}
+tspan <- seq(from = 1L, to = as.integer(days), by = as.integer(stride))
 
-#need to construct contact matrix between farms and reformat this into vector
-#format so this can be part of gdata as follows
+u0 <- data.frame(S = rep(1,n), #all nodes have pop size 1 and start susceptible
+                 E = rep(0,n),
+                 I = rep(0,n),
+                 R = rep(0,n))
 
-gdata <- c(beta_1_1 = 0, #contact between farm 1 and itself
-           beta_1_2 = ..., #effective contact from farm 2 to 1
-           beta_1_3 = ...,
-           # etc. for n*n beta's (contact parameters)
-           epsilon = epsilon,
-           gamma = gamma)
+#Make a single random node infectious
+infected_node <- sample(n,1)
+u0[infected_node, 1] <- 0 #change S to 0 for infected node
+u0[infected_node, 3] <- 1 #change I to 1 for infected node
+
+model <- SEIRcm(u0 = u0,
+                tspan = tspan,
+                beta = beta, #within-farm f.o.i.; 0 for farm-unit model
+                epsilon = epsilon,
+                gamma = gamma,
+                contact_matrix = contact_matrix)
 
 
-#define tspan
+#################
+### Run model ###
+#################
 
-model <- mparse(transitions = transitions,
-                compartments = compartments,
-                gdata = gdata,
-                u0 = data.frame(rep(c(1,0,0,0),n),
-                                colnames=compartments),
-                tspan = tspan)
+#Summary stats of total outbreak size, for 100 simulations
+summary(replicate(n = 100, {
+  IR_at_end <- tail(trajectory(run(model))[c("I","R")], n)
+  sum(IR_at_end)
+}))
+
