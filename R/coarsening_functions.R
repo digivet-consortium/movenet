@@ -64,8 +64,8 @@ coarsen_date <- function(data, unit, sum_weight = TRUE, ...){
   #########################
 
   if (!has_element(names(movenetenv$options), "movedata_cols")){
-    stop("The loaded config file and the type of data (movement data)
-    do not correspond. Please ensure the appropriate config file is loaded.")
+    stop("The loaded config file does not match the type of data (movement
+    data). Please ensure the appropriate config file is loaded.")
   }
 
 
@@ -213,8 +213,8 @@ coarsen_weight <- function(data,
   #########################
 
   if (!has_element(names(movenetenv$options), "movedata_cols")){
-    stop("The loaded config file and the type of data (movement data)
-    do not correspond. Please ensure the appropriate config file is loaded.")
+    stop("The loaded config file does not match the type of data (movement
+    data). Please ensure the appropriate config file is loaded.")
   }
 
 
@@ -290,9 +290,10 @@ coarsen_weight <- function(data,
 #' @param data A holding or movement data frame.
 #' @param prefix Character string, to form the basis of anonymised holding
 #'   identifiers. An integer will be appended to form this new identifier.
-#' @param key A named list to be used as anonymisation key, or `NULL` (default)
-#'   to generate a new key. A provided `key` should have original holding
-#'   identifiers as names, and new (anonymised) identifiers as values.
+#' @param key A named character vector to be used as anonymisation key, or
+#'   `NULL` (default) to generate a new key. A provided `key` should have
+#'   original holding identifiers as names, and new (anonymised) identifiers as
+#'   values.
 #'
 #' @details
 #' Requires that the appropriate config file is loaded, to identify the
@@ -317,8 +318,8 @@ coarsen_weight <- function(data,
 #' A named list with two elements:
 #' * `data` containing the anonymised data frame
 #' * `key` containing the applied anonymisation key. This has the form of a
-#' named list, with original holding identifiers as names, and new (anonymised)
-#' identifiers as values.
+#' named character vector, with original holding identifiers as names, and new
+#' (anonymised) identifiers as values.
 #'
 #' @import checkmate
 #' @importFrom purrr has_element
@@ -339,8 +340,8 @@ anonymise <- function(data, prefix, key = NULL){
                 must.include = movenetenv$options$holdingdata_cols$id)
   )
   assert_string(prefix, null.ok = TRUE)
-  assert_list(key, types = "character", any.missing = FALSE, names = "unique",
-              null.ok = TRUE)
+  assert_character(key, any.missing = FALSE, names = "unique", null.ok = TRUE,
+                   unique = TRUE)
 
 
   #########################
