@@ -5,5 +5,5 @@
 \alias{SEIRcm-class}
 \title{Definition of the \sQuote{SEIRcm} model}
 \description{
-Class to handle the SEIRcm model,
+Class to handle the SEIRcm model.
 }
