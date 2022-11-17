@@ -53,3 +53,16 @@ SEIRcm <- function(u0,
 
     as(model, "SEIRcm")
 }
+
+##' Run the SEIRcm model
+##' @export
+##' @noRd
+setMethod(
+    "run",
+    signature(model = "SEIRcm"),
+    function(model, solver = c("ssm", "aem"), ...) {
+        solver <- match.arg(solver)
+        validObject(model)
+        .Call(SEIRcm_run, model, solver)
+    }
+)
