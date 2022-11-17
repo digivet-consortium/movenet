@@ -24,7 +24,7 @@ Imports:
     checkmate,
     dplyr,
     igraph,
-    lubridate,
+    lubridate (>= 1.9.0),
     magrittr,
     plyr,
     purrr,
