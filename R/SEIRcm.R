@@ -34,13 +34,13 @@ SEIRcm <- function(u0,
             c("S -> beta*S*(I+coupling)/(S+E+I+R) -> E",
               "E -> epsilon*E -> I",
               "I -> gamma*I -> R"),
-            NULL)
+            NULL))
 
     ## State-change matrix
     S <- matrix(c(
-        -1,  0,  0   ## S
-         1, -1,  0   ## E
-         0,  1, -1   ## I
+        -1,  0,  0,  ## S
+         1, -1,  0,  ## E
+         0,  1, -1,  ## I
          0,  0,  1), ## R
         nrow = length(compartments),
         byrow = TRUE,
