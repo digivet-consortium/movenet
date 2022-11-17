@@ -175,7 +175,7 @@ coarsen_date <- function(data, unit, sum_weight = TRUE, ...){
 #' first jittered and then rounded.
 #'
 #' If `jitter > 0`, the data in the selected column are modified by addition of
-#' an amount of noise between `-jitter` and `-jitter`, following a uniform
+#' an amount of noise between `-jitter` and `jitter`, following a uniform
 #' distribution. If this were to result in a data point becoming `<= 0`, the
 #' amount of jitter for this data point is resampled, until the resulting data
 #' point becomes positive. This is to capture that any movement in a livestock
