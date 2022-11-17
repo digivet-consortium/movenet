@@ -4,20 +4,21 @@
 \alias{SEIRcm}
 \title{Create an SEIR model with contact matrix}
 \usage{
-SEIRcm(u0, tspan, events = NULL, beta = NULL, epsilon = NULL, gamma = NULL)
+SEIRcm(u0 = NULL, tspan = NULL, beta = NULL, epsilon = NULL, gamma = NULL)
 }
 \arguments{
 \item{u0}{FIXME}
 
 \item{tspan}{FIXME}
 
-\item{events}{FIXME}
+\item{beta}{the transmission rate from susceptible to infected
+state.}
 
-\item{beta}{FIXME}
+\item{epsilon}{the incubation rate from exposed to infected state.}
 
-\item{epsilon}{FIXME}
+\item{gamma}{the recovery rate from infected to recovered state.}
 
-\item{gamma}{FIXME}
+\item{coupling}{FIXME}
 }
 \description{
 Create an SEIR model with contact matrix
