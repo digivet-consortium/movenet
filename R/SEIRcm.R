@@ -13,7 +13,10 @@ setClass("SEIRcm", contains = c("SimInf_model"))
 ##'     state.
 ##' @param epsilon the incubation rate from exposed to infected state.
 ##' @param gamma the recovery rate from infected to recovered state.
-##' @param coupling FIXME
+##' @param coupling a measure of the strength of the interaction
+##'     between nodes. Specifically, \code{coupling[i, j]} measures
+##'     the relative strength of transmission to node \code{i} from
+##'     node \code{j}.
 ##' @export
 SEIRcm <- function(u0      = NULL,
                    tspan   = NULL,
@@ -55,6 +58,23 @@ SEIRcm <- function(u0      = NULL,
 
     gdata <- c(beta = beta, epsilon = epsilon, gamma = gamma)
 
+    ## Check coupling
+    if (!is.numeric(coupling) ||
+        !is.matrix(coupling) ||
+        nrow(coupling) != ncol(coupling) ||
+        nrow(coupling) != nrow(u0) ||
+        any(!is.finite(coupling)) ||
+        any(coupling < 0)) {
+        stop("Invalid 'coupling' matrix.", call. = FALSE)
+    }
+
+    ## Ensure the diagonal is zero
+    diag(coupling) <- 0
+
+    ## FIXME: must calculate the initial strength of interaction
+    ## between nodes from u0. For now, set lambda_i = 0.
+    v0 <- data.frame(lambda_i = rep(0, nrow(u0)))
+
     ## Dependency graph.
     G <- matrix(c(
         1, 1, 1,
@@ -63,7 +83,7 @@ SEIRcm <- function(u0      = NULL,
         nrow = 3,
         byrow = TRUE,
         dimnames = list(
-            c("S -> beta*S*(I+coupling)/(S+E+I+R) -> E",
+            c("S -> beta*S*(I+lambda_i)/(S+E+I+R) -> E",
               "E -> epsilon*E -> I",
               "I -> gamma*I -> R"),
             NULL))
@@ -82,7 +102,9 @@ SEIRcm <- function(u0      = NULL,
                           S     = S,
                           tspan = tspan,
                           gdata = gdata,
-                          u0    = u0)
+                          ldata = coupling,
+                          u0    = u0,
+                          v0    = v0)
 
     as(model, "SEIRcm")
 }

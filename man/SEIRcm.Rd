@@ -18,7 +18,10 @@ state.}
 
 \item{gamma}{the recovery rate from infected to recovered state.}
 
-\item{coupling}{FIXME}
+\item{coupling}{a measure of the strength of the interaction
+between nodes. Specifically, \code{coupling[i, j]} measures
+the relative strength of transmission to node \code{i} from
+node \code{j}.}
 }
 \description{
 Create an SEIR model with contact matrix
