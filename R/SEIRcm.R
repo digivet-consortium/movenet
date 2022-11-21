@@ -18,11 +18,12 @@ setClass("SEIRcm", contains = c("SimInf_model"))
 ##'     the relative strength of transmission to node \code{i} from
 ##'     node \code{j}.
 ##' @export
-SEIRcm <- function(u0      = NULL,
-                   tspan   = NULL,
-                   beta    = NULL,
-                   epsilon = NULL,
-                   gamma   = NULL) {
+SEIRcm <- function(u0       = NULL,
+                   tspan    = NULL,
+                   beta     = NULL,
+                   epsilon  = NULL,
+                   gamma    = NULL,
+                   coupling = NULL) {
     compartments <- c("S", "E", "I", "R")
 
     ## Check u0
@@ -71,6 +72,14 @@ SEIRcm <- function(u0      = NULL,
     ## Ensure the diagonal is zero
     diag(coupling) <- 0
 
+    ## 'ldata' is a numeric matrix with local data specific to each
+    ## node. The column ldata[, j] contains the local data vector for
+    ## node j. The local data vector is passed as an argument to the
+    ## post time step function where it will be used determine the
+    ## strength of interaction between populations. To use the
+    ## coupling matrix in ldata,it has to be transformed.
+    ldata <- t(coupling)
+
     ## FIXME: must calculate the initial strength of interaction
     ## between nodes from u0. For now, set lambda_i = 0.
     v0 <- data.frame(lambda_i = rep(0, nrow(u0)))
@@ -102,7 +111,7 @@ SEIRcm <- function(u0      = NULL,
                           S     = S,
                           tspan = tspan,
                           gdata = gdata,
-                          ldata = coupling,
+                          ldata = ldata,
                           u0    = u0,
                           v0    = v0)
 
