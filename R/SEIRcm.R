@@ -69,8 +69,10 @@ SEIRcm <- function(u0       = NULL,
         stop("Invalid 'coupling' matrix.", call. = FALSE)
     }
 
-    ## Ensure the diagonal is zero
+    ## Ensure the diagonal is zero. Also, drop the dimnames to skip
+    ## printing the matrix when printing the SEIRcm model object.
     diag(coupling) <- 0
+    dimnames(coupling) <- NULL
 
     ## 'ldata' is a numeric matrix with local data specific to each
     ## node. The column ldata[, j] contains the local data vector for
