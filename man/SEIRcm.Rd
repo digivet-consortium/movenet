@@ -4,7 +4,14 @@
 \alias{SEIRcm}
 \title{Create an SEIR model with contact matrix}
 \usage{
-SEIRcm(u0 = NULL, tspan = NULL, beta = NULL, epsilon = NULL, gamma = NULL)
+SEIRcm(
+  u0 = NULL,
+  tspan = NULL,
+  beta = NULL,
+  epsilon = NULL,
+  gamma = NULL,
+  coupling = NULL
+)
 }
 \arguments{
 \item{u0}{FIXME}
