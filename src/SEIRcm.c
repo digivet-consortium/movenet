@@ -38,7 +38,7 @@ static double SEIRcm_S_to_E(
     const double *gdata,
     double t)
 {
-    return v[LAMBDA_I] * u[S];
+    return gdata[BETA] * u[S] * (u[I] + v[LAMBDA_I]);
 }
 
 /**
