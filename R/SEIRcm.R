@@ -80,6 +80,10 @@ SEIRcm <- function(u0       = NULL,
     ## coupling matrix in ldata,it has to be transformed.
     ldata <- t(coupling)
 
+    ## Add one row with the number of nodes in the model. This is used
+    ## in the post time step function to iterate over all nodes.
+    ldata <- rbind(rep(nrow(u0), nrow(u0)), ldata)
+
     ## FIXME: must calculate the initial strength of interaction
     ## between nodes from u0. For now, set lambda_i = 0.
     v0 <- data.frame(lambda_i = rep(0, nrow(u0)))

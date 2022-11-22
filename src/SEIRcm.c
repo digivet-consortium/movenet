@@ -19,7 +19,7 @@ enum {LAMBDA_I};
 
 /* Offset in the global data (gdata) vector to parameters in the
  * model */
-enum {N_NODES, EPSILON, GAMMA};
+enum {BETA, EPSILON, GAMMA};
 
 /**
  * Susceptible to Exposed: S -> E
@@ -123,14 +123,16 @@ static int SEIRcm_post_time_step(
     const int *u_0 = &u[-N_COMPARTMENTS * node];
 
     /* Determine the number of nodes in the model. */
-    const int n_nodes = (int)gdata[N_NODES];
+    const int n_nodes = (int)ldata[0];
 
     /* First, clear lambda_i, then iterate over all nodes and add the
-     * contributions from infected individuals. */
+     * contributions from infected individuals. Note the offset
+     * 'ldata[i + 1]' for the coupling because the first item is the
+     * number of nodes. */
     v_new[LAMBDA_I] = 0.0;
     for (int i = 0; i < n_nodes; i++) {
         /* Add the contribution from node i. */
-        v_new[LAMBDA_I] += ldata[i] * u_0[i * N_COMPARTMENTS + I];
+        v_new[LAMBDA_I] += ldata[i + 1] * u_0[i * N_COMPARTMENTS + I];
     }
 
     /* Error check the new lambda_i value. */
