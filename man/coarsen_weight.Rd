@@ -34,7 +34,8 @@ the selected numeric column.
 column in a movement data frame. By default, the weight column is selected.
 }
 \details{
-Requires that the appropriate movement config file is loaded.
+Requires that the appropriate movement config file is loaded, to correctly
+identify the \code{weight} column in \code{data}.
 
 If both jitter and rounding are applied, the data in the selected column are
 first jittered and then rounded.

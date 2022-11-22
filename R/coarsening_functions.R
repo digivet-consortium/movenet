@@ -1,4 +1,4 @@
-#' Round down movement dates, and summarise data by time unit
+#' Round down movement dates, and/or summarise data by time unit
 #'
 #' `coarsen_date()` takes a movement data frame, and rounds down movement dates
 #' to the first day of the specified time unit. It optionally summarises
@@ -17,25 +17,28 @@
 #'   the specified `unit`, for all rows with the same origin and destination.
 #'   The name of the weight column will remain the same.
 #' @param ... [<`data-masking`>][dplyr::dplyr_data_masking] Additional or
-#'   alternative summary function(s), of the form name = value. Any summary
-#'   functions will be applied to `data`, grouped by origin, destination, and
-#'   rounded-down date. The specified name will be the column name in the
-#'   resulting data frame. Be careful when using existing names: the
-#'   corresponding columns will be immediately updated with the new data and
-#'   this can affect subsequent operations referring to this name.
+#'   alternative summary function(s), of the form name = value, to pass on to
+#'   [dplyr::summarise()]. Any summary functions will be applied to `data`,
+#'   grouped by origin, destination, and rounded-down date. The specified name
+#'   will be the column name in the resulting data frame. Be careful when using
+#'   existing names: the corresponding columns will be immediately updated with
+#'   the new data and this can affect subsequent operations referring to this
+#'   name.
 #'   The value can be:
 #'   * A vector of length 1, e.g. `min(x)`, `n()`, or `sum(is.na(y))`.
 #'   * A vector of length n, e.g. `quantile()`.
 #'   * A data frame, to add multiple columns from a single expression.
 #'
 #' @details
-#' Requires that the appropriate movement config file is loaded.
+#' Requires that the appropriate movement config file is loaded, to correctly
+#' identify origin (`from`), destination (`to`), `date` and `weight` columns in
+#' `data`.
 #'
 #' @returns
 #' A movement data frame with movement dates rounded down to the first day of
 #' the specified `unit`.
 #'
-#' If `sum_weight` is `TRUE`, the weight column (with the same name as the
+#' If `sum_weight == TRUE`, the weight column (with the same name as the
 #' weight column in `data`) contains weights as summed over all rows in `data`
 #' with the same origin, destination, and rounded-down date.
 #' If any summary functions are provided through `...`, the corresponding
@@ -61,8 +64,8 @@ coarsen_date <- function(data, unit, sum_weight = TRUE, ...){
   #########################
 
   if (!has_element(names(movenetenv$options), "movedata_cols")){
-    stop("The loaded config file and the type of data (movement data)
-    do not correspond. Please ensure the appropriate config file is loaded.")
+    stop("The loaded config file does not match the type of data (movement
+    data). Please ensure the appropriate config file is loaded.")
   }
 
 
@@ -165,7 +168,8 @@ coarsen_date <- function(data, unit, sum_weight = TRUE, ...){
 #'   `round` is additionally set as minimum possible value for the column.
 #'
 #' @details
-#' Requires that the appropriate movement config file is loaded.
+#' Requires that the appropriate movement config file is loaded, to correctly
+#' identify the `weight` column in `data`.
 #'
 #' If both jitter and rounding are applied, the data in the selected column are
 #' first jittered and then rounded.
@@ -209,8 +213,8 @@ coarsen_weight <- function(data,
   #########################
 
   if (!has_element(names(movenetenv$options), "movedata_cols")){
-    stop("The loaded config file and the type of data (movement data)
-    do not correspond. Please ensure the appropriate config file is loaded.")
+    stop("The loaded config file does not match the type of data (movement
+    data). Please ensure the appropriate config file is loaded.")
   }
 
 
@@ -274,10 +278,51 @@ coarsen_weight <- function(data,
 }
 
 ################################################################################
-
-#' @param data
+#' Anonymise data by replacing holding identifiers with prefix-integer
+#' combinations
 #'
-#' @param prefix
+#' `anonymise()` anonymises a holding or movement data frame by replacing
+#' holding identifiers with prefix-integer combinations. Both the anonymised
+#' data frame and the anonymisation key are returned. By default, a new
+#' anonymisation key is generated; alternatively, an existing key can be
+#' provided.
+#'
+#' @param data A holding or movement data frame.
+#' @param prefix Character string, to form the basis of anonymised holding
+#'   identifiers. An integer will be appended to form this new identifier.
+#' @param key A named character vector to be used as anonymisation key, or
+#'   `NULL` (default) to generate a new key. A provided `key` should have
+#'   original holding identifiers as names, and new (anonymised) identifiers as
+#'   values.
+#'
+#' @details
+#' Requires that the appropriate config file is loaded, to identify the
+#' column(s) in `data` that contain(s) holding identifiers: origin (`from`) and
+#' destination (`to`) columns for movement data, or the `id` column for holding
+#' data.
+#'
+#' If `key == NULL` (default), a new anonymisation key is generated, with
+#' holdings being given new identifiers consisting of `prefix` followed by an
+#' integer ranging between 1 and the total number of holdings. Integers are
+#' assigned to holdings in a random order.
+#'
+#' If an existing `key` is provided, its coverage of holding identifiers in
+#' `data` is checked. If all holding identifiers in `data` are present among
+#' element names in `key`, the `key` is used for anonymisation as-is: holding
+#' identifiers in `data` are replaced with the values of elements of the same
+#' name in `key`. Otherwise, if `data` contains holding identifiers that are not
+#' present in `key`, the `key` is expanded by adding additional `prefix`-integer
+#' combinations.
+#'
+#' @returns
+#' A named list with two elements:
+#' * `data` containing the anonymised data frame
+#' * `key` containing the applied anonymisation key. This has the form of a
+#' named character vector, with original holding identifiers as names, and new
+#' (anonymised) identifiers as values.
+#'
+#' @import checkmate
+#' @importFrom purrr has_element
 #'
 #' @export
 anonymise <- function(data, prefix, key = NULL){
@@ -295,8 +340,8 @@ anonymise <- function(data, prefix, key = NULL){
                 must.include = movenetenv$options$holdingdata_cols$id)
   )
   assert_string(prefix, null.ok = TRUE)
-  assert_list(key, types = "character", any.missing = FALSE, names = "unique",
-              null.ok = TRUE)
+  assert_character(key, any.missing = FALSE, names = "unique", null.ok = TRUE,
+                   unique = TRUE)
 
 
   #########################

@@ -2,7 +2,7 @@
 % Please edit documentation in R/coarsening_functions.R
 \name{coarsen_date}
 \alias{coarsen_date}
-\title{Round down movement dates, and summarise data by time unit}
+\title{Round down movement dates, and/or summarise data by time unit}
 \usage{
 coarsen_date(data, unit, sum_weight = TRUE, ...)
 }
@@ -21,12 +21,13 @@ the specified \code{unit}, for all rows with the same origin and destination.
 The name of the weight column will remain the same.}
 
 \item{...}{\link[dplyr:dplyr_data_masking]{<\code{data-masking}>} Additional or
-alternative summary function(s), of the form name = value. Any summary
-functions will be applied to \code{data}, grouped by origin, destination, and
-rounded-down date. The specified name will be the column name in the
-resulting data frame. Be careful when using existing names: the
-corresponding columns will be immediately updated with the new data and
-this can affect subsequent operations referring to this name.
+alternative summary function(s), of the form name = value, to pass on to
+\code{\link[dplyr:summarise]{dplyr::summarise()}}. Any summary functions will be applied to \code{data},
+grouped by origin, destination, and rounded-down date. The specified name
+will be the column name in the resulting data frame. Be careful when using
+existing names: the corresponding columns will be immediately updated with
+the new data and this can affect subsequent operations referring to this
+name.
 The value can be:
 \itemize{
 \item A vector of length 1, e.g. \code{min(x)}, \code{n()}, or \code{sum(is.na(y))}.
@@ -38,7 +39,7 @@ The value can be:
 A movement data frame with movement dates rounded down to the first day of
 the specified \code{unit}.
 
-If \code{sum_weight} is \code{TRUE}, the weight column (with the same name as the
+If \code{sum_weight == TRUE}, the weight column (with the same name as the
 weight column in \code{data}) contains weights as summed over all rows in \code{data}
 with the same origin, destination, and rounded-down date.
 If any summary functions are provided through \code{...}, the corresponding
@@ -57,7 +58,9 @@ default, this involves summation of weights, but alternative or additional
 summary functions can be provided through \code{...}.
 }
 \details{
-Requires that the appropriate movement config file is loaded.
+Requires that the appropriate movement config file is loaded, to correctly
+identify origin (\code{from}), destination (\code{to}), \code{date} and \code{weight} columns in
+\code{data}.
 }
 \seealso{
 \code{\link[lubridate:round_date]{lubridate::floor_date()}}, \code{\link[dplyr:summarise]{dplyr::summarise()}} which this function
