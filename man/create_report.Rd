@@ -13,12 +13,6 @@ create_report(data, output, output_format = "html_document")
 
 \item{output_format}{output format ("html_document", "pdf_document")}
 }
-\value{
-
-}
 \description{
 Create a network analysis report from data
-}
-\examples{
-
 }
