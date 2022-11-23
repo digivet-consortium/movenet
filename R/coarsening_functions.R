@@ -1,21 +1,24 @@
-#' Round down movement dates, and/or summarise data by time unit
+#' Jitter and/or round down movement dates, and/or summarise data by time unit
 #'
-#' `coarsen_date()` takes a movement data frame, and rounds down movement dates
-#' to the first day of the specified time unit. It optionally summarises
-#' movement data with the same origin and destination by this time unit. By
-#' default, this involves summation of weights, but alternative or additional
-#' summary functions can be provided through `...`.
+#' `coarsen_date()` applies jitter to, and/or rounds down, movement dates in a
+#' movement data frame. Rounding down is to the first day of the specified time
+#' unit. It optionally summarises movement data with the same origin and
+#' destination by this time unit. By default, this involves summation of
+#' weights, but alternative or additional summary functions can be provided
+#' through `...`.
 #'
 #' @param data A movement data frame.
-#' @param unit A character string specifying a time unit or a multiple of a unit
-#'   for movement dates to be rounded down to. Valid base units are `day`,
-#'   `week`, `month`, `bimonth`, `quarter`, `season`, `halfyear` and `year`.
-#'   Arbitrary unique English abbreviations as in the [lubridate::period()]
-#'   constructor are allowed. Rounding to multiples of units (except weeks) is
-#'   supported.
+#' @param jitter Either a positive integer, indicating the amount of jitter (in
+#'   days) to apply (see Details), or `FALSE` to not apply any jitter.
+#' @param rounding_unit Either a character string specifying a time unit or a
+#'   multiple of a unit for movement dates to be rounded down to, or `FALSE` to
+#'   not apply any rounding. Valid base units are `day`, `week`, `month`,
+#'   `bimonth`, `quarter`, `season`, `halfyear` and `year`. Arbitrary unique
+#'   English abbreviations as in the [lubridate::period()] constructor are
+#'   allowed. Rounding to multiples of units (except weeks) is supported.
 #' @param sum_weight If this is `TRUE` (the default), weights are summed over
-#'   the specified `unit`, for all rows with the same origin and destination.
-#'   The name of the weight column will remain the same.
+#'   the specified `rounding_unit`, for all rows with the same origin and
+#'   destination. The name of the weight column will remain the same.
 #' @param ... [<`data-masking`>][dplyr::dplyr_data_masking] Additional or
 #'   alternative summary function(s), of the form name = value, to pass on to
 #'   [dplyr::summarise()]. Any summary functions will be applied to `data`,
@@ -34,17 +37,39 @@
 #' identify origin (`from`), destination (`to`), `date` and `weight` columns in
 #' `data`.
 #'
-#' @returns
-#' A movement data frame with movement dates rounded down to the first day of
-#' the specified `unit`.
+#' If both jitter and rounding are applied, movement dates are first jittered
+#' and then rounded down.
 #'
-#' If `sum_weight == TRUE`, the weight column (with the same name as the
-#' weight column in `data`) contains weights as summed over all rows in `data`
+#' If `jitter > 0`, movement dates are modified by addition of a number of days
+#' between `-jitter` and `jitter`, following a discrete uniform distribution. If
+#' this were to result in a date being moved beyond the original date range, the
+#' amount of jitter for this date is resampled, until the resulting date is
+#' within the original date range.
+#' If `jitter == FALSE` (or `jitter == 0`), no jitter is applied.
+#'
+#' If `rounding_unit` is a character string, movement dates are rounded to the
+#' first day of the `rounding_unit`.
+#' If `rounding_unit == FALSE`, no rounding is applied.
+#'
+#' If `rounding_unit == FALSE` and `sum_weight == TRUE`, weights are summed over
+#' all rows in `data` with the same origin, destination, and rounded-down date.
+#' If `rounding_unit == FALSE`, `sum_weight` is ignored.
+#'
+#' If `rounding_unit == FALSE` and any summary functions are provided through
+#' `...`, the specified data are summarised accordingly, over all rows in `data`
 #' with the same origin, destination, and rounded-down date.
-#' If any summary functions are provided through `...`, the corresponding
-#' columns (with name specified by the summary function name) contain data
-#' summarised (as specified by the summary function value) over all rows in
-#' `data` with the same origin, destination, and rounded-down date.
+#' If `rounding_unit == FALSE`, `...` is ignored.
+#'
+#' Columns for which a summary function is not provided, are dropped from
+#' the resulting data frame.
+#'
+#' @returns
+#' A movement data frame like `data`, but with jittered and/or rounded-down
+#' movement dates.
+#'
+#' If `sum_weight == TRUE` or any summary functions are provided through `...`,
+#' the returned data frame contains data summarised by origin, destination, and
+#' `rounding_unit`, and may thus have a decreased length compared to `data`.
 #'
 #' Columns for which a summary function is not provided, are dropped from
 #' the resulting data frame.
@@ -57,7 +82,7 @@
 #' @importFrom lubridate floor_date
 #'
 #' @export
-coarsen_date <- function(data, unit, sum_weight = TRUE, ...){
+coarsen_date <- function(data, jitter, rounding_unit, sum_weight = TRUE, ...){
 
   #########################
   ### Config file check ###
@@ -68,6 +93,7 @@ coarsen_date <- function(data, unit, sum_weight = TRUE, ...){
     data). Please ensure the appropriate config file is loaded.")
   }
 
+  dates <- data[[movenetenv$options$movedata_cols$date]]
 
   #######################
   ### Argument checks ###
@@ -76,25 +102,75 @@ coarsen_date <- function(data, unit, sum_weight = TRUE, ...){
   assert_data_frame(data)
   assert_names(names(data),
                must.include = movenetenv$options$movedata_cols$date)
-  assert_date(data[[movenetenv$options$movedata_cols$date]],
+  assert_date(dates,
               .var.name =
                 paste0("data[[", movenetenv$options$movedata_cols$date,"]]"))
+  assert(
+    check_integerish(jitter, len = 1, lower = 0, any.missing = FALSE),
+    check_false(jitter, na.ok = FALSE)
+  )
+  assert(
+    check_character(rounding_unit, len = 1, any.missing = FALSE), #this does not check accepted/meaningful values
+    check_false(rounding_unit, na.ok = FALSE)
+  )
   assert_logical(sum_weight, len = 1)
 
+  if(isFALSE(rounding_unit) & (isTRUE(sum_weight) | ...length() != 0)){
+    warning("As 'rounding_unit' is FALSE, no rounding or summarising by date has
+    been performed. Arguments 'sum_weight' and '...' have been ignored.",
+    call. = FALSE)
+  }
+
   # How does one check the other arguments?
-  #   - unit (from floor_date)
+  #   - rounding_unit (unit from floor_date)
   #   - ... (var = value pairs, in summarise)
+
+
+  #####################
+  ### Adding jitter ###
+  #####################
+
+  if (jitter != FALSE | jitter != 0){
+
+    jitter <- as.integer(jitter)
+
+    replacement_data <-
+      dates +
+      sample(c(-jitter:jitter),
+             length(dates),
+             replace = TRUE)
+
+    while (any(replacement_data < min(dates) | replacement_data > max(dates))){
+
+      #resampling for dates beyond boundaries
+      replacement_data[which(replacement_data < min(dates) |
+                               replacement_data > max(dates))] <-
+        dates[which(replacement_data < min(dates) |
+                      replacement_data > max(dates))] +
+        sample(c(-jitter:jitter),
+               sum(any(replacement_data < min(dates) |
+                         replacement_data > max(dates))),
+               replace = TRUE)
+
+    }
+
+    data[movenetenv$options$movedata_cols$date] <- replacement_data
+  }
+
+  # Currently adds uniform ints between -jitter and +jitter , including 0 !
 
 
   ###########################
   ### Rounding down dates ###
   ###########################
 
-  # round down each date to the first date of the unit (e.g. month)
-  coarsened_data <-
-    data |>
-    mutate("{movenetenv$options$movedata_cols$date}" :=
-             floor_date(.data[[movenetenv$options$movedata_cols$date]], unit))
+  if (rounding_unit != FALSE){
+  # round down each date to the first date of the rounding_unit (e.g. month)
+    rounded_data <-
+      data |>
+      mutate("{movenetenv$options$movedata_cols$date}" :=
+               floor_date(.data[[movenetenv$options$movedata_cols$date]],
+                          rounding_unit))
 
   #What to do with floor_date's week_start? default = 7 = Sunday.
   #what to do to allow user to coarsen other date fields?
@@ -113,42 +189,46 @@ coarsen_date <- function(data, unit, sum_weight = TRUE, ...){
 
 
   ###########################
-  ### Aggregating by date ###
+  ### Aggregating by date ###   (only if rounding_unit != FALSE)
   ###########################
 
-  if (sum_weight == TRUE){
+    if (sum_weight == TRUE){
 
-    aggregated_data <-
-      coarsened_data |>
-      group_by(.data[[movenetenv$options$movedata_cols$from]],
-               .data[[movenetenv$options$movedata_cols$to]],
-               .data[[movenetenv$options$movedata_cols$date]]) |>
-      summarise(summed_weight =
-                sum(.data[[movenetenv$options$movedata_cols$weight]]),
-                ...) |>
-      ungroup() |>
-      rename("{movenetenv$options$movedata_cols$weight}" := summed_weight)
+      aggregated_data <-
+        rounded_data |>
+        group_by(.data[[movenetenv$options$movedata_cols$from]],
+                 .data[[movenetenv$options$movedata_cols$to]],
+                 .data[[movenetenv$options$movedata_cols$date]]) |>
+        summarise(summed_weight =
+                  sum(.data[[movenetenv$options$movedata_cols$weight]]),
+                  ...) |>
+        ungroup() |>
+        rename("{movenetenv$options$movedata_cols$weight}" := summed_weight)
 
-    return(aggregated_data)
+      return(aggregated_data)
 
-  } else if(...length() == 0){
+    } else if(...length() == 0){
 
-    return(coarsened_data)
+      return(rounded_data)
 
-  } else {
+    } else {
 
-    aggregated_data <-
-      coarsened_data |>
-      group_by(.data[[movenetenv$options$movedata_cols$from]],
-               .data[[movenetenv$options$movedata_cols$to]],
-               .data[[movenetenv$options$movedata_cols$date]]) |>
-      summarise(...) |>
-      ungroup()
+      aggregated_data <-
+        rounded_data |>
+        group_by(.data[[movenetenv$options$movedata_cols$from]],
+                 .data[[movenetenv$options$movedata_cols$to]],
+                 .data[[movenetenv$options$movedata_cols$date]]) |>
+        summarise(...) |>
+        ungroup()
 
-    return(aggregated_data)
-  }
+      return(aggregated_data)
+    }
 
-  #N.B. this drops columns for which a summary function is not given
+  ###############################################
+  ### Returning jittered data, if no rounding ###
+  ###############################################
+
+  } else return(data)
 }
 
 ################################################################################
@@ -195,8 +275,8 @@ coarsen_date <- function(data, unit, sum_weight = TRUE, ...){
 #' A movement data frame like `data`, but with jitter and/or rounding applied to
 #' the selected numeric column.
 #'
-#' @seealso [base::jitter()], [plyr::round_any()] which this function
-#' wraps.
+#' @seealso [base::jitter()], which the jitter part of this function is based
+#' on; [plyr::round_any()], which this function wraps.
 #'
 #' @import checkmate
 #' @importFrom plyr round_any
@@ -227,11 +307,11 @@ coarsen_weight <- function(data,
                must.include = column)
   assert_data_frame(data[column], type = "numeric", ncols = 1)
   assert(
-    check_numeric(jitter, lower = 0),
+    check_numeric(jitter, len = 1, lower = 0),
     check_false(jitter, na.ok = FALSE)
   )
   assert(
-    check_numeric(round, lower = 0),
+    check_numeric(round, len = 1, lower = 0),
     check_false(round, na.ok = FALSE)
   )
 
