@@ -45,22 +45,23 @@
 #' this were to result in a date being moved beyond the original date range, the
 #' amount of jitter for this date is resampled, until the resulting date is
 #' within the original date range.
-#' If `jitter == FALSE` (or `jitter == 0`), no jitter is applied.
+#' If `jitter` is `FALSE` (or `jitter == 0`), no jitter is applied.
 #'
 #' If `rounding_unit` is a character string, movement dates are rounded to the
 #' nearest boundary value of the `rounding_unit`. For rounding dates which are
 #' exactly halfway between two consecutive time units, the convention is to
 #' round up.
-#' If `rounding_unit == FALSE`, no rounding is applied.
+#' If `rounding_unit` is `FALSE`, no rounding is applied.
 #'
-#' If `rounding_unit == FALSE` and `sum_weight == TRUE`, weights are summed over
+#' If `rounding_unit` is a character string and `sum_weight` is `TRUE`, weights
+#' are summed over all rows in `data` with the same origin, destination, and
+#' rounded date.
+#' If `rounding_unit` is `FALSE`, `sum_weight` is ignored.
+#'
+#' If `rounding_unit` is a character string and any summary functions are
+#' provided through `...`, the specified data are summarised accordingly, over
 #' all rows in `data` with the same origin, destination, and rounded date.
-#' If `rounding_unit == FALSE`, `sum_weight` is ignored.
-#'
-#' If `rounding_unit == FALSE` and any summary functions are provided through
-#' `...`, the specified data are summarised accordingly, over all rows in `data`
-#' with the same origin, destination, and rounded date.
-#' If `rounding_unit == FALSE`, `...` is ignored.
+#' If `rounding_unit` is `FALSE`, `...` is ignored.
 #'
 #' Columns for which a summary function is not provided, are dropped from
 #' the resulting data frame.
@@ -69,9 +70,10 @@
 #' A movement data frame like `data`, but with jittered and/or rounded
 #' movement dates.
 #'
-#' If `sum_weight == TRUE` or any summary functions are provided through `...`,
-#' the returned data frame contains data summarised by origin, destination, and
-#' `rounding_unit`, and may thus have a decreased length compared to `data`.
+#' If `sum_weight` is `TRUE` or any summary functions are provided through
+#' `...`, the returned data frame contains data summarised by origin,
+#' destination, and `rounding_unit`, and may thus have a decreased length
+#' compared to `data`.
 #'
 #' Columns for which a summary function is not provided, are dropped from
 #' the resulting data frame.
@@ -132,7 +134,7 @@ coarsen_date2 <- function(data, jitter, rounding_unit, sum_weight = TRUE, ...){
   ### Adding jitter ###
   #####################
 
-  if (jitter != FALSE | jitter != 0){
+  if (!isFALSE(jitter) | jitter != 0){
 
     jitter <- as.integer(jitter)
 
@@ -166,7 +168,7 @@ coarsen_date2 <- function(data, jitter, rounding_unit, sum_weight = TRUE, ...){
   ### Rounding dates ###
   ######################
 
-  if (rounding_unit != FALSE){
+  if (!isFALSE(rounding_unit)){
   # round each date to the nearest first date of the rounding_unit (e.g. month)
     rounded_data <-
       data |>
@@ -191,10 +193,10 @@ coarsen_date2 <- function(data, jitter, rounding_unit, sum_weight = TRUE, ...){
 
 
   ###########################
-  ### Aggregating by date ###  (only if rounding_unit != FALSE)
+  ### Aggregating by date ###  (only if !isFALSE(rounding_unit))
   ###########################
 
-    if (sum_weight == TRUE){
+    if (isTRUE(sum_weight)){
 
       aggregated_data <-
         rounded_data |>

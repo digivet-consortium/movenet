@@ -45,20 +45,21 @@
 #' this were to result in a date being moved beyond the original date range, the
 #' amount of jitter for this date is resampled, until the resulting date is
 #' within the original date range.
-#' If `jitter == FALSE` (or `jitter == 0`), no jitter is applied.
+#' If `jitter` is `FALSE` (or `jitter == 0`), no jitter is applied.
 #'
 #' If `rounding_unit` is a character string, movement dates are rounded to the
 #' first day of the `rounding_unit`.
-#' If `rounding_unit == FALSE`, no rounding is applied.
+#' If `rounding_unit` is `FALSE`, no rounding is applied.
 #'
-#' If `rounding_unit == FALSE` and `sum_weight == TRUE`, weights are summed over
+#' If `rounding_unit` is a character string and `sum_weight` is `TRUE`, weights
+#' are summed over all rows in `data` with the same origin, destination, and
+#' rounded-down date.
+#' If `rounding_unit` is `FALSE`, `sum_weight` is ignored.
+#'
+#' If `rounding_unit` is a character string and any summary functions are
+#' provided through `...`, the specified data are summarised accordingly, over
 #' all rows in `data` with the same origin, destination, and rounded-down date.
-#' If `rounding_unit == FALSE`, `sum_weight` is ignored.
-#'
-#' If `rounding_unit == FALSE` and any summary functions are provided through
-#' `...`, the specified data are summarised accordingly, over all rows in `data`
-#' with the same origin, destination, and rounded-down date.
-#' If `rounding_unit == FALSE`, `...` is ignored.
+#' If `rounding_unit` is `FALSE`, `...` is ignored.
 #'
 #' Columns for which a summary function is not provided, are dropped from
 #' the resulting data frame.
@@ -67,9 +68,10 @@
 #' A movement data frame like `data`, but with jittered and/or rounded-down
 #' movement dates.
 #'
-#' If `sum_weight == TRUE` or any summary functions are provided through `...`,
-#' the returned data frame contains data summarised by origin, destination, and
-#' `rounding_unit`, and may thus have a decreased length compared to `data`.
+#' If `sum_weight` is `TRUE` or any summary functions are provided through
+#' `...`, the returned data frame contains data summarised by origin,
+#' destination, and `rounding_unit`, and may thus have a decreased length
+#' compared to `data`.
 #'
 #' Columns for which a summary function is not provided, are dropped from
 #' the resulting data frame.
@@ -130,7 +132,7 @@ coarsen_date <- function(data, jitter, rounding_unit, sum_weight = TRUE, ...){
   ### Adding jitter ###
   #####################
 
-  if (jitter != FALSE | jitter != 0){
+  if (!isFALSE(jitter) | jitter != 0){
 
     jitter <- as.integer(jitter)
 
@@ -164,7 +166,7 @@ coarsen_date <- function(data, jitter, rounding_unit, sum_weight = TRUE, ...){
   ### Rounding down dates ###
   ###########################
 
-  if (rounding_unit != FALSE){
+  if (!isFALSE(rounding_unit)){
   # round down each date to the first date of the rounding_unit (e.g. month)
     rounded_data <-
       data |>
@@ -189,10 +191,10 @@ coarsen_date <- function(data, jitter, rounding_unit, sum_weight = TRUE, ...){
 
 
   ###########################
-  ### Aggregating by date ###   (only if rounding_unit != FALSE)
+  ### Aggregating by date ###   (only if !isFALSE(rounding_unit))
   ###########################
 
-    if (sum_weight == TRUE){
+    if (isTRUE(sum_weight)){
 
       aggregated_data <-
         rounded_data |>
@@ -261,7 +263,7 @@ coarsen_date <- function(data, jitter, rounding_unit, sum_weight = TRUE, ...){
 #' point becomes positive. This is to capture that any movement in a livestock
 #' movement database, is assumed to have a positive weight (quantity of animals
 #' moved).
-#' If `jitter == FALSE` (or `jitter == 0`), no jitter is applied.
+#' If `jitter` is `FALSE` (or `jitter == 0`), no jitter is applied.
 #'
 #' If `round > 0`, the data in the selected column are modified by rounding to
 #' multiples of `round`.
@@ -269,7 +271,7 @@ coarsen_date <- function(data, jitter, rounding_unit, sum_weight = TRUE, ...){
 #' becomes the minimum possible value in the column. This is to capture that any
 #' livestock movement, no matter how small, has an inherent risk that is
 #' conceptually closer to that of `round`, than that of no movement at all.
-#' If `round == FALSE` (or `round == 0`), no rounding is applied.
+#' If `round` is `FALSE` (or `round == 0`), no rounding is applied.
 #'
 #' @returns
 #' A movement data frame like `data`, but with jitter and/or rounding applied to
@@ -320,7 +322,7 @@ coarsen_weight <- function(data,
   ### Adding jitter ###
   #####################
 
-  if (jitter != FALSE | jitter != 0){
+  if (!isFALSE(jitter) | jitter != 0){
 
     replacement_data <-
       data[[column]] +
@@ -344,7 +346,7 @@ coarsen_weight <- function(data,
   ### Rounding ###
   ################
 
-  if (round != FALSE | round != 0){
+  if (!isFALSE(round) | round != 0){
 
     data[column] <- round_any(data[[column]], accuracy = round)
 

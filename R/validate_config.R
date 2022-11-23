@@ -30,7 +30,7 @@ internal_validate_config <- function(file){
   if (!file.exists(file)){
     stop(paste0(file, ": no such file exists"))
   }
-  if (validate_yaml(file)$test == FALSE){
+  if (isFALSE(validate_yaml(file)$test)){
     invisible(validate_yaml(file)$msg)
   }else{
     yamlfile <- yaml.load_file(file)
@@ -53,7 +53,7 @@ validate_yaml <- function(file){
   out <- tryCatch(yaml.load_file(file),error = function(e) FALSE)
   test <- !identical(out,FALSE)
   msg <- NULL
-  if (test==FALSE){
+  if (isFALSE(test)){
     msg <- paste(file,"is not valid yaml format")
   }
   list(test = test, msg = msg) #Does this need to be invisible?
