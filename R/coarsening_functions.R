@@ -206,6 +206,10 @@ coarsen_date <- function(data, jitter, rounding_unit, sum_weight = TRUE, ...){
                   ...) |>
         ungroup() |>
         rename("{movenetenv$options$movedata_cols$weight}" := summed_weight)
+        #using "summed_weight" and then renaming to the data-specific weight
+        #variable, to avoid problems with additional weight summarising
+        #functions. If the original name is kept, any additional functions are
+        #performed on the summed weights rather than individual weights
 
       return(aggregated_data)
 
