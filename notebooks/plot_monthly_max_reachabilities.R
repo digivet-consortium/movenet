@@ -4,7 +4,7 @@
 
 library(networkDynamic) #networkDynamic
 library(tsna) #tReach, [tPath]
-library(ndtv) #[transmissionTimeline]
+#library(ndtv) #[transmissionTimeline]
 library(dplyr) #select [can be avoided]
 library(tidyr) #pivot_longer
 library(ggplot2)
