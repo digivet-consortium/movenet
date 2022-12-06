@@ -16,6 +16,11 @@
 #'   `bimonth`, `quarter`, `season`, `halfyear` and `year`. Arbitrary unique
 #'   English abbreviations as in the [lubridate::period()] constructor are
 #'   allowed. Rounding to multiples of units (except weeks) is supported.
+#' @param week_start Week start day, only relevant for rounding down dates and/
+#'   or aggregating data by week. Default is the value of the
+#'   `lubridate.week.start` option, or 7 (Sunday) if this option is not set.
+#'   Full or abbreviated names of the days of the week can be in English or as
+#'   provided by the current locale.
 #' @param sum_weight If this is `TRUE` (the default), weights are summed over
 #'   the specified `rounding_unit`, for all rows with the same origin and
 #'   destination. The name of the weight column will remain the same.
@@ -23,10 +28,7 @@
 #'   alternative summary function(s), of the form name = value, to pass on to
 #'   [dplyr::summarise()]. Any summary functions will be applied to `data`,
 #'   grouped by origin, destination, and rounded-down date. The specified name
-#'   will be the column name in the resulting data frame. Be careful when using
-#'   existing names: the corresponding columns will be immediately updated with
-#'   the new data and this can affect subsequent operations referring to this
-#'   name.
+#'   will be the column name in the resulting data frame.
 #'   The value can be:
 #'   * A vector of length 1, e.g. `min(x)`, `n()`, or `sum(is.na(y))`.
 #'   * A vector of length n, e.g. `quantile()`.
@@ -53,12 +55,17 @@
 #'
 #' If `rounding_unit` is a character string and `sum_weight` is `TRUE`, weights
 #' are summed over all rows in `data` with the same origin, destination, and
-#' rounded-down date.
+#' rounded-down date. The summed weight column is temporarily renamed, so that
+#' any additional weight-dependent summary functions passed through `...` use
+#' the original weights rather than the sums.
 #' If `rounding_unit` is `FALSE`, `sum_weight` is ignored.
 #'
 #' If `rounding_unit` is a character string and any summary functions are
 #' provided through `...`, the specified data are summarised accordingly, over
 #' all rows in `data` with the same origin, destination, and rounded-down date.
+#' Be careful when using existing names: the corresponding columns will be
+#' immediately updated with the new data and this can affect subsequent
+#' operations referring to this name.
 #' If `rounding_unit` is `FALSE`, `...` is ignored.
 #'
 #' Columns for which a summary function is not provided, are dropped from
@@ -84,7 +91,10 @@
 #' @importFrom lubridate floor_date
 #'
 #' @export
-coarsen_date <- function(data, jitter, rounding_unit, sum_weight = TRUE, ...){
+coarsen_date <- function(data, jitter,
+                         rounding_unit,
+                         week_start = getOption("lubridate.week.start", 7),
+                         sum_weight = TRUE, ...){
 
   #########################
   ### Config file check ###
@@ -124,8 +134,9 @@ coarsen_date <- function(data, jitter, rounding_unit, sum_weight = TRUE, ...){
   }
 
   # How does one check the other arguments?
-  #   - rounding_unit (unit from floor_date)
-  #   - ... (var = value pairs, in summarise)
+  #   - rounding_unit (unit from floor_date; currently checking for character type, a subset of original requirements)
+  #   - week_start (from floor_date)
+  #   - ... (from summarise; format should be var = value pairs)
 
 
   #####################
@@ -172,9 +183,9 @@ coarsen_date <- function(data, jitter, rounding_unit, sum_weight = TRUE, ...){
       data |>
       mutate("{movenetenv$options$movedata_cols$date}" :=
                floor_date(.data[[movenetenv$options$movedata_cols$date]],
-                          rounding_unit))
+                          unit = rounding_unit,
+                          week_start = week_start))
 
-  #What to do with floor_date's week_start? default = 7 = Sunday.
   #what to do to allow user to coarsen other date fields?
   #  build in column argument like for coarsen_weight?
 
