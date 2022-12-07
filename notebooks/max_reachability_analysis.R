@@ -23,6 +23,7 @@ round_set = c("day", "week", "month", "bimonth", "quarter", "halfyear", "year")
 #depends on relative values
 
 #How much jitter & which rounding, for fig 1 on monthly max reachabilities?
+#Make sure these are included in jitter_set and round_set above
 jitter_mmr <- c(4, 15)
 round_mmr <- c("week", "month")
 
