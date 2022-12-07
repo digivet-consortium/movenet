@@ -1,6 +1,7 @@
 load_all()
 library(tidyverse)
-library(sf)
+library(sf) #st_as_sf(), st_distance()
+library(units) #drop_units()
 
 movement_datafile <-
   "tests/testthat/test_input_files/sample_pigs_UK_with_dep_arr_dates.csv"
@@ -11,6 +12,9 @@ holding_configfile <- "tests/testthat/test_input_files/fakeScotEID_holding.yml"
 contactpars_outfile <- "tests/testthat/test_input_files/contact_matrix.rds"
 
 load_config(movement_configfile)
+from <- movenetenv$options$movedata_cols$from
+to <- movenetenv$options$movedata_cols$to
+weight <- movenetenv$options$movedata_cols$weight
 
 anonymisation_m <-
   movement_datafile |>
@@ -18,32 +22,39 @@ anonymisation_m <-
   anonymise("")
 
 load_config(holding_configfile)
+id <- movenetenv$options$holdingdata_cols$id
+crs <- movenetenv$options$holdingdata_fileopts$coord_EPSG_code
+coord_x <- movenetenv$options$holdingdata_cols$coord_x
+coord_y <- movenetenv$options$holdingdata_cols$coord_y
 
 anonymisation_h <-
   holding_datafile |>
   reformat_data("holding") |>
-  anonymise("", key=anonymisation_m$key)
+  anonymise("", key = anonymisation_m$key)
+
 
 
 #matrix containing average number of pigs transported per day
+#assumes all farms sending & receiving; may want to fill into complete matrix
 transport_matrix <-
   anonymisation_m$data %>%
-    group_by(departure_cph, dest_cph) %>%
-    summarise(prob=sum(qty_pigs)/365) %>%
+    group_by(.data[[from]], .data[[to]]) %>%
+    summarise(prob = sum(.data[[weight]])/365) %>%
     ungroup() %>%
-    arrange(as.numeric(dest_cph)) %>%
-    pivot_wider(names_from = dest_cph,
+    arrange(as.numeric(.data[[to]])) %>%
+    pivot_wider(names_from = all_of(to),
                 values_from = prob,
                 values_fill = 0) %>%
-    arrange(as.numeric(departure_cph)) %>%
-    select(-departure_cph) %>%
+    arrange(as.numeric(.data[[from]])) %>%
+    select(-all_of(from)) %>%
     as.matrix(rownames.force = TRUE)
+
 
 #distance matrix between farms
 distance_matrix <-
   anonymisation_h$data %>%
-  st_as_sf(coords = c("easting", "northing"),
-           crs = movenetenv$options$holdingdata_fileopts$coord_EPSG_code) %>%
+  st_as_sf(coords = c(coord_x, coord_y),
+           crs = crs) %>%
   st_distance()
 
 #matrix containing daily probabilities of becoming infected through local spread
@@ -56,7 +67,7 @@ distance_matrix <-
 #from 1 to 2km: 0.000015
 local_spread <-
   distance_matrix %>%
-  units::drop_units()
+  drop_units()
 
 local_spread[local_spread > 0 & local_spread < 100] <- 0.1
 local_spread[local_spread >= 100 & local_spread < 500] <- 0.006
