@@ -30,7 +30,7 @@ round_mmr <- c("week", "month")
 ### Reformat data & create networks ###
 #######################################
 
-#reformat movement data to have node ids and dates as numbers
+#reformat movement data, anonymise to have node ids as numbers (required!)
 anonymisation_m <-
   movement_datafile |>
   reformat_data("movement") |>
