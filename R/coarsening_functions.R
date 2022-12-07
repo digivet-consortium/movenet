@@ -487,7 +487,8 @@ anonymise <- function(data, prefix, key = NULL){
   ### Replace ids using key ###
   #############################
 
-  data[col_to_anonymise]<-lapply(col_to_anonymise,function(x){key[data[[x]]]})
+  data[col_to_anonymise] <-
+    lapply(col_to_anonymise, function(x){unname(key[data[[x]]])})
 
   return(list(data = data,
               key = key))
