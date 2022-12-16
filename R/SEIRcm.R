@@ -98,7 +98,7 @@ SEIRcm <- function(u0       = NULL,
         nrow = 3,
         byrow = TRUE,
         dimnames = list(
-            c("S -> beta*S*(I+lambda_i)/(S+E+I+R) -> E",
+            c("S -> beta*S*(I/(S+E+I+R)+lambda_i) -> E",
               "E -> epsilon*E -> I",
               "I -> gamma*I -> R"),
             NULL))
