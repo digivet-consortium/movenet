@@ -68,10 +68,15 @@ model <- SEIRcm(
     gamma    = 0.077,
     coupling = coupling)
 
-## Run the model and display a summary of the output in the generated
-## trajectory.
+## Run the model and display a summary of the output in the
+## generated trajectory.
 result <- run(model)
 summary(result)
+
+## View the content of the simulated trajectory. Here, only the
+## first six lines of data are shown. Remove the 'head' function
+## to show all data.
+head(trajectory(result))
 
 ## Plot the number of individuals
 plot(result, ~S+E+I+R)
