@@ -73,6 +73,12 @@ model <- SEIRcm(
 result <- run(model)
 summary(result)
 
+## Plot the number of individuals
+plot(result, ~S+E+I+R)
+
+## Plot the external force of infection
+plot(result, ~lambda_i)
+
 ## Plot the individual level prevalence.
 plot(result, I~S+E+I+R)
 
