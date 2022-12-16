@@ -14,9 +14,11 @@
 #' @import checkmate
 #' @import readr
 #'
-#' @return reformatted movement or holding data (selected & renamed columns)
-#' @export
+#' @details
 #'
+#' @return reformatted movement or holding data (selected & renamed columns)
+#'
+#' @export
 reformat_data <- function(datafile, type){ #Could also infer type from the data
 
   #######################
@@ -149,6 +151,11 @@ reformat_data <- function(datafile, type){ #Could also infer type from the data
 }
 
 ################################################################################
+
+############################################################
+### Helper: make column names ascii-compliant and unique ###
+############################################################
+
 #' @export
 asciify <- function(x){
   make.names(stringi::stri_trans_general(x, 'Latin-ASCII'),

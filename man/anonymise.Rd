@@ -13,17 +13,18 @@ anonymise(data, prefix, key = NULL)
 \item{prefix}{Character string, to form the basis of anonymised holding
 identifiers. An integer will be appended to form this new identifier.}
 
-\item{key}{A named list to be used as anonymisation key, or \code{NULL} (default)
-to generate a new key. A provided \code{key} should have original holding
-identifiers as names, and new (anonymised) identifiers as values.}
+\item{key}{A named character vector to be used as anonymisation key, or
+\code{NULL} (default) to generate a new key. A provided \code{key} should have
+original holding identifiers as names, and new (anonymised) identifiers as
+values.}
 }
 \value{
 A named list with two elements:
 \itemize{
 \item \code{data} containing the anonymised data frame
 \item \code{key} containing the applied anonymisation key. This has the form of a
-named list, with original holding identifiers as names, and new (anonymised)
-identifiers as values.
+named character vector, with original holding identifiers as names, and new
+(anonymised) identifiers as values.
 }
 }
 \description{

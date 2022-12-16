@@ -41,13 +41,13 @@ If both jitter and rounding are applied, the data in the selected column are
 first jittered and then rounded.
 
 If \code{jitter > 0}, the data in the selected column are modified by addition of
-an amount of noise between \code{-jitter} and \code{-jitter}, following a uniform
+an amount of noise between \code{-jitter} and \code{jitter}, following a uniform
 distribution. If this were to result in a data point becoming \verb{<= 0}, the
 amount of jitter for this data point is resampled, until the resulting data
 point becomes positive. This is to capture that any movement in a livestock
 movement database, is assumed to have a positive weight (quantity of animals
 moved).
-If \code{jitter == FALSE} (or \code{jitter == 0}), no jitter is applied.
+If \code{jitter} is \code{FALSE} (or \code{jitter == 0}), no jitter is applied.
 
 If \code{round > 0}, the data in the selected column are modified by rounding to
 multiples of \code{round}.
@@ -55,9 +55,9 @@ Additionally, any data points \verb{< round} are set to \code{round}, so that th
 becomes the minimum possible value in the column. This is to capture that any
 livestock movement, no matter how small, has an inherent risk that is
 conceptually closer to that of \code{round}, than that of no movement at all.
-If \code{round == FALSE} (or \code{round == 0}), no rounding is applied.
+If \code{round} is \code{FALSE} (or \code{round == 0}), no rounding is applied.
 }
 \seealso{
-\code{\link[base:jitter]{base::jitter()}}, \code{\link[plyr:round_any]{plyr::round_any()}} which this function
-wraps.
+\code{\link[base:jitter]{base::jitter()}}, which the jitter part of this function is based
+on; \code{\link[plyr:round_any]{plyr::round_any()}}, which this function wraps.
 }
