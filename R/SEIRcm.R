@@ -18,65 +18,6 @@ setClass("SEIRcm", contains = c("SimInf_model"))
 ##'     the relative strength of transmission to node \code{i} from
 ##'     node \code{j}.
 ##' @export
-##' @examples
-##' ## To illustrate the model, use the synthetic population of 1600
-##' ## nodes in SimInf.
-##' data("nodes", package = "SimInf")
-##' plot(y ~ x, nodes, pch = 20, asp = 1)
-##'
-##' ## Assume a power-law kernel for the relative strength of the coupling
-##' ## between populations where 'd' is the distance in meters between
-##' ## populations and 'k' is a spatial kernel scaling parameter.
-##' power_law_kernel <- function(d, k) {
-##'     1 / (1 + (d/1000)^k)
-##' }
-##'
-##' ## Calculate the coupling between nodes.
-##' coupling <- power_law_kernel(as.matrix(dist(nodes)), 1.76)
-##' diag(coupling) <- 0
-##'
-##' ## Assume each of the 1600 nodes consists of 100 susceptible
-##' ## individuals. Then add one infected individual to the first node.
-##' u0 <- data.frame(
-##'     S = rep(100, nrow(nodes)),
-##'     E = rep(0, nrow(nodes)),
-##'     I = rep(0, nrow(nodes)),
-##'     R = rep(0, nrow(nodes)))
-##' u0$I[1] <- 1
-##'
-##' ## Create a SEIRvm model to simulate a trajectory over a year.
-##' model <- SEIRcm(
-##'     u0       = u0,
-##'     tspan    = 1:365,
-##'     beta     = 0.005,
-##'     epsilon  = 0.25,
-##'     gamma    = 0.077,
-##'     coupling = coupling)
-##'
-##' ## Run the model and display a summary of the output in the
-##' ## generated trajectory.
-##' result <- run(model)
-##' summary(result)
-##'
-##' ## View the content of the simulated trajectory. Here, only the
-##' ## first six lines of data are shown. Remove the 'head' function
-##' ## to show all data.
-##' head(trajectory(result))
-##'
-##' ## Plot the number of individuals
-##' plot(result, ~S+E+I+R)
-##'
-##' ## Plot the external force of infection
-##' plot(result, ~lambda_i)
-##'
-##' ## Plot the individual level prevalence.
-##' plot(result, I~S+E+I+R)
-##'
-##' ## Plot the node level prevalence.
-##' plot(result, I~S+E+I+R, level = 2)
-##'
-##' ## Plot the within-node prevalence.
-##' plot(result, I~S+E+I+R, level = 3)
 SEIRcm <- function(u0       = NULL,
                    tspan    = NULL,
                    beta     = NULL,
