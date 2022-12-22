@@ -18,6 +18,7 @@ load_config(movement_configfile)
 
 #jitter_set = c(0:10) #more sensible values
 jitter_set = c(0, 4, 15, 30, 46, 91, 183) #corresponding to half rounding units
+n_sim = 5 #How many simulations to do for each jitter value?
 round_set = c("day", "week", "month", "bimonth", "quarter", "halfyear", "year")
 #Do we want any jitter + rounding? does not seem particularly sensible, but
 #depends on relative values
@@ -53,11 +54,11 @@ movedata2networkDynamic <- function(data){
 true_network <- movedata2networkDynamic(true_data)
 
 jitter_networks <-
-  lapply(jitter_set, function(x){
+  lapply(rep(jitter_set, n_sim), function(x){
     coarsen_date(true_data, jitter = x, rounding_unit = FALSE) |>
-    movedata2networkDynamic()
+      movedata2networkDynamic()
   })
-names(jitter_networks)<-paste0("jitter (",jitter_set," days)")
+names(jitter_networks)<-paste0("jitter (",rep(jitter_set, n_sim)," days)")
 
 week_start <- wday(min(true_data[[movenetenv$options$movedata_cols$date]]))
 rounding_networks <-
@@ -97,19 +98,20 @@ max_reachability_for_period <- function(network, start, end){
 }
 
 selected_networks <- c(true=list(true_network),
-                       jitter_networks[paste0("jitter (",jitter_mmr," days)")],
+                       jitter_networks[names(jitter_networks) %in%
+                                       paste0("jitter (",jitter_mmr," days)")],
                        rounding_networks[paste0(round_mmr,"ly")])
 
 monthly_max_reachabilities <- tibble(.rows = length(months_in_data))
 
-for (netw_name in names(selected_networks)){
-  monthly_max_reachabilities[netw_name] <-
+for (netw_ind in seq_along(selected_networks)){
+  network <- selected_networks[[netw_ind]]
+  monthly_max_reachabilities[as.character(netw_ind)] <-
     sapply(months_in_data,
-           function(x){
-             max_reachability_for_period(selected_networks[[netw_name]],
-                                         x[[1]], x[[2]])
-          })
+           function(x){max_reachability_for_period(network,
+                                                   x[[1]], x[[2]])})
 }
+colnames(monthly_max_reachabilities) <- names(selected_networks)
 
 #Reformat to long tibble for plotting
 monthly_max_reachabilities <-
@@ -121,7 +123,7 @@ monthly_max_reachabilities <-
 #Set network as a factor with specific order (to avoid default alphabetic order)
 monthly_max_reachabilities$network <-
   factor(monthly_max_reachabilities$network,
-         levels = names(selected_networks))
+         levels = unique(names(selected_networks)))
 
 ########################################################
 ### Fig 1: boxplot of monthly maximum reachabilities ###
@@ -141,7 +143,7 @@ plot(p)
 ### Fig 2 prep: Extract overall maximum reachabilities ###
 ##########################################################
 
-jitter_measures <- tibble(jitter = jitter_set,
+jitter_measures <- tibble(jitter = rep(jitter_set,n_sim),
                           max_reachability = "")
 jitter_measures[, "max_reachability"] <-
   sapply(jitter_networks, function(x){max(tReach(x, graph.step.time = 1))})
@@ -158,10 +160,10 @@ round_measures[, "max_reachability"] <-
 
 q <-
   ggplot(data = jitter_measures,
-         aes(x = jitter, y = max_reachability)) +
+         aes(x = jitter, y = max_reachability, group = jitter)) +
   xlab("Jitter (days)") +
   ylab ("Maximum reachability") +
-  geom_point()
+  geom_boxplot()
 
 plot(q)
 
