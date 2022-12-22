@@ -132,7 +132,9 @@ static int SEIRcm_post_time_step(
         /* Add the contribution from node i.
          * Note the offset 'ldata[i + 1]' for the contact matrix
          * because the first item is the number of nodes. */
-        v_new[LAMBDA_I] += ldata[i + 1] * u_0[i * N_COMPARTMENTS + I];
+        if (u_0[i * N_COMPARTMENTS + I] > 0) {
+            v_new[LAMBDA_I] += ldata[i + 1];
+        }
     }
 
     /* Error check the new lambda_i value. */
