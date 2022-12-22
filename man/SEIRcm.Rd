@@ -19,9 +19,6 @@ node.}
 
 \item{tspan}{FIXME}
 
-\item{beta}{the transmission rate from susceptible to infected
-state.}
-
 \item{epsilon}{the incubation rate from exposed to infected state.}
 
 \item{gamma}{the recovery rate from infected to recovered state.}

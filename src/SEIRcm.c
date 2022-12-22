@@ -19,7 +19,7 @@ enum {LAMBDA_I};
 
 /* Offset in the global data (gdata) vector to parameters in the
  * model */
-enum {BETA, EPSILON, GAMMA};
+enum {EPSILON, GAMMA};
 
 /**
  * Susceptible to Exposed: S -> E
@@ -38,12 +38,7 @@ static double SEIRcm_S_to_E(
     const double *gdata,
     double t)
 {
-    const double n = u[S] + u[E] + u[I] + u[R];
-
-    if (n > 0)
-        return gdata[BETA] * u[S] * (u[I] / n + v[LAMBDA_I]);
-
-    return 0;
+    return u[S] * v[LAMBDA_I];
 }
 
 /**

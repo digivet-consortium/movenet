@@ -10,8 +10,6 @@ setClass("SEIRcm", contains = c("SimInf_model"))
 ##' @param infected logical vector with the infectious status in each
 ##'     node.
 ##' @param tspan FIXME
-##' @param beta the transmission rate from susceptible to infected
-##'     state.
 ##' @param epsilon the incubation rate from exposed to infected state.
 ##' @param gamma the recovery rate from infected to recovered state.
 ##' @param coupling a measure of the strength of the interaction
@@ -40,14 +38,6 @@ SEIRcm <- function(infected = NULL,
         I = as.integer(infected),
         R = rep(0, length(infected)))
 
-    ## Check beta
-    if (!is.numeric(beta) ||
-        length(beta) != 1 ||
-        !is.finite(beta) ||
-        any(beta < 0)) {
-        stop("'beta' must be a numeric value >= 0.", call. = FALSE)
-    }
-
     ## Check epsilon
     if (!is.numeric(epsilon) ||
         length(epsilon) != 1 ||
@@ -64,7 +54,7 @@ SEIRcm <- function(infected = NULL,
         stop("'gamma' must be a numeric value >= 0.", call. = FALSE)
     }
 
-    gdata <- c(beta = beta, epsilon = epsilon, gamma = gamma)
+    gdata <- c(epsilon = epsilon, gamma = gamma)
 
     ## Check coupling
     if (!is.numeric(coupling) ||
@@ -105,7 +95,7 @@ SEIRcm <- function(infected = NULL,
         nrow = 3,
         byrow = TRUE,
         dimnames = list(
-            c("S -> beta*S*(I/(S+E+I+R)+lambda_i) -> E",
+            c("S -> S*lambda_i -> E",
               "E -> epsilon*E -> I",
               "I -> gamma*I -> R"),
             NULL))
