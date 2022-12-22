@@ -113,6 +113,10 @@ for (netw_ind in seq_along(selected_networks)){
 }
 colnames(monthly_max_reachabilities) <- names(selected_networks)
 
+#N.B. This step is slow. Consider using a socket cluster, esp for a dashboard.
+#See https://bookdown.org/rdpeng/rprogdatascience/parallel-computation.html#
+#building-a-socket-cluster
+
 #Reformat to long tibble for plotting
 monthly_max_reachabilities <-
   monthly_max_reachabilities |>
@@ -153,6 +157,9 @@ round_measures <- tibble(round = c(1,7,30.4,60.8,91.3,182.5,365),
 round_measures[, "max_reachability"] <-
   sapply(rounding_networks, function(x){max(tReach(x, graph.step.time = 1))})
 
+#N.B. This step is super-slow. Consider using a socket cluster, esp for a
+#dashboard. See https://bookdown.org/rdpeng/rprogdatascience/parallel-
+#computation.html#building-a-socket-cluster
 
 ##########################################################################
 ### Fig 2: Max reachabilities for a diverse range of jitter & rounding ###
