@@ -5,7 +5,7 @@
 \title{Create an SEIR model with contact matrix}
 \usage{
 SEIRcm(
-  u0 = NULL,
+  infected = NULL,
   tspan = NULL,
   beta = NULL,
   epsilon = NULL,
@@ -14,7 +14,8 @@ SEIRcm(
 )
 }
 \arguments{
-\item{u0}{FIXME}
+\item{infected}{logical vector with the infectious status in each
+node.}
 
 \item{tspan}{FIXME}
 

@@ -7,7 +7,8 @@ setClass("SEIRcm", contains = c("SimInf_model"))
 
 ##' Create an SEIR model with contact matrix
 ##'
-##' @param u0 FIXME
+##' @param infected logical vector with the infectious status in each
+##'     node.
 ##' @param tspan FIXME
 ##' @param beta the transmission rate from susceptible to infected
 ##'     state.
@@ -18,7 +19,7 @@ setClass("SEIRcm", contains = c("SimInf_model"))
 ##'     the relative strength of transmission to node \code{i} from
 ##'     node \code{j}.
 ##' @export
-SEIRcm <- function(u0       = NULL,
+SEIRcm <- function(infected = NULL,
                    tspan    = NULL,
                    beta     = NULL,
                    epsilon  = NULL,
@@ -26,12 +27,18 @@ SEIRcm <- function(u0       = NULL,
                    coupling = NULL) {
     compartments <- c("S", "E", "I", "R")
 
-    ## Check u0
-    if (!is.data.frame(u0))
-        u0 <- as.data.frame(u0)
-    if (!all(compartments %in% names(u0)))
-        stop("Missing columns in u0.", call. = FALSE)
-    u0 <- u0[, compartments, drop = FALSE]
+    ## Check infected.
+    infected <- as.logical(infected)
+    if (length(infected) < 1 || any(!is.finite(infected))) {
+        stop("'infected' must be a logical vector.", call. = FALSE)
+    }
+
+    ## Create u0.
+    u0 <- data.frame(
+        S = as.integer(!infected),
+        E = rep(0, length(infected)),
+        I = as.integer(infected),
+        R = rep(0, length(infected)))
 
     ## Check beta
     if (!is.numeric(beta) ||
