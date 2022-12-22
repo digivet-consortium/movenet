@@ -125,19 +125,14 @@ static int SEIRcm_post_time_step(
     /* Determine the number of nodes in the model. */
     const int n_nodes = (int)ldata[0];
 
-    /* Determine the number of individuals in the node. */
-    const double n = u[S] + u[E] + u[I] + u[R];
-
     /* First, clear lambda_i, then iterate over all nodes and add the
-     * contributions from infected individuals. Note the offset
-     * 'ldata[i + 1]' for the coupling because the first item is the
-     * number of nodes. */
+     * contributions from infected nodes. */
     v_new[LAMBDA_I] = 0.0;
-    if (n > 0) {
-        for (int i = 0; i < n_nodes; i++) {
-            /* Add the contribution from node i. */
-            v_new[LAMBDA_I] += ldata[i + 1] * u_0[i * N_COMPARTMENTS + I] / n;
-        }
+    for (int i = 0; i < n_nodes; i++) {
+        /* Add the contribution from node i.
+         * Note the offset 'ldata[i + 1]' for the contact matrix
+         * because the first item is the number of nodes. */
+        v_new[LAMBDA_I] += ldata[i + 1] * u_0[i * N_COMPARTMENTS + I];
     }
 
     /* Error check the new lambda_i value. */
