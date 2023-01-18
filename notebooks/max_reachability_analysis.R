@@ -1,13 +1,8 @@
 ##############
 ### Set-up ###
 ##############
-
-library(networkDynamic) #networkDynamic
-library(tsna) #tReach, [tPath]
-library(dplyr) #select [can be avoided]
-library(tidyr) #pivot_longer
-library(ggplot2)
 library(lubridate) #wday
+library(tibble) #tibble
 
 load_all()
 
@@ -16,10 +11,10 @@ movement_datafile <-
 movement_configfile <- "ScotEID"
 load_config(movement_configfile)
 
-#jitter_set = c(0:10) #more sensible values
-jitter_set = c(0, 4, 15, 30, 46, 91, 183) #corresponding to half rounding units
-n_sim = 5 #How many simulations to do for each jitter value?
-round_set = c("day", "week", "month", "bimonth", "quarter", "halfyear", "year")
+#jitter_set <- c(0:10) #more sensible values
+jitter_set <- c(0, 4, 15, 30, 46, 91, 183) #corresponding to half rounding units
+n_sim <- 5 #How many simulations to do for each jitter value?
+round_set <- c("day", "week", "month", "bimonth", "quarter", "halfyear", "year")
 #Do we want any jitter + rounding? does not seem particularly sensible, but
 #depends on relative values
 
@@ -27,6 +22,9 @@ round_set = c("day", "week", "month", "bimonth", "quarter", "halfyear", "year")
 #Make sure these are included in jitter_set and round_set above
 jitter_mmr <- c(4, 15)
 round_mmr <- c("week", "month")
+
+#Parallelisation
+n_threads <- 4
 
 #######################################
 ### Reformat data & create networks ###
@@ -40,17 +38,6 @@ anonymisation_m <-
 
 true_data <- anonymisation_m$data
 
-#create dynamic networks
-movedata2networkDynamic <- function(data){
-  nd_data <-
-    data |>
-    select(onset = 3, terminus = 3, tail = 1, head = 2) |>
-    lapply(as.integer) |>  #networkDynamic doesnt seem to like tibbles, need to
-    data.frame()           #convert to df - hence using lapply cf purrr::modify
-
-  networkDynamic(edge.spells = nd_data)
-}
-
 true_network <- movedata2networkDynamic(true_data)
 
 jitter_networks <-
@@ -58,7 +45,31 @@ jitter_networks <-
     coarsen_date(true_data, jitter = x, rounding_unit = FALSE) |>
       movedata2networkDynamic()
   })
-names(jitter_networks)<-paste0("jitter (",rep(jitter_set, n_sim)," days)")
+names(jitter_networks) <- paste0("jitter (",rep(jitter_set, n_sim)," days)")
+
+# create_rounding_networks <- function(round_set, n_threads, ...){
+#   cl <- makeCluster(n_threads)
+#   clusterExport(cl, c("coarsen_date", "movedata2networkDynamic",
+#                       "has_element", "floor_date", "select", "networkDynamic",
+#                       "movenetenv"))
+#   clusterExport(cl, ...names(), envir = environment())
+#   clusterEvalQ(cl, {
+#     library(checkmate)
+#     library(dplyr)
+#     #print(has_element(names(movenetenv$options), "movedata_cols"))
+#   })
+#   rounding_networks <-
+#     parLapply(cl, round_set,
+#               function(x){coarsen_date(rounding_unit = x, ...) |>
+#                   movedata2networkDynamic()})
+#   stopCluster(cl)
+#   return(rounding_networks)
+# }
+#movenetenv is passed on to cluster (confirmed!), but somehow it raises error
+#as if config file not loaded
+
+# create_rounding_networks(round_set, n_threads, data = true_data,
+#                          jitter = FALSE, week_start = week_start)
 
 week_start <- wday(min(true_data[[movenetenv$options$movedata_cols$date]]))
 rounding_networks <-
@@ -73,112 +84,48 @@ names(rounding_networks)<-paste0(round_set,"ly")
 ### Fig 1 prep: Extract monthly maximum reachabilities ###
 ##########################################################
 
-#Extract months covered in dataset
-extract_months <- function(data){
-  start_dates <- seq(floor_date(min(data),"month"),
-                     floor_date(max(data),"month"),
-                     by = "month")
-  end_dates <- as.integer(start_dates + months(1))
-  start_dates <- as.integer(start_dates)
-  Map(c,start_dates,end_dates)
-}
-
 months_in_data <-
   extract_months(true_data[[movenetenv$options$movedata_cols$date]])
 
 #Extract monthly max reachabilities
-max_reachability_for_period <- function(network, start, end){
-  network |>
-    network.extract(onset = start, terminus = end,
-                    rule = "any",
-                    trim.spells = TRUE) |> #essential: eliminates edge activity
-                                           #spells outside desired time frame
-    tReach(graph.step.time = 1) |> #identifies reachable sets
-    max()
-}
-
 selected_networks <- c(true=list(true_network),
                        jitter_networks[names(jitter_networks) %in%
                                        paste0("jitter (",jitter_mmr," days)")],
                        rounding_networks[paste0(round_mmr,"ly")])
 
-monthly_max_reachabilities <- tibble(.rows = length(months_in_data))
+monthly_networks <- extract_monthly_networks(selected_networks, n_threads,
+                                             months_in_data)
 
-for (netw_ind in seq_along(selected_networks)){
-  network <- selected_networks[[netw_ind]]
+monthly_max_reachabilities <- tibble(.rows = length(months_in_data))
+for (netw_ind in seq_along(monthly_networks)){
+  network <- monthly_networks[[netw_ind]]
   monthly_max_reachabilities[as.character(netw_ind)] <-
-    sapply(months_in_data,
-           function(x){max_reachability_for_period(network,
-                                                   x[[1]], x[[2]])})
+    parallel_max_reachabilities(network, n_threads)
 }
 colnames(monthly_max_reachabilities) <- names(selected_networks)
-
-#N.B. This step is slow. Consider using a socket cluster, esp for a dashboard.
-#See https://bookdown.org/rdpeng/rprogdatascience/parallel-computation.html#
-#building-a-socket-cluster
-
-#Reformat to long tibble for plotting
-monthly_max_reachabilities <-
-  monthly_max_reachabilities |>
-  pivot_longer(everything(),
-               names_to = "network",
-               values_to = "max_reachability")
-
-#Set network as a factor with specific order (to avoid default alphabetic order)
-monthly_max_reachabilities$network <-
-  factor(monthly_max_reachabilities$network,
-         levels = unique(names(selected_networks)))
 
 ########################################################
 ### Fig 1: boxplot of monthly maximum reachabilities ###
 ########################################################
 
-p <-
-  ggplot(data = monthly_max_reachabilities,
-         aes(x = network, y = max_reachability)) +
-  xlab("Movement network") +
-  ylab ("Monthly maximum reachability") +
-  geom_boxplot()
-
-plot(p)
+boxplot_monthly_measures(monthly_max_reachabilities, "maximum reachability")
 
 
 ##########################################################
 ### Fig 2 prep: Extract overall maximum reachabilities ###
 ##########################################################
-
 jitter_measures <- tibble(jitter = rep(jitter_set,n_sim),
                           max_reachability = "")
 jitter_measures[, "max_reachability"] <-
-  sapply(jitter_networks, function(x){max(tReach(x, graph.step.time = 1))})
+  parallel_max_reachabilities(jitter_networks, n_threads)
 
 round_measures <- tibble(round = c(1,7,30.4,60.8,91.3,182.5,365),
                          max_reachability = "")
 round_measures[, "max_reachability"] <-
-  sapply(rounding_networks, function(x){max(tReach(x, graph.step.time = 1))})
-
-#N.B. This step is super-slow. Consider using a socket cluster, esp for a
-#dashboard. See https://bookdown.org/rdpeng/rprogdatascience/parallel-
-#computation.html#building-a-socket-cluster
+  parallel_max_reachabilities(rounding_networks, n_threads)
 
 ##########################################################################
 ### Fig 2: Max reachabilities for a diverse range of jitter & rounding ###
 ##########################################################################
-
-q <-
-  ggplot(data = jitter_measures,
-         aes(x = jitter, y = max_reachability, group = jitter)) +
-  xlab("Jitter (days)") +
-  ylab ("Maximum reachability") +
-  geom_boxplot()
-
-plot(q)
-
-r <-
-  ggplot(data = round_measures,
-         aes(x = round, y = max_reachability)) +
-  xlab("Rounding unit equivalent (days)") +
-  ylab ("Maximum reachability") +
-  geom_point()
-
-plot(r)
+plot_measure_over_anonymisation_gradient(jitter_measures, "Max reachability", "jitter")
+plot_measure_over_anonymisation_gradient(round_measures, "Max reachability", "rounding")
