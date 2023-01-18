@@ -26,9 +26,12 @@ Imports:
     igraph,
     lubridate (>= 1.9.0),
     magrittr,
+    networkDynamic,
+    parallel,
     plyr,
     purrr,
     Rcpp,
     readr,
     rmarkdown,
+    tsna,
     yaml

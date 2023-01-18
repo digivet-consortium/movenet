@@ -4,7 +4,14 @@
 \alias{coarsen_date}
 \title{Jitter and/or round down movement dates, and/or summarise data by time unit}
 \usage{
-coarsen_date(data, jitter, rounding_unit, sum_weight = TRUE, ...)
+coarsen_date(
+  data,
+  jitter,
+  rounding_unit,
+  week_start = getOption("lubridate.week.start", 7),
+  sum_weight = TRUE,
+  ...
+)
 }
 \arguments{
 \item{data}{A movement data frame.}
@@ -19,6 +26,12 @@ not apply any rounding. Valid base units are \code{day}, \code{week}, \code{mont
 English abbreviations as in the \code{\link[lubridate:period]{lubridate::period()}} constructor are
 allowed. Rounding to multiples of units (except weeks) is supported.}
 
+\item{week_start}{Week start day, only relevant for rounding down dates and/
+or aggregating data by week. Default is the value of the
+\code{lubridate.week.start} option, or 7 (Sunday) if this option is not set.
+Full or abbreviated names of the days of the week can be in English or as
+provided by the current locale.}
+
 \item{sum_weight}{If this is \code{TRUE} (the default), weights are summed over
 the specified \code{rounding_unit}, for all rows with the same origin and
 destination. The name of the weight column will remain the same.}
@@ -27,10 +40,7 @@ destination. The name of the weight column will remain the same.}
 alternative summary function(s), of the form name = value, to pass on to
 \code{\link[dplyr:summarise]{dplyr::summarise()}}. Any summary functions will be applied to \code{data},
 grouped by origin, destination, and rounded-down date. The specified name
-will be the column name in the resulting data frame. Be careful when using
-existing names: the corresponding columns will be immediately updated with
-the new data and this can affect subsequent operations referring to this
-name.
+will be the column name in the resulting data frame.
 The value can be:
 \itemize{
 \item A vector of length 1, e.g. \code{min(x)}, \code{n()}, or \code{sum(is.na(y))}.
@@ -79,12 +89,17 @@ If \code{rounding_unit} is \code{FALSE}, no rounding is applied.
 
 If \code{rounding_unit} is a character string and \code{sum_weight} is \code{TRUE}, weights
 are summed over all rows in \code{data} with the same origin, destination, and
-rounded-down date.
+rounded-down date. The summed weight column is temporarily renamed, so that
+any additional weight-dependent summary functions passed through \code{...} use
+the original weights rather than the sums.
 If \code{rounding_unit} is \code{FALSE}, \code{sum_weight} is ignored.
 
 If \code{rounding_unit} is a character string and any summary functions are
 provided through \code{...}, the specified data are summarised accordingly, over
 all rows in \code{data} with the same origin, destination, and rounded-down date.
+Be careful when using existing names: the corresponding columns will be
+immediately updated with the new data and this can affect subsequent
+operations referring to this name.
 If \code{rounding_unit} is \code{FALSE}, \code{...} is ignored.
 
 Columns for which a summary function is not provided, are dropped from
