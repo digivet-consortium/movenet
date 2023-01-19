@@ -47,7 +47,7 @@ parallel_max_reachabilities <- function(networks, n_threads){
 
 #' Extract months covered in movement dataset
 #'
-#' @param data Movenet movement data
+#' @param data Date column of movement data
 #'
 #' @importFrom lubridate floor_date
 #'
