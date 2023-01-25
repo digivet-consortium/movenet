@@ -90,18 +90,18 @@ extract_monthly_networks <- function(networks, n_threads, months_in_data){
   return(monthly_networks)
 }
 
-#' Draw boxplot of distributions of monthly values of a selected network measure, for various jittered & rounded networks
+#' Draw violin plot of distributions of monthly values of a selected network measure, for various jittered & rounded networks
 #'
 #' @param monthly_data tibble with measure values, for monthly networks
 #' @param measure_name measure name (to refer to in y axis)
 #'
 #' @return
 #'
+#' @importFrom stringr str_wrap
 #' @importFrom tidyr pivot_longer
 #' @import ggplot2
 #'
-#' @export
-boxplot_monthly_measures <- function(monthly_data, measure_name){
+violinplot_monthly_measures <- function(monthly_data, measure_name){
 
   #Reformat to long tibble for plotting
   monthly_measures <-
@@ -120,7 +120,10 @@ boxplot_monthly_measures <- function(monthly_data, measure_name){
            aes(x = network, y = .data[[measure_name]])) +
     xlab("Movement network") +
     ylab(paste("Monthly", measure_name)) +
-    geom_boxplot()
+    scale_x_discrete(labels = function(x) str_wrap(as.character(x), width = 9))+
+    geom_violin(trim = FALSE)
+
+  p <- p + geom_boxplot(width = 0.1)
 
   plot(p)
 }

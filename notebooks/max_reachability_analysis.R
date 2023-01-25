@@ -108,7 +108,7 @@ colnames(monthly_max_reachabilities) <- names(selected_networks)
 ### Fig 1: boxplot of monthly maximum reachabilities ###
 ########################################################
 
-boxplot_monthly_measures(monthly_max_reachabilities, "maximum reachability")
+violinplot_monthly_measures(monthly_max_reachabilities, "maximum reachability")
 
 
 ##########################################################
