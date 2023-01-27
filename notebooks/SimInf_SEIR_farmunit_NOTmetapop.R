@@ -7,7 +7,6 @@ movement_configfile <- "ScotEID"
 holding_datafile <- "tests/testthat/test_input_files/test_holdingdata_generic.csv"
 holding_configfile <- "tests/testthat/test_input_files/fakeScotEID_holding.yml"
 
-beta = 0 #within-farm transmission; 0 for farm-unit model
 epsilon = #farm-level incubation rate (same as for individual?)
 gamma =  #mortality rate (how does this work for farm level?)
 
