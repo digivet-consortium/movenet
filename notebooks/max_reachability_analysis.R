@@ -3,13 +3,21 @@
 ##############
 library(lubridate) #wday
 library(tibble) #tibble
+library(pbapply)
 
-load_all()
+#load_all()
 
 movement_datafile <-
   "tests/testthat/test_input_files/sample_pigs_UK_with_dep_arr_dates.csv"
 movement_configfile <- "ScotEID"
 load_config(movement_configfile)
+
+# Danish data, available to Matt only:
+movement_datafile <- "/Users/matthewdenwood/Documents/Research/Projects/DigiVet/CS2/DK_pig_movements/svine_flytninger_2018_2020.csv"
+movement_configfile <- "Denmark_processed"
+load_config(movement_configfile)
+
+date_col <- movenet:::movenetenv$options$movedata_cols$date
 
 #jitter_set <- c(0:10) #more sensible values
 jitter_set <- c(0, 4, 15, 30, 46, 91, 183) #corresponding to half rounding units
@@ -41,7 +49,7 @@ true_data <- anonymisation_m$data
 true_network <- movedata2networkDynamic(true_data)
 
 jitter_networks <-
-  lapply(rep(jitter_set, n_sim), function(x){
+  pblapply(rep(jitter_set, n_sim), function(x){
     coarsen_date(true_data, jitter = x, rounding_unit = FALSE) |>
       movedata2networkDynamic()
   })
@@ -68,12 +76,24 @@ names(jitter_networks) <- paste0("jitter (",rep(jitter_set, n_sim)," days)")
 #movenetenv is passed on to cluster (confirmed!), but somehow it raises error
 #as if config file not loaded
 
+## Comment from Matt:  on a socket type cluster the R sessions loaded are "fresh",
+## which is why the config file is not loaded. If you do the following it should
+## hopefully work (untested):
+if(FALSE){
+  clusterExport(cl, "movement_datafile")
+  clusterEvalQ(cl, {
+    library("movenet")
+    load_config(movement_configfile)
+  })
+}
+## This isn't necessary on Fork clusters, but these are not available on Windows
+
 # create_rounding_networks(round_set, n_threads, data = true_data,
 #                          jitter = FALSE, week_start = week_start)
 
-week_start <- wday(min(true_data[[movenetenv$options$movedata_cols$date]]))
+week_start <- wday(min(true_data[[date_col]]))
 rounding_networks <-
-  lapply(round_set, function(x){
+  pblapply(round_set, function(x){
     coarsen_date(true_data, jitter = FALSE, rounding_unit = x,
                  week_start = week_start) |>
       movedata2networkDynamic()
@@ -85,7 +105,7 @@ names(rounding_networks)<-paste0(round_set,"ly")
 ##########################################################
 
 months_in_data <-
-  extract_months(true_data[[movenetenv$options$movedata_cols$date]])
+  extract_months(true_data[[date_col]])
 
 #Extract monthly max reachabilities
 selected_networks <- c(true=list(true_network),
