@@ -7,8 +7,10 @@ movement_configfile <- "ScotEID"
 holding_datafile <- "tests/testthat/test_input_files/test_holdingdata_generic.csv"
 holding_configfile <- "tests/testthat/test_input_files/fakeScotEID_holding.yml"
 
-epsilon = #farm-level incubation rate (same as for individual?)
-gamma =  #mortality rate (how does this work for farm level?)
+epsilon_rate = #farm-level incubation rate (same as for individual?)
+epsilon_shape = 1
+gamma_rate =  #mortality rate (how does this work for farm level?)
+gamma_shape = 1
 
 days = 365 #number of days to run the simulation. Default is 365 days.
 stride = 1 #the increment (integer) between days that are recorded in the model
@@ -60,9 +62,11 @@ infected[n] <- 1
 
 model <- SEIRcm(infected = infected,
                 tspan = tspan,
-                epsilon = epsilon,
-                gamma = gamma,
-                coupling = contact_matrix)
+                epsilon_rate = epsilon_rate,
+                epsilon_shape = epsilon_shape,
+                gamma_rate = gamma_rate,
+                gamma_shape = gamma_shape,
+                contact_matrix = contact_matrix)
 
 
 #################
