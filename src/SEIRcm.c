@@ -14,12 +14,12 @@
  */
 enum {S, E, I, R, N_COMPARTMENTS};
 
-/* Offset in the real-valued continuous state vector. */
+/* Offset in the real-valued continuous state vector (v). */
 enum {LAMBDA_I};
 
-/* Offset in the global data (gdata) vector to parameters in the
+/* Offset in the local data (ldata) vector to parameters in the
  * model */
-enum {EPSILON, GAMMA};
+enum {EPSILON_RATE, EPSILON_SHAPE, GAMMA_RATE, GAMMA_SHAPE, N_CONTACTS, CONTACTS};
 
 /**
  * Susceptible to Exposed: S -> E
@@ -38,7 +38,51 @@ static double SEIRcm_S_to_E(
     const double *gdata,
     double t)
 {
-    return u[S] * v[LAMBDA_I];
+    SIMINF_UNUSED(ldata);
+    SIMINF_UNUSED(gdata);
+    SIMINF_UNUSED(t);
+
+    if (u[S] == 1 &&
+        u[E] == 0 &&
+        u[I] == 0 &&
+        u[R] == 0)
+    {
+        return v[LAMBDA_I];
+    }
+
+    return 0;
+}
+
+/**
+ * Exposed stages: E_{n} -> E_{n+1}
+ *
+ * @param u The compartment state vector in node.
+ * @param v The continuous state vector in node.
+ * @param ldata The local data vector for the node.
+ * @param gdata The global data vector.
+ * @param t Current time.
+ * @return propensity.
+ */
+static double SEIRcm_E_stages(
+    const int *u,
+    const double *v,
+    const double *ldata,
+    const double *gdata,
+    double t)
+{
+    SIMINF_UNUSED(v);
+    SIMINF_UNUSED(gdata);
+    SIMINF_UNUSED(t);
+
+    if (u[S] == 1 &&
+        u[E]  > 0 && u[E] < (int)ldata[EPSILON_SHAPE] &&
+        u[I] == 0 &&
+        u[R] == 0)
+    {
+        return ldata[EPSILON_RATE];
+    }
+
+    return 0;
 }
 
 /**
@@ -58,7 +102,51 @@ static double SEIRcm_E_to_I(
     const double *gdata,
     double t)
 {
-    return gdata[EPSILON] * u[E];
+    SIMINF_UNUSED(v);
+    SIMINF_UNUSED(gdata);
+    SIMINF_UNUSED(t);
+
+    if (u[S] == 1 &&
+        u[E]  > 0 && u[E] == (int)ldata[EPSILON_SHAPE] &&
+        u[I] == 0 &&
+        u[R] == 0)
+    {
+        return ldata[EPSILON_RATE];
+    }
+
+    return 0;
+}
+
+/**
+ *  Infected stages: I_{n} -> I_{n+1}
+ *
+ * @param u The compartment state vector in node.
+ * @param v The continuous state vector in node.
+ * @param ldata The local data vector for node.
+ * @param gdata The global data vector.
+ * @param t Current time.
+ * @return propensity.
+ */
+static double SEIRcm_I_stages(
+    const int *u,
+    const double *v,
+    const double *ldata,
+    const double *gdata,
+    double t)
+{
+    SIMINF_UNUSED(v);
+    SIMINF_UNUSED(gdata);
+    SIMINF_UNUSED(t);
+
+    if (u[S] == 1 &&
+        u[E]  > 0 && u[E] > (int)ldata[EPSILON_SHAPE] &&
+        u[I]  > 0 && u[I] < (int)ldata[GAMMA_SHAPE]   &&
+        u[R] == 0)
+    {
+        return ldata[GAMMA_RATE];
+    }
+
+    return 0;
 }
 
 /**
@@ -78,7 +166,19 @@ static double SEIRcm_I_to_R(
     const double *gdata,
     double t)
 {
-    return gdata[GAMMA] * u[I];
+    SIMINF_UNUSED(v);
+    SIMINF_UNUSED(gdata);
+    SIMINF_UNUSED(t);
+
+    if (u[S] == 1 &&
+        u[E]  > 0 && u[E]  > (int)ldata[EPSILON_SHAPE] &&
+        u[I]  > 0 && u[I] == (int)ldata[GAMMA_SHAPE]   &&
+        u[R] == 0)
+    {
+        return ldata[GAMMA_RATE];
+    }
+
+    return 0;
 }
 
 /**
@@ -122,18 +222,22 @@ static int SEIRcm_post_time_step(
      */
     const int *u_0 = &u[-N_COMPARTMENTS * node];
 
-    /* Determine the number of nodes in the model. */
-    const int n_nodes = (int)ldata[0];
+    /* Determine the number of contacts in the contact matrix. */
+    const int n_contacts = (int)ldata[N_CONTACTS];
 
-    /* First, clear lambda_i, then iterate over all nodes and add the
-     * contributions from infected nodes. */
+    /* First, clear lambda_i, then iterate over all nodes in the
+     * contact matrix and add the contributions from infected
+     * nodes. */
     v_new[LAMBDA_I] = 0.0;
-    for (int i = 0; i < n_nodes; i++) {
-        /* Add the contribution from node i.
-         * Note the offset 'ldata[i + 1]' for the contact matrix
-         * because the first item is the number of nodes. */
-        if (u_0[i * N_COMPARTMENTS + I] > 0) {
-            v_new[LAMBDA_I] += ldata[i + 1];
+    for (int i = 0, j = 0; i < n_contacts; i++, j += N_COMPARTMENTS) {
+        /* Check if node i is in infected stage. */
+        if (u_0[j + S] == 1 &&
+            u_0[j + E]  > 0 && u_0[j + E]  > (int)ldata[EPSILON_SHAPE] &&
+            u_0[j + I]  > 0 && u_0[j + I] <= (int)ldata[GAMMA_SHAPE]   &&
+            u_0[j + R] == 0)
+        {
+            /* Add the contribution from node i. */
+            v_new[LAMBDA_I] += ldata[i + CONTACTS];
         }
     }
 
@@ -159,7 +263,12 @@ static int SEIRcm_post_time_step(
 static SEXP SIMINF_MODEL_RUN(SEXP model, SEXP solver)
 {
     static SEXP(*SimInf_run)(SEXP, SEXP, TRFun*, PTSFun) = NULL;
-    TRFun tr_fun[] = {&SEIRcm_S_to_E, &SEIRcm_E_to_I, &SEIRcm_I_to_R};
+    TRFun tr_fun[] = {
+        &SEIRcm_S_to_E,
+        &SEIRcm_E_stages,
+        &SEIRcm_E_to_I,
+        &SEIRcm_I_stages,
+        &SEIRcm_I_to_R};
 
     if (!SimInf_run) {
         SimInf_run = (SEXP(*)(SEXP, SEXP, TRFun*, PTSFun))

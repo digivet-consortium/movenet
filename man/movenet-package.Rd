@@ -14,6 +14,7 @@ What the package does (one paragraph).
 Authors:
 \itemize{
   \item Carlijn Bogaardt \email{Carlijn.Bogaardt@glasgow.ac.uk}
+  \item Stefan Widgren \email{stefan.widgren@sva.se} (\href{https://orcid.org/0000-0001-5745-2284}{ORCID})
 }
 
 }
