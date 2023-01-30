@@ -1,26 +1,25 @@
 Package: movenet
 Title: What the Package Does (One Line, Title Case)
 Version: 0.1.0-1
-Authors@R: 
-    c(person("Matt", "Denwood", , "md@sund.ku.dk", role = c("aut", "cre")),
-      person("Carlijn", "Bogaardt", , "Carlijn.Bogaardt@glasgow.ac.uk", role = "aut")
-      )
+Authors@R:
+    c(person(given = "Matt", family = "Denwood",
+             email = "md@sund.ku.dk", role = c("aut", "cre")),
+      person(given = "Carlijn", family = "Bogaardt",
+             email = "Carlijn.Bogaardt@glasgow.ac.uk", role = "aut"),
+      person(given = "Stefan", family = "Widgren",
+             email = "stefan.widgren@sva.se", role = "aut",
+             comment = c(ORCID = "0000-0001-5745-2284")))
 Description: What the package does (one paragraph).
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.2
-Suggests: 
-    knitr,
-    spelling,
-    testthat (>= 3.0.0),
-    withr
+RoxygenNote: 7.2.3
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Language: en-GB
-LinkingTo: 
-    Rcpp
-Imports: 
+Depends:
+    SimInf(>= 9.3.1)
+Imports:
     checkmate,
     dplyr,
     igraph,
@@ -30,8 +29,14 @@ Imports:
     parallel,
     plyr,
     purrr,
-    Rcpp,
     readr,
     rmarkdown,
     tsna,
     yaml
+Suggests:
+    knitr,
+    spelling,
+    testthat (>= 3.0.0),
+    withr
+LinkingTo: SimInf
+NeedsCompilation: yes
