@@ -13,7 +13,8 @@ movement_configfile <- "ScotEID"
 load_config(movement_configfile)
 
 # Danish data, available to Matt only:
-movement_datafile <- "/Users/matthewdenwood/Documents/Research/Projects/DigiVet/CS2/DK_pig_movements/svine_flytninger_2018_2020.csv"
+# movement_datafile <- "/Users/matthewdenwood/Documents/Research/Projects/DigiVet/CS2/DK_pig_movements/svine_flytninger_2018_2020.csv"
+movement_datafile <- "/Users/matthewdenwood/Documents/Research/Projects/DigiVet/CS2/DK_pig_movements/svine_flytninger_2020.csv"
 movement_configfile <- "Denmark_processed"
 load_config(movement_configfile)
 
@@ -118,6 +119,7 @@ monthly_networks <- extract_monthly_networks(selected_networks, n_threads,
 
 monthly_max_reachabilities <- tibble(.rows = length(months_in_data))
 for (netw_ind in seq_along(monthly_networks)){
+  cat("Running network ", netw_ind, " of ", length(monthly_networks), "...\n", sep="")
   network <- monthly_networks[[netw_ind]]
   monthly_max_reachabilities[as.character(netw_ind)] <-
     parallel_max_reachabilities(network, n_threads)
