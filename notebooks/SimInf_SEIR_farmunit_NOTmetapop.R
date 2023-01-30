@@ -7,7 +7,6 @@ movement_configfile <- "ScotEID"
 holding_datafile <- "tests/testthat/test_input_files/test_holdingdata_generic.csv"
 holding_configfile <- "tests/testthat/test_input_files/fakeScotEID_holding.yml"
 
-beta = 0 #within-farm transmission; 0 for farm-unit model
 epsilon = #farm-level incubation rate (same as for individual?)
 gamma =  #mortality rate (how does this work for farm level?)
 
@@ -54,22 +53,16 @@ n <- length(nodes$id) #number of farms
 
 tspan <- seq(from = 1L, to = as.integer(days), by = as.integer(stride))
 
-u0 <- data.frame(S = rep(1,n), #all nodes have pop size 1 and start susceptible
-                 E = rep(0,n),
-                 I = rep(0,n),
-                 R = rep(0,n))
-
 #Make a single random node infectious
+infected <- rep(0,n)
 infected_node <- sample(n,1)
-u0[infected_node, 1] <- 0 #change S to 0 for infected node
-u0[infected_node, 3] <- 1 #change I to 1 for infected node
+infected[n] <- 1
 
-model <- SEIRcm(u0 = u0,
+model <- SEIRcm(infected = infected,
                 tspan = tspan,
-                beta = beta, #within-farm f.o.i.; 0 for farm-unit model
                 epsilon = epsilon,
                 gamma = gamma,
-                contact_matrix = contact_matrix)
+                coupling = contact_matrix)
 
 
 #################
