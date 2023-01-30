@@ -1,5 +1,7 @@
+#test everything with non-consecutive holding id's!!
+
 load_all()
-library(tidyverse)
+library(tidyverse) #
 library(sf) #st_as_sf(), st_distance()
 library(units) #drop_units()
 
@@ -33,28 +35,31 @@ anonymisation_h <-
   anonymise("", key = anonymisation_m$key)
 
 
+#empty df w all possible combinations of holdings in the holding datafile
+holding_df <-
+  expand.grid(anonymisation_h$data[[id]], anonymisation_h$data[[id]]) |>
+  `colnames<-`(c(from, to))
 
 #matrix containing average number of pigs transported per day
-#assumes all farms sending & receiving; may want to fill into complete matrix
 transport_matrix <-
   anonymisation_m$data %>%
     group_by(.data[[from]], .data[[to]]) %>%
     summarise(prob = sum(.data[[weight]])/365) %>%
     ungroup() %>%
+    right_join(holding_df, by=c(from, to)) %>%
+    replace_na(list(prob=0)) %>%
     arrange(as.numeric(.data[[to]])) %>%
     pivot_wider(names_from = all_of(to),
-                values_from = prob,
-                values_fill = 0) %>%
+                values_from = prob) %>%
     arrange(as.numeric(.data[[from]])) %>%
-    select(-all_of(from)) %>%
-    as.matrix(rownames.force = TRUE)
-
+    column_to_rownames(from) %>%
+    as.matrix()
 
 #distance matrix between farms
 distance_matrix <-
-  anonymisation_h$data %>%
+  anonymisation_h$data |>
   st_as_sf(coords = c(coord_x, coord_y),
-           crs = crs) %>%
+           crs = crs) |>
   st_distance()
 
 #matrix containing daily probabilities of becoming infected through local spread
@@ -66,7 +71,7 @@ distance_matrix <-
 #from 0.5 to 1 km: 0.002
 #from 1 to 2km: 0.000015
 local_spread <-
-  distance_matrix %>%
+  distance_matrix |>
   drop_units()
 
 local_spread[local_spread > 0 & local_spread < 100] <- 0.1
