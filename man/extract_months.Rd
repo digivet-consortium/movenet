@@ -7,7 +7,7 @@
 extract_months(data)
 }
 \arguments{
-\item{data}{Movenet movement data}
+\item{data}{Date column of movement data}
 }
 \value{
 List of c(start date, end date) for each month covered in the dataset, with dates in int format
