@@ -6,7 +6,7 @@ movedata_fileopts:
 
 movedata_cols:
   move_ID: "ID" #Column name or number for Transport identifier
-  origin_ID: "CHRNR_AFSENDER" #Column name or number for Identifier of origin holding/establishment/..
-  dest_ID: "CHRNR_MODTAGER" #Column name or number for Identifier of destination holding/establishment/..
-  move_date: "DATO_FLYTNING" #Column name or number for Date of transport (if multiple date types are available, use the one deemed most appropriate)
-  nr_pigs: "ANTAL_FLYT_DYR" #Column name or number for Number of pigs transported
+  from: "CHRNR_AFSENDER" #Column name or number for Identifier of origin holding/establishment/..
+  to: "CHRNR_MODTAGER" #Column name or number for Identifier of destination holding/establishment/..
+  date: "DATO_FLYTNING" #Column name or number for Date of transport (if multiple date types are available, use the one deemed most appropriate)
+  weight: "ANTAL_FLYT_DYR" #Column name or number for Number of pigs transported

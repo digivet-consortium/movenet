@@ -6,6 +6,7 @@
 #'
 #' @importFrom dplyr select
 #' @importFrom networkDynamic networkDynamic
+#' @importFrom parallel clusterEvalQ
 #'
 #' @export
 movedata2networkDynamic <- function(data){
@@ -35,10 +36,16 @@ movedata2networkDynamic <- function(data){
 parallel_max_reachabilities <- function(networks, n_threads){
   cl <- makeCluster(n_threads)
   on.exit(stopCluster(cl))
-  clusterExport(cl, "tReach")
+
+  ## Comment from Matt:  this didn't work, so I replaced it with the clusterEvalQ
+  ## clusterExport(cl, "tReach")
+  clusterEvalQ(cl, {
+    library("tsna")
+  })
+
   max_reachabilities <-
-    parSapply(cl, networks,
-              function(x){max(tReach(x, graph.step.time = 1))})
+    pbsapply(networks,
+              function(x){max(tReach(x, graph.step.time = 1))}, cl=cl)
   return(max_reachabilities)
 }
 # N.B. This step is super-slow without parallel processing.
@@ -50,6 +57,7 @@ parallel_max_reachabilities <- function(networks, n_threads){
 #' @param data Date column of movement data
 #'
 #' @importFrom lubridate floor_date
+#' @importFrom pbapply pblapply
 #'
 #' @return List of c(start date, end date) for each month covered in the dataset, with dates in int format
 #' @export
@@ -80,12 +88,12 @@ extract_monthly_networks <- function(networks, n_threads, months_in_data){
   on.exit(stopCluster(cl))
   clusterExport(cl, c("network.extract","months_in_data"), envir = environment())
   monthly_networks <-
-    parLapply(cl, networks,
+    pblapply(networks,
               function(nw){
                 lapply(months_in_data, function(m) {
                   network.extract(nw, onset = m[[1]], terminus = m[[2]],
                                   rule = "any",
-                                  trim.spells = TRUE)})})
+                                  trim.spells = TRUE)})}, cl=cl)
   names(monthly_networks) <- names(networks)
   return(monthly_networks)
 }
