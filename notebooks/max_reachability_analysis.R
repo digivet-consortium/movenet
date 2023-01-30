@@ -4,6 +4,7 @@
 library(lubridate) #wday
 library(tibble) #tibble
 library(pbapply)
+library(movenet)
 
 #load_all()
 
@@ -33,7 +34,7 @@ jitter_mmr <- c(4, 15)
 round_mmr <- c("week", "month")
 
 #Parallelisation
-n_threads <- 4
+n_threads <- ifelse(movement_configfile == "Denmark_processed", 10, 4)
 
 #######################################
 ### Reformat data & create networks ###
