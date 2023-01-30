@@ -89,6 +89,7 @@
 #' @import checkmate
 #' @importFrom dplyr group_by mutate rename summarise ungroup
 #' @importFrom lubridate floor_date
+#' @importFrom purrr has_element
 #'
 #' @export
 coarsen_date <- function(data, jitter,
@@ -297,6 +298,7 @@ coarsen_date <- function(data, jitter,
 #'
 #' @import checkmate
 #' @importFrom plyr round_any
+#' @importFrom purrr has_element
 #'
 #' @export
 coarsen_weight <- function(data,

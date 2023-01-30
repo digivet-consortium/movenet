@@ -25,10 +25,13 @@ Imports:
     igraph,
     lubridate (>= 1.9.0),
     magrittr,
+    networkDynamic,
+    parallel,
     plyr,
     purrr,
     readr,
     rmarkdown,
+    tsna,
     yaml
 Suggests:
     knitr,
