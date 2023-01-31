@@ -128,6 +128,7 @@ violinplot_monthly_measures <- function(monthly_data, measure_name){
            aes(x = network, y = .data[[measure_name]])) +
     xlab("Movement network") +
     ylab(paste("Monthly", measure_name)) +
+    ylim(0, NA) +
     scale_x_discrete(labels = function(x) str_wrap(as.character(x), width = 9))+
     geom_violin(trim = FALSE)
 
@@ -158,7 +159,8 @@ plot_measure_over_anonymisation_gradient <-
                  group = .data[[anon_amount]])) +
       xlab(ifelse(anonymisation == "jitter", "Jitter (days)",
                   "Rounding unit equivalent (days)")) +
-      ylab(measure_name)
+      ylab(measure_name) +
+      ylim(0, NA)
 
     if(anonymisation == "jitter"){
       p <- p + geom_boxplot()
