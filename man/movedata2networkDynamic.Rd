@@ -7,7 +7,7 @@
 movedata2networkDynamic(data)
 }
 \arguments{
-\item{data}{}
+\item{data}{Movenet format movement data, with integerish holding IDs}
 }
 \description{
 Create dynamic networks from movenet-format, anonymised movement data

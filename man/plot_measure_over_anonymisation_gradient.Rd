@@ -11,7 +11,7 @@ plot_measure_over_anonymisation_gradient(data, measure_name, anonymisation)
 
 \item{measure_name}{measure name (to refer to in y axis)}
 
-\item{anonymisation}{"jitter" and/or "round(ing)"}
+\item{anonymisation}{"jitter" or "round(ing)"}
 }
 \description{
 Plot values of a measures for a varying range of jitter or rounding
