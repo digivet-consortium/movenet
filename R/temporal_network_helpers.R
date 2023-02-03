@@ -1,12 +1,11 @@
 #' Create dynamic networks from movenet-format, anonymised movement data
 #'
-#' @param data
+#' @param data Movenet format movement data, with integerish holding IDs
 #'
 #' @return
 #'
 #' @importFrom dplyr select
 #' @importFrom networkDynamic networkDynamic
-#' @importFrom parallel clusterEvalQ
 #'
 #' @export
 movedata2networkDynamic <- function(data){
@@ -29,7 +28,8 @@ movedata2networkDynamic <- function(data){
 #'
 #' @return
 #'
-#' @importFrom parallel makeCluster clusterExport parSapply stopCluster
+#' @importFrom parallel makeCluster clusterExport clusterEvalQ parSapply stopCluster
+#' @importFrom pbapply pbsapply
 #' @importFrom tsna tReach
 #'
 #' @export
@@ -52,51 +52,73 @@ parallel_max_reachabilities <- function(networks, n_threads){
 # See https://bookdown.org/rdpeng/rprogdatascience/parallel-computation.html#building-a-socket-cluster
 # Using a socket cluster, as mclapply doesn't work on Windows
 
-#' Extract months covered in movement dataset
+#' Extract time periods covered in movement dataset
 #'
 #' @param data Date column of movement data
+#' @param period time period for which to extract dates (n days, week, n weeks,
+#'    month, n months, year, n years)
 #'
-#' @importFrom lubridate floor_date
-#' @importFrom pbapply pblapply
+#' @importFrom lubridate floor_date period
 #'
-#' @return List of c(start date, end date) for each month covered in the dataset, with dates in int format
+#' @return List of c(start date, end date) for each period covered in the data,
+#'    with dates in int format
+#'
+#' @details For periods of days or weeks, the first date in the data is used
+#'    as starting date; for periods of months or years, the first day of the
+#'    month, n months, year or n years is used as starting date. (OR make
+#'    starting date an argument?)
 #' @export
-extract_months <- function(data){
-  start_dates <- seq(floor_date(min(data),"month"),
-                     floor_date(max(data),"month"),
-                     by = "month")
-  end_dates <- as.integer(start_dates + months(1))
+extract_periods <- function(data, period){
+  if (isTRUE(grepl("(\\d+\\sdays)|((\\d+\\s)?week(\\s)?)",period))){
+    start_dates <- seq(min(data), max(data), by = period)
+  } else {
+    start_dates <- seq(floor_date(min(data), period),
+                       max(data),
+                       by = period)
+  }
+  end_dates <- as.integer(start_dates + period(period))
   start_dates <- as.integer(start_dates)
   Map(c,start_dates,end_dates)
 }
 
-#' Extract monthly movement networks
+#' Extract periodic subnetworks from movement networks
 #'
 #' @param networks a named list of movement networks
 #' @param n_threads
-#' @param months_in_data a list of start and end dates (in int format) for all months in the data
+#' @param periods_in_data a list of start and end dates (in int format) for all periods in the data
 #'
 #' @return
 #'
 #' @importFrom networkDynamic network.extract
 #' @importFrom parallel makeCluster clusterExport parLapply stopCluster
+#' @importFrom pbapply pblapply
+#'
+#' @details Note from network.extract: Note that only active vertices are
+#'    included by default (retain.all.vertices=FALSE). As a result, the size of
+#'    the extracted network may be smaller than the original. Vertex and edge
+#'    ids will be translated, but may not correspond to their original values.
+#'    If it is necessary to maintain the identities of vertices, see
+#'    persistent.ids. (Make this an argument? Add ... to pass on arguments?)
 #'
 #' @export
-extract_monthly_networks <- function(networks, n_threads, months_in_data){
+extract_periodic_subnetworks <- function(networks, n_threads, periods_in_data){
 
   cl <- makeCluster(n_threads)
   on.exit(stopCluster(cl))
-  clusterExport(cl, c("network.extract","months_in_data"), envir = environment())
-  monthly_networks <-
+  clusterExport(cl, c("network.extract","periods_in_data"), envir = environment())
+  periodic_networks <-
     pblapply(networks,
               function(nw){
-                lapply(months_in_data, function(m) {
-                  network.extract(nw, onset = m[[1]], terminus = m[[2]],
+                lapply(periods_in_data, function(p) {
+                  network.extract(nw, onset = p[[1]], terminus = p[[2]],
                                   rule = "any",
+                                  #retain.all.vertices = TRUE,
                                   trim.spells = TRUE)})}, cl=cl)
-  names(monthly_networks) <- names(networks)
-  return(monthly_networks)
+  names(periodic_networks) <- names(networks)
+  return(periodic_networks)
 }
+
+
 
 #' Draw violin plot of distributions of monthly values of a selected network measure, for various jittered & rounded networks
 #'
@@ -141,7 +163,7 @@ violinplot_monthly_measures <- function(monthly_data, measure_name){
 #'
 #' @param data tibble with measure values for range of jitter or rounding
 #' @param measure_name measure name (to refer to in y axis)
-#' @param anonymisation "jitter" and/or "round(ing)"
+#' @param anonymisation "jitter" or "round(ing)"
 #'
 #' @return
 #'

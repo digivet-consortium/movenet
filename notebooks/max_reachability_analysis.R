@@ -81,17 +81,14 @@ names(jitter_networks) <- paste0("jitter (",rep(jitter_set, n_sim)," days)")
 ## Comment from Matt:  on a socket type cluster the R sessions loaded are "fresh",
 ## which is why the config file is not loaded. If you do the following it should
 ## hopefully work (untested):
-if(FALSE){
-  clusterExport(cl, "movement_datafile")
-  clusterEvalQ(cl, {
-    library("movenet")
-    load_config(movement_configfile)
-  })
-}
+#if(FALSE){
+#  clusterExport(cl, "movement_datafile")
+#  clusterEvalQ(cl, {
+#    library("movenet")
+#    load_config(movement_configfile)
+#  })
+#}
 ## This isn't necessary on Fork clusters, but these are not available on Windows
-
-# create_rounding_networks(round_set, n_threads, data = true_data,
-#                          jitter = FALSE, week_start = week_start)
 
 week_start <- wday(min(true_data[[date_col]]))
 rounding_networks <-
@@ -107,7 +104,7 @@ names(rounding_networks)<-paste0(round_set,"ly")
 ##########################################################
 
 months_in_data <-
-  extract_months(true_data[[date_col]])
+  extract_periods(true_data[[date_col]], "month")
 
 #Extract monthly max reachabilities
 selected_networks <- c(true=list(true_network),
@@ -115,8 +112,8 @@ selected_networks <- c(true=list(true_network),
                                        paste0("jitter (",jitter_mmr," days)")],
                        rounding_networks[paste0(round_mmr,"ly")])
 
-monthly_networks <- extract_monthly_networks(selected_networks, n_threads,
-                                             months_in_data)
+monthly_networks <- extract_periodic_subnetworks(selected_networks, n_threads,
+                                                 months_in_data)
 
 monthly_max_reachabilities <- tibble(.rows = length(months_in_data))
 for (netw_ind in seq_along(monthly_networks)){
