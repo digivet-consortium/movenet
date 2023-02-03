@@ -28,7 +28,7 @@ movedata2networkDynamic <- function(data){
 #'
 #' @return
 #'
-#' @importFrom parallel makeCluster clusterExport clusterEvalQ parSapply stopCluster
+#' @importFrom parallel makeCluster clusterEvalQ stopCluster
 #' @importFrom pbapply pbsapply
 #' @importFrom tsna tReach
 #'
@@ -37,8 +37,6 @@ parallel_max_reachabilities <- function(networks, n_threads){
   cl <- makeCluster(n_threads)
   on.exit(stopCluster(cl))
 
-  ## Comment from Matt:  this didn't work, so I replaced it with the clusterEvalQ
-  ## clusterExport(cl, "tReach")
   clusterEvalQ(cl, {
     library("tsna")
   })
@@ -90,7 +88,7 @@ extract_periods <- function(data, period){
 #' @return
 #'
 #' @importFrom networkDynamic network.extract
-#' @importFrom parallel makeCluster clusterExport parLapply stopCluster
+#' @importFrom parallel makeCluster clusterExport stopCluster
 #' @importFrom pbapply pblapply
 #'
 #' @details Note from network.extract: Note that only active vertices are
