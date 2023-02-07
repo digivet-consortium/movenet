@@ -7,8 +7,18 @@ movement_configfile <- "ScotEID"
 holding_datafile <- "tests/testthat/test_input_files/test_holdingdata_generic.csv"
 holding_configfile <- "tests/testthat/test_input_files/fakeScotEID_holding.yml"
 
-epsilon_rate = #farm-level incubation rate (same as for individual?)
-epsilon_shape = 1
+epsilon_rate = 18/(6.1) #farm-level incubation rate (same as for individual?)
+epsilon_shape = 18
+# These parameters for Epsilon come from Guinat et al. 2018, via EFSA 2020.
+# They are within-farm transmission parameters for one of 9 outbreaks of the
+# Georgia 2007/1 strain in Russia. The rate and shape parameters are both close
+# to the median for the 9 outbreaks. In the EFSA report, parameters from this
+# outbreak are used as a low-R0 scenario.
+# These parameters cover a larger range with a higher average, compared to
+# several other studies - but this might fit with the idea that farm-level
+# latent periods would be higher than individual-pig latent periods due to v low
+# level transmissibility if considering just a single pig.
+
 gamma_rate =  #mortality rate (how does this work for farm level?)
 gamma_shape = 1
 
