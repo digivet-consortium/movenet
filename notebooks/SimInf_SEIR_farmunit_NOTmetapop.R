@@ -1,3 +1,7 @@
+##############
+### Set-up ###
+##############
+
 library(dplyr) #for arrange and transmute
 library(SimInf)
 load_all()
@@ -19,8 +23,12 @@ epsilon_shape = 18
 # latent periods would be higher than individual-pig latent periods due to v low
 # level transmissibility if considering just a single pig.
 
-gamma_rate =  #mortality rate (how does this work for farm level?)
+gamma_rate = 1/8 #removal rate
 gamma_shape = 1
+# Average time-to-removal (infectious period) was derived as follows:
+# average time from first infection to suspicion report = 13 days (EFSA) +
+# assumed time from suspicion report to removal = 1 day -
+# average latent period = 6 days (as from Guinat et al. above)
 
 days = 365 #number of days to run the simulation. Default is 365 days.
 stride = 1 #the increment (integer) between days that are recorded in the model
@@ -44,7 +52,7 @@ anonymisation_h <-
   reformat_data("holding") |>
   anonymise("", key=anonymisation_m$key)
 
-nodes <-
+nodes <- #creates a simple single-col tibble of nodes' numeric ids
   anonymisation_h$data |>
   arrange(as.numeric(.data[[movenetenv$options$holdingdata_cols$id]])) |>
   transmute(id = .data[[movenetenv$options$holdingdata_cols$id]])
