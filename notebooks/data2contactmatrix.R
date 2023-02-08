@@ -34,33 +34,36 @@ anonymisation_h <-
   reformat_data("holding") |>
   anonymise("", key = anonymisation_m$key)
 
+n_nodes <- length(anonymisation_h$data[[id]])
+node_idnumbers <- sort(as.numeric(anonymisation_h$data[[id]]))
+
+
 
 #empty df w all possible combinations of holdings in the holding datafile
-holding_df <-
-  expand.grid(anonymisation_h$data[[id]], anonymisation_h$data[[id]]) |>
-  `colnames<-`(c(from, to))
-
-#matrix containing average number of pigs transported per day
 transport_matrix <-
+  matrix(0, n_nodes, n_nodes,
+         dimnames = list(node_idnumbers, node_idnumbers))
+
+#average number of pigs transported per day between each farm
+ave_transport_data <-
   anonymisation_m$data %>%
     group_by(.data[[from]], .data[[to]]) %>%
-    summarise(prob = sum(.data[[weight]])/365) %>%
-    ungroup() %>%
-    right_join(holding_df, by=c(from, to)) %>%
-    replace_na(list(prob=0)) %>%
-    arrange(as.numeric(.data[[to]])) %>%
-    pivot_wider(names_from = all_of(to),
-                values_from = prob) %>%
-    arrange(as.numeric(.data[[from]])) %>%
-    column_to_rownames(from) %>%
-    as.matrix()
+    summarise(prob = sum(.data[[weight]])/365)
+
+transport_matrix[cbind(as.numeric(ave_transport_data[[from]]),
+                       as.numeric(ave_transport_data[[to]]))] <-
+  ave_transport_data[["prob"]]
+
 
 #distance matrix between farms
 distance_matrix <-
   anonymisation_h$data |>
+  arrange(as.numeric(anonymisation_h$data[[id]])) |>
   st_as_sf(coords = c(coord_x, coord_y),
            crs = crs) |>
-  st_distance()
+  st_distance() |>
+  `dimnames<-`(list(node_idnumbers,node_idnumbers))
+
 
 #matrix containing daily probabilities of becoming infected through local spread
 #using distance look-up-table from DTU-DADS-ASF Table S4 (which in turn is based
@@ -82,8 +85,6 @@ local_spread[local_spread >= 2000] <- 0
 
 #combine both matrices into contact_matrix
 contact_matrix <- transport_matrix + local_spread
-
-#transpose?
 
 #saveRDS(contact_matrix,
 #        contactpars_outfile)
