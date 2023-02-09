@@ -40,13 +40,10 @@ n_threads <- ifelse(movement_configfile == "Denmark_processed", 10, 4)
 ### Reformat data & create networks ###
 #######################################
 
-#reformat movement data, anonymise to have node ids as numbers (required!)
-anonymisation_m <-
+#reformat movement data
+true_data <-
   movement_datafile |>
-  reformat_data("movement") |>
-  anonymise("")
-
-true_data <- anonymisation_m$data
+  reformat_data("movement")
 
 true_network <- movedata2networkDynamic(true_data)
 

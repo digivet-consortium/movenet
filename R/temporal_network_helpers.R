@@ -1,24 +1,88 @@
 #' Create dynamic networks from movenet-format, anonymised movement data
 #'
-#' @param data Movenet format movement data, with integerish holding IDs
+#' @param data Movenet format movement data
 #'
-#' @return
+#' @return Directed network in networkDynamic format
+#'
+#' @details In the returned network, node identifiers are consecutive integers,
+#' that may not correspond to original holding identifiers as provided in (the
+#' first two columns of) `data`. However, original holding identifiers (in
+#' character format) have been set as [<`persistent identifiers`>]
+#' [networkDynamic::persistent.ids] and can thus be accessed through
+#' `get.vertex.pid()`. They can also be accessed through the vertex attribute
+#' `true_id`.
 #'
 #' @importFrom dplyr select
-#' @importFrom networkDynamic networkDynamic
+#' @import networkDynamic
 #'
 #' @export
 movedata2networkDynamic <- function(data){
+
+  #############################################
+  ### Ensure correct node identifier format ###
+  #############################################
+
+  #networkDynamic needs vertex.ids to be consecutive integers from 1 to n_nodes.
+  #Check if holding ids are consecutive "integers" (in character format is ok),
+  #and if this is not the case, renumber and save the key.
+  #(The key is later used to generate a "true_id" vertex attribute, and to set
+  #vertex.pids (persistent identifiers))
+
+  node_ids <- unique(c(data[[1]],data[[2]]))
+  if(!all(grepl("^\\d+$",node_ids)) ||
+     !identical(sort(as.integer(node_ids)), 1:max(as.integer(node_ids)))){
+
+    key <- generate_anonymisation_key(node_ids, prefix = "", n_start = 1)
+    #using this instead of 'anonymise' avoids the loaded config file requirement
+
+    data[c(1,2)] <-
+      lapply(c(1,2), function(x){unname(key[as.character(data[[x]])])})
+  }
+
+  ########################################
+  ### Reformat data and create network ###
+  ########################################
+
+  #Reformat data to the specific column order, and integer vertex.ids and dates,
+  #required by networkDynamic. Then create the network.
+
   nd_data <-
     data |>
     select(onset = 3, terminus = 3, tail = 1, head = 2) |>
     lapply(as.integer) |>  #networkDynamic doesnt seem to like tibbles, need to
     data.frame()           #convert to df - hence using lapply cf purrr::modify
 
-  networkDynamic(edge.spells = nd_data, verbose = FALSE)
+  net <- networkDynamic(edge.spells = nd_data, verbose = FALSE)
+  #Allow multiplex graphs? (Default = FALSE)
+  #This may cause trouble with certain measures. Edge spells over time will
+  #cover most cases, but what if multiple moves betw same farms on 1 day?
+  #Allow loops? (Default = FALSE)
+
+  #######################################
+  ### Set node persistent identifiers ###
+  #######################################
+
+  #vertex.pids (persistent identifiers) are needed to reliably identify nodes
+  #when extracting subnetworks, as vertex.ids are re-numbered to match the
+  #network size (i.e. vertex.ids are always 1:n_nodes; whereas vertex.pids
+  #remain the same throughout extractions and can be non-int/non-consecutive).
+
+  #if have key, add names (original holding ids) as vertex attrib "true_id"
+  if(exists("key",where=environment(),inherits=FALSE)){
+    set.vertex.attribute(net,'true_id',names(key))
+  } else {
+  #else, set convert vertex.names (original holding ids if consecutive ints) to
+  #character and set these as vertex attrib "true_id" [for consistency]
+    set.vertex.attribute(net,'true_id',
+                         as.character(get.vertex.attribute(foo,'vertex.names')))
+  }
+  #set true_id attribute as vertex.pid
+  set.network.attribute(net,'vertex.pid','true_id')
+
+  #return network w/ true_id and vertex.pid containing original holding ids in
+  #character format
+  return(net)
 }
-# N.B. Holding IDs need to be integer-ish (in character format is fine), so pass
-# movenet-format movement data through anonymise() first.
 
 
 #' Extract max reachabilities in parallel
