@@ -4,11 +4,31 @@
 \alias{movedata2networkDynamic}
 \title{Create dynamic networks from movenet-format, anonymised movement data}
 \usage{
-movedata2networkDynamic(data)
+movedata2networkDynamic(
+  movement_data,
+  holding_data = NULL,
+  incl_nonactive_holdings = FALSE
+)
 }
 \arguments{
-\item{data}{Movenet format movement data, with integerish holding IDs}
+\item{movement_data}{Movenet format movement data}
+
+\item{holding_data}{Movenet format holding data (optional)}
+
+\item{incl_nonactive_holdings}{Whether to include holdings from
+\code{holding_data} that are not present in \code{movement_data}. Default is \code{FALSE}.}
+}
+\value{
+Temporal network (directed) in networkDynamic format
 }
 \description{
 Create dynamic networks from movenet-format, anonymised movement data
+}
+\details{
+In the returned network, node identifiers are consecutive integers,
+which may not correspond to original holding identifiers as provided in
+\code{movement_data} and/or \code{holding_data}. The original holding identifiers (in
+character format) have been set as 
+\link[networkDynamic:persistent_ids]{networkDynamic::persistent.ids} and can be accessed through
+\code{get.vertex.pid()}, or through the vertex attribute \code{true_id}.
 }

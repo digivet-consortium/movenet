@@ -26,6 +26,7 @@ Imports:
     igraph,
     lubridate (>= 1.9.0),
     magrittr,
+    network,
     networkDynamic,
     parallel,
     pbapply,

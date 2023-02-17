@@ -1,22 +1,87 @@
 #' Create dynamic networks from movenet-format, anonymised movement data
 #'
-#' @param data Movenet format movement data
+#' @param movement_data Movenet format movement data
+#' @param holding_data Movenet format holding data (optional)
+#' @param incl_nonactive_holdings Whether to include holdings from
+#'   `holding_data` that are not present in `movement_data`. Default is `FALSE`.
+#'   If set to `TRUE`, holdings that don't trade within the period covered by
+#'   `movement_data` are added to the network but set as non-active.
 #'
-#' @return Directed network in networkDynamic format
+#' @return Temporal network (directed) in networkDynamic format
 #'
 #' @details In the returned network, node identifiers are consecutive integers,
-#' that may not correspond to original holding identifiers as provided in (the
-#' first two columns of) `data`. However, original holding identifiers (in
+#' which may not correspond to original holding identifiers as provided in
+#' `movement_data` and/or `holding_data`. The original holding identifiers (in
 #' character format) have been set as [<`persistent identifiers`>]
-#' [networkDynamic::persistent.ids] and can thus be accessed through
-#' `get.vertex.pid()`. They can also be accessed through the vertex attribute
-#' `true_id`.
+#' [networkDynamic::persistent.ids] and can be accessed through
+#' `get.vertex.pid()`, or through the vertex attribute `true_id`.
 #'
-#' @importFrom dplyr select
+#' @importFrom dplyr filter select
+#' @import network
 #' @import networkDynamic
+#' @importFrom tibble add_row
 #'
 #' @export
-movedata2networkDynamic <- function(data){
+movedata2networkDynamic <- function(movement_data, holding_data = NULL,
+                                    incl_nonactive_holdings = FALSE){
+
+  #######################
+  ### Argument checks ###
+  #######################
+
+  assert_data_frame(movement_data, min.cols = 4, null.ok = FALSE)
+  assert_character(movement_data[[1]], any.missing = FALSE)
+  assert_character(movement_data[[2]], any.missing = FALSE)
+  assert_date(movement_data[[3]], any.missing = FALSE)
+  assert_numeric(movement_data[[4]], any.missing = TRUE)
+
+  node_ids <- unique(c(movement_data[[1]],movement_data[[2]]))
+
+  assert_data_frame(holding_data, min.cols = 1, null.ok = TRUE)
+  if(!is.null(holding_data)){
+    #check that holding_ids are unique - should this be done in "reformat_data"?!
+    assert_character(holding_data[[1]], unique = TRUE, any.missing = FALSE)
+
+    holding_ids <- holding_data[[1]]
+    }
+
+  assert_logical(incl_nonactive_holdings, len = 1, any.missing = FALSE,
+                 null.ok = FALSE)
+
+  ############################################################
+  ### Ensure consistency between movement and holding data ###
+  ############################################################
+
+  if(!is.null(holding_data)){
+
+    #If there are any holding ids present in movement_data, but missing from
+    #holding_data, add these ids to holding_data with NAs for other columns
+    missing_holding_ids <- !(node_ids %in% holding_ids)
+    if(any(missing_holding_ids)){
+      holding_data <-
+        holding_data %>%
+        add_row("{names(holding_data)[1]}" :=
+                  node_ids[which(missing_holding_ids)])
+      holding_ids <- holding_data[[1]]
+    }
+
+    #If there are any holding ids present in holding_data but missing from
+    #movement_data, either delete these ids (if incl_nonactive_holdings == FALSE),
+    #or split these to form a new additional_holding_data dataframe, to be
+    #added as (non-active) vertices after network creation (if
+    #incl_nonactive_holdings == TRUE)
+    additional_holding_ids <- !(holding_ids %in% node_ids)
+    if(any(additional_holding_ids)){
+      if(isTRUE(incl_nonactive_holdings)){
+        additional_holding_data <-
+          holding_data %>%
+          dplyr::filter(!(.data[[names(holding_data)[1]]] %in% node_ids))
+      }
+      holding_data <-
+        holding_data %>%
+        dplyr::filter(.data[[names(holding_data)[1]]] %in% node_ids)
+    }
+  }
 
   #############################################
   ### Ensure correct node identifier format ###
@@ -28,15 +93,18 @@ movedata2networkDynamic <- function(data){
   #(The key is later used to generate a "true_id" vertex attribute, and to set
   #vertex.pids (persistent identifiers))
 
-  node_ids <- unique(c(data[[1]],data[[2]]))
   if(!all(grepl("^\\d+$",node_ids)) ||
      !identical(sort(as.integer(node_ids)), 1:max(as.integer(node_ids)))){
 
     key <- generate_anonymisation_key(node_ids, prefix = "", n_start = 1)
     #using this instead of 'anonymise' avoids the loaded config file requirement
 
-    data[c(1,2)] <-
-      lapply(c(1,2), function(x){unname(key[as.character(data[[x]])])})
+    movement_data[c(1,2)] <-
+      lapply(c(1,2), function(x){unname(key[as.character(movement_data[[x]])])})
+
+    if(!is.null(holding_data)){
+      holding_data[1] <- unname(key[as.character(holding_data[[1]])])
+    }
   }
 
   ########################################
@@ -46,13 +114,14 @@ movedata2networkDynamic <- function(data){
   #Reformat data to the specific column order, and integer vertex.ids and dates,
   #required by networkDynamic. Then create the network.
 
-  nd_data <-
-    data |>
-    select(onset = 3, terminus = 3, tail = 1, head = 2) |>
-    lapply(as.integer) |>  #networkDynamic doesnt seem to like tibbles, need to
-    data.frame()           #convert to df - hence using lapply cf purrr::modify
+  movement_data[1:3] <- movement_data[1:3] |> lapply(as.numeric)
+  movement_data <-
+    movement_data[,c(3,3,1,2,4:length(movement_data))] |>
+    data.frame(stringsAsFactors = FALSE)
 
-  net <- networkDynamic(edge.spells = nd_data, verbose = FALSE)
+  net <- networkDynamic(edge.spells = movement_data, verbose = FALSE,
+                        create.TEAs = TRUE,
+                        edge.TEA.names = names(movement_data)[-c(1:4)])
   #Allow multiplex graphs? (Default = FALSE)
   #This may cause trouble with certain measures. Edge spells over time will
   #cover most cases, but what if multiple moves betw same farms on 1 day?
@@ -68,19 +137,57 @@ movedata2networkDynamic <- function(data){
   #remain the same throughout extractions and can be non-int/non-consecutive).
 
   #if have key, add names (original holding ids) as vertex attrib "true_id"
-  if(exists("key",where=environment(),inherits=FALSE)){
-    set.vertex.attribute(net,'true_id',names(key))
+  if(exists("key", where = environment(), inherits = FALSE)){
+    set.vertex.attribute(net, 'true_id', names(key))
+    warning(str_wrap("Node identifiers (vertex.id) have been changed to
+    consecutive integers. Original identifiers have been set as persistent
+    identifiers (vertex.pid) and can be identified for each node by running
+    `get.vertex.pid(network_name, vertex.id(s))`."))
   } else {
   #else, set convert vertex.names (original holding ids if consecutive ints) to
   #character and set these as vertex attrib "true_id" [for consistency]
-    set.vertex.attribute(net,'true_id',
-                         as.character(get.vertex.attribute(foo,'vertex.names')))
+    set.vertex.attribute(net, 'true_id',
+                         as.character(get.vertex.attribute(net,'vertex.names')))
   }
   #set true_id attribute as vertex.pid
   set.network.attribute(net,'vertex.pid','true_id')
 
+  ###########################
+  ### Set node attributes ###
+  ###########################
+
+  if(!is.null(holding_data)){
+    holding_data <- holding_data[order(as.integer(holding_data[[1]])),]
+    set.vertex.attribute(net, names(holding_data)[-1], holding_data[-1])
+  }
+
+  ###########################################
+  ### Add any non-active nodes to network ###
+  ###########################################
+
+  #If incl_nonactive_holdings == TRUE, add any non-active holdings to network,
+  #creating (automatic) new numeric identifiers, setting their original
+  #identifiers as true_id vertex.attribute and as vertex.pids, and adding
+  #other vertex.attributes from additional_holding_data
+
+  if(exists("additional_holding_data", where = environment(),
+            inherits = FALSE)){
+    names(additional_holding_data)[1]<-"true_id"
+    add.vertices(net, nv = sum(additional_holding_ids),
+                 vattr = lapply(split(additional_holding_data,
+                                      1:nrow(additional_holding_data)),
+                                as.list),
+                 vertex.pid = additional_holding_data[[1]])
+    deactivate.vertices(net, v = c((nrow(holding_data)+1):network.size(net)))
+  }
+
+  ######################
+  ### Return network ###
+  ######################
+
   #return network w/ true_id and vertex.pid containing original holding ids in
   #character format
+
   return(net)
 }
 
