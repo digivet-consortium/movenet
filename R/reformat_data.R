@@ -157,6 +157,7 @@ reformat_data <- function(datafile, type){ #Could also infer type from the data
 ############################################################
 
 #' @export
+#' @importFrom stringi stri_trans_general
 asciify <- function(x){
   make.names(stringi::stri_trans_general(x, 'Latin-ASCII'),
              unique=TRUE)
@@ -408,6 +409,3 @@ reformat_date <- function(date_col, date_format){
                  format = date_format))
     )
 }
-
-
-

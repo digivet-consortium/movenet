@@ -7,8 +7,20 @@
 movedata2networkDynamic(data)
 }
 \arguments{
-\item{data}{Movenet format movement data, with integerish holding IDs}
+\item{data}{Movenet format movement data}
+}
+\value{
+Directed network in networkDynamic format
 }
 \description{
 Create dynamic networks from movenet-format, anonymised movement data
+}
+\details{
+In the returned network, node identifiers are consecutive integers,
+that may not correspond to original holding identifiers as provided in (the
+first two columns of) \code{data}. However, original holding identifiers (in
+character format) have been set as 
+\link[networkDynamic:persistent_ids]{networkDynamic::persistent.ids} and can thus be accessed through
+\code{get.vertex.pid()}. They can also be accessed through the vertex attribute
+\code{true_id}.
 }
