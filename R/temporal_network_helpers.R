@@ -14,7 +14,9 @@
 #'
 #' @importFrom dplyr select
 #' @import networkDynamic
-#'
+#' @importFrom network set.vertex.attribute
+#' @importFrom network get.vertex.attribute
+#' @importFrom network set.network.attribute
 #' @export
 movedata2networkDynamic <- function(data){
 
@@ -69,12 +71,12 @@ movedata2networkDynamic <- function(data){
 
   #if have key, add names (original holding ids) as vertex attrib "true_id"
   if(exists("key",where=environment(),inherits=FALSE)){
-    set.vertex.attribute(net,'true_id',names(key))
+    network::set.vertex.attribute(net,'true_id',names(key))
   } else {
   #else, set convert vertex.names (original holding ids if consecutive ints) to
   #character and set these as vertex attrib "true_id" [for consistency]
-    set.vertex.attribute(net,'true_id',
-                         as.character(get.vertex.attribute(foo,'vertex.names')))
+    network::set.vertex.attribute(net,'true_id',
+                         as.character(network::get.vertex.attribute(foo,'vertex.names')))
   }
   #set true_id attribute as vertex.pid
   set.network.attribute(net,'vertex.pid','true_id')
@@ -191,6 +193,7 @@ extract_periodic_subnetworks <- function(networks, n_threads, periods_in_data){
 #'
 #' @importFrom stringr str_wrap
 #' @importFrom tidyr pivot_longer
+#' @importFrom tidyselect everything
 #' @import ggplot2
 #'
 violinplot_monthly_measures <- function(monthly_data, measure_name){
@@ -253,4 +256,3 @@ plot_measure_over_anonymisation_gradient <-
 
     plot(p)
   }
-

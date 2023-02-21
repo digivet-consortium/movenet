@@ -85,6 +85,7 @@ get_config <- function(...){
 
 #' @rdname change_config
 #' @export
+#' @importFrom utils relist
 change_config <- function(...){
   #set aliases: set_config, set_option, set_options?
   #remove behaviour to invisibly return old options [no longer trying to copy base R options system]?
@@ -197,5 +198,3 @@ change_config <- function(...){
     return(options_no_structure)
   }
   }
-
-
