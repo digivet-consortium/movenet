@@ -8,10 +8,10 @@ library(movenet)
 
 #load_all()
 
-movement_datafile <-
-  "tests/testthat/test_input_files/sample_pigs_UK_with_dep_arr_dates.csv"
-movement_configfile <- "ScotEID"
-load_config(movement_configfile)
+#movement_datafile <-
+#  "tests/testthat/test_input_files/sample_pigs_UK_with_dep_arr_dates.csv"
+#movement_configfile <- "ScotEID"
+#load_config(movement_configfile)
 
 # Danish data, available to Matt only:
 # movement_datafile <- "/Users/matthewdenwood/Documents/Research/Projects/DigiVet/CS2/DK_pig_movements/svine_flytninger_2018_2020.csv"
@@ -43,7 +43,9 @@ n_threads <- ifelse(movement_configfile == "Denmark_processed", 10, 4)
 #reformat movement data
 true_data <-
   movement_datafile |>
-  reformat_data("movement")
+  reformat_data("movement") |>
+  anonymise("") |>
+  getElement(1)
 
 true_network <- movedata2networkDynamic(true_data)
 
@@ -113,36 +115,62 @@ monthly_networks <- extract_periodic_subnetworks(selected_networks, n_threads,
                                                  months_in_data)
 
 monthly_max_reachabilities <- tibble(.rows = length(months_in_data))
+monthly_max_reaching_nodes <- tibble(.rows = length(months_in_data))
+max_reach_paths_month1 <- list()
 for (netw_ind in seq_along(monthly_networks)){
   cat("Running network ", netw_ind, " of ", length(monthly_networks), "...\n", sep="")
   network <- monthly_networks[[netw_ind]]
+  max_reachabilities_with_ids <-
+    parallel_max_reachabilities_with_id(network, n_threads)
   monthly_max_reachabilities[as.character(netw_ind)] <-
-    parallel_max_reachabilities(network, n_threads)
+    sapply(max_reachabilities_with_ids,"[[",1)
+  monthly_max_reaching_nodes[[netw_ind]] <-
+    sapply(max_reachabilities_with_ids,"[[",2)
+  max_reach_paths_month1[[netw_ind]] <-
+    tPath(network[[1]],
+          v = get.vertex.id(network[[1]],
+                            max_reachabilities_with_ids[[1]][[2]][1]),
+          graph.step.time = 1)
 }
 colnames(monthly_max_reachabilities) <- names(selected_networks)
+colnames(monthly_max_reaching_nodes) <- names(selected_networks)
+names(max_reach_paths_month1) <- names(selected_networks)
+
+# monthly_max_temp_degree <- tibble(.rows = length(months_in_data))
+# monthly_mean_temp_degree <- tibble(.rows = length(months_in_data))
+# monthly_median_temp_degree <- tibble(.rows = length(months_in_data))
+# for (netw_ind in seq_along(monthly_networks)){
+#   cat("Running network ", netw_ind, " of ", length(monthly_networks), "...\n", sep="")
+#   network <- monthly_networks[[netw_ind]]
+#   monthly_max_temp_degree[as.character(netw_ind)] <-
+#     parallel_max_reachabilities(network, n_threads)
+# }
+# colnames(monthly_max_reachabilities) <- names(selected_networks)
+# max(colSums(deg))
+# mean(colSums)
 
 ########################################################
 ### Fig 1: boxplot of monthly maximum reachabilities ###
 ########################################################
 
-violinplot_monthly_measures(monthly_max_reachabilities, "maximum reachability")
-
-
-##########################################################
-### Fig 2 prep: Extract overall maximum reachabilities ###
-##########################################################
-jitter_measures <- tibble(jitter = rep(jitter_set,n_sim),
-                          max_reachability = "")
-jitter_measures[, "max_reachability"] <-
-  parallel_max_reachabilities(jitter_networks, n_threads)
-
-round_measures <- tibble(round = c(1,7,30.4,60.8,91.3,182.5,365),
-                         max_reachability = "")
-round_measures[, "max_reachability"] <-
-  parallel_max_reachabilities(rounding_networks, n_threads)
-
-##########################################################################
-### Fig 2: Max reachabilities for a diverse range of jitter & rounding ###
-##########################################################################
-plot_measure_over_anonymisation_gradient(jitter_measures, "Max reachability", "jitter")
-plot_measure_over_anonymisation_gradient(round_measures, "Max reachability", "rounding")
+# violinplot_monthly_measures(monthly_max_reachabilities, "maximum reachability")
+#
+#
+# ##########################################################
+# ### Fig 2 prep: Extract overall maximum reachabilities ###
+# ##########################################################
+# jitter_measures <- tibble(jitter = rep(jitter_set,n_sim),
+#                           max_reachability = "")
+# jitter_measures[, "max_reachability"] <-
+#   parallel_max_reachabilities(jitter_networks, n_threads)
+#
+# round_measures <- tibble(round = c(1,7,30.4,60.8,91.3,182.5,365),
+#                          max_reachability = "")
+# round_measures[, "max_reachability"] <-
+#   parallel_max_reachabilities(rounding_networks, n_threads)
+#
+# ##########################################################################
+# ### Fig 2: Max reachabilities for a diverse range of jitter & rounding ###
+# ##########################################################################
+# plot_measure_over_anonymisation_gradient(jitter_measures, "Max reachability", "jitter")
+# plot_measure_over_anonymisation_gradient(round_measures, "Max reachability", "rounding")
