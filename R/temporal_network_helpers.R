@@ -221,6 +221,42 @@ parallel_max_reachabilities <- function(networks, n_threads){
 # See https://bookdown.org/rdpeng/rprogdatascience/parallel-computation.html#building-a-socket-cluster
 # Using a socket cluster, as mclapply doesn't work on Windows
 
+#' Extract max reachabilities and associated node persistent identifiers, in parallel
+#'
+#' @param networks list of movement networks
+#' @param n_threads
+#'
+#' @return list of lists: for each network, a list with (1) max reachability,
+#' (2) the persistent identifiers of the node(s) with max reachability.
+#'
+#' @importFrom networkDynamic get.vertex.pid
+#' @importFrom parallel makeCluster clusterEvalQ stopCluster
+#' @importFrom pbapply pblapply
+#' @importFrom tsna tReach
+#'
+#' @export
+parallel_max_reachabilities_with_id <- function(networks, n_threads){
+  cl <- makeCluster(n_threads)
+  on.exit(stopCluster(cl))
+
+  clusterEvalQ(cl, {
+    library("tsna")
+    library("networkDynamic")
+  })
+
+  max_reachabilities_w_ids <-
+    pblapply(networks,
+             function(x){
+               reachability <- tReach(x, graph.step.time = 1)
+               max_reachability <- max(reachability)
+               id_max_reachability <-
+                 get.vertex.pid(x, which(reachability == max_reachability))
+               list(max_reachability, id_max_reachability)
+               },
+             cl=cl)
+  return(max_reachabilities_w_ids)
+}
+
 #' Extract time periods covered in movement dataset
 #'
 #' @param data Date column of movement data
