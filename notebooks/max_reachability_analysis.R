@@ -156,19 +156,19 @@ names(max_reach_paths_month1) <- names(selected_networks)
 # violinplot_monthly_measures(monthly_max_reachabilities, "maximum reachability")
 #
 #
-# ##########################################################
-# ### Fig 2 prep: Extract overall maximum reachabilities ###
-# ##########################################################
-# jitter_measures <- tibble(jitter = rep(jitter_set,n_sim),
-#                           max_reachability = "")
-# jitter_measures[, "max_reachability"] <-
-#   parallel_max_reachabilities(jitter_networks, n_threads)
-#
-# round_measures <- tibble(round = c(1,7,30.4,60.8,91.3,182.5,365),
-#                          max_reachability = "")
-# round_measures[, "max_reachability"] <-
-#   parallel_max_reachabilities(rounding_networks, n_threads)
-#
+##########################################################
+### Fig 2 prep: Extract overall maximum reachabilities ###
+##########################################################
+jitter_measures <- tibble(jitter = rep(jitter_set,n_sim),
+                          max_reachability = "")
+jitter_measures[, "max_reachability"] <-
+  parallel_max_reachabilities(jitter_networks, n_threads)
+
+round_measures <- tibble(round = c(1,7,30.4,60.8,91.3,182.5,365),
+                         max_reachability = "")
+round_measures[, "max_reachability"] <-
+  parallel_max_reachabilities(rounding_networks, n_threads)
+
 # ##########################################################################
 # ### Fig 2: Max reachabilities for a diverse range of jitter & rounding ###
 # ##########################################################################
