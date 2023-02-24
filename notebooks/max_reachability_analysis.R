@@ -14,8 +14,12 @@ library(movenet)
 #load_config(movement_configfile)
 
 # Danish data, available to Matt only:
+if(length(find("year_range"))==0L) year_range <- "2020"
+movement_datafile <- paste0("/Users/matthewdenwood/Documents/Research/Projects/DigiVet/CS2/DK_pig_movements_old/svine_flytninger_", year_range, ".csv")
+stopifnot(file.exists(movement_datafile))
+# movement_datafile <- "/Users/matthewdenwood/Documents/Research/Projects/DigiVet/CS2/DK_pig_movements/svine_flytninger_2020.csv"
 # movement_datafile <- "/Users/matthewdenwood/Documents/Research/Projects/DigiVet/CS2/DK_pig_movements/svine_flytninger_2018_2020.csv"
-movement_datafile <- "/Users/matthewdenwood/Documents/Research/Projects/DigiVet/CS2/DK_pig_movements/svine_flytninger_2020.csv"
+
 movement_configfile <- "Denmark_processed"
 load_config(movement_configfile)
 
@@ -174,3 +178,14 @@ round_measures[, "max_reachability"] <-
 # ##########################################################################
 # plot_measure_over_anonymisation_gradient(jitter_measures, "Max reachability", "jitter")
 # plot_measure_over_anonymisation_gradient(round_measures, "Max reachability", "rounding")
+
+fn <- paste0("mra_outputs_dk_", year_range, ".rda")
+save(
+  monthly_max_reachabilities,
+  monthly_max_reaching_nodes,
+  max_reach_paths_month1,
+  jitter_measures,
+  round_measures,
+  file=fn
+)
+
