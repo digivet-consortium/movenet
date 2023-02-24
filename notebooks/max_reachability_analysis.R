@@ -2,7 +2,7 @@
 ### Set-up ###
 ##############
 library(lubridate) #wday
-library(tibble) #tibble
+library(tidyverse) #tibble,str_split,str_c
 library(pbapply)
 library(movenet)
 
@@ -13,15 +13,22 @@ library(movenet)
 #movement_configfile <- "ScotEID"
 #load_config(movement_configfile)
 
-# Danish data, available to Matt only:
-if(length(find("year_range"))==0L) year_range <- "2020"
-movement_datafile <- paste0("/Users/matthewdenwood/Documents/Research/Projects/DigiVet/CS2/DK_pig_movements_old/svine_flytninger_", year_range, ".csv")
-stopifnot(file.exists(movement_datafile))
-# movement_datafile <- "/Users/matthewdenwood/Documents/Research/Projects/DigiVet/CS2/DK_pig_movements/svine_flytninger_2020.csv"
-# movement_datafile <- "/Users/matthewdenwood/Documents/Research/Projects/DigiVet/CS2/DK_pig_movements/svine_flytninger_2018_2020.csv"
-
 movement_configfile <- "Denmark_processed"
 load_config(movement_configfile)
+
+## Specific code for running outputs on Matt's machine:
+if(movement_configfile == "Denmark_processed"){
+  if(length(find("year_range"))==0L){
+    year_range <- "2020_2020"
+  }
+  # Danish data, available to Matt only:
+  movement_datafile <- str_c("/Users/matthewdenwood/Documents/Research/Projects/DigiVet/CS2/DK_pig_movements/pig_movements_anon_", year_range, ".csv")
+  stopifnot(file.exists(movement_datafile))
+
+  pboptions(type="txt")
+  cat("Running", year_range, "\n...")
+  print(Sys.time())
+}
 
 date_col <- movenet:::movenetenv$options$movedata_cols$date
 
@@ -179,13 +186,17 @@ round_measures[, "max_reachability"] <-
 # plot_measure_over_anonymisation_gradient(jitter_measures, "Max reachability", "jitter")
 # plot_measure_over_anonymisation_gradient(round_measures, "Max reachability", "rounding")
 
-fn <- paste0("mra_outputs_dk_", year_range, ".rda")
-save(
-  monthly_max_reachabilities,
-  monthly_max_reaching_nodes,
-  max_reach_paths_month1,
-  jitter_measures,
-  round_measures,
-  file=fn
-)
+## Specific code for saving outputs on Matt's machine:
+if(movement_configfile == "Denmark_processed"){
+  save(
+    monthly_max_reachabilities,
+    monthly_max_reaching_nodes,
+    max_reach_paths_month1,
+    jitter_measures,
+    round_measures,
+    file=str_c("mra_outputs_dk_", year_range, ".rda")
+  )
 
+  print(Sys.time())
+  cat("Done\n\n\n")
+}
