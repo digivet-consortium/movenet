@@ -4,6 +4,8 @@
 library(lubridate) #wday
 library(tidyverse) #tibble,str_split,str_c
 library(pbapply)
+library(tsna)  #tPath
+library(networkDynamic)  #get.vertex.id
 library(movenet)
 
 #load_all()
