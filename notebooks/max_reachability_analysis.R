@@ -28,7 +28,7 @@ if(movement_configfile == "Denmark_processed"){
   stopifnot(file.exists(movement_datafile))
 
   pboptions(type="txt")
-  cat("Running", year_range, "\n...")
+  cat("Running", year_range, "...\n")
   print(Sys.time())
 }
 
