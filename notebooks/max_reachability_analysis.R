@@ -14,6 +14,7 @@ library(movenet)
 #  "tests/testthat/test_input_files/sample_pigs_UK_with_dep_arr_dates.csv"
 #movement_configfile <- "ScotEID"
 #load_config(movement_configfile)
+verbose <- FALSE
 
 movement_configfile <- "Denmark_processed"
 load_config(movement_configfile)
@@ -23,13 +24,25 @@ if(movement_configfile == "Denmark_processed"){
   if(length(find("year_range"))==0L){
     year_range <- "2020_2020"
   }
+  dates <- as.Date(paste0(str_split(year_range, "_")[[1]], c("-01-01","-12-31")))
+  stopifnot(length(dates)==2L)
+
   # Danish data, available to Matt only:
-  movement_datafile <- str_c("/Users/matthewdenwood/Documents/Research/Projects/DigiVet/CS2/DK_pig_movements/pig_movements_anon_", year_range, ".csv")
+  readRDS("/Users/matthewdenwood/Documents/Research/Projects/DigiVet/CS2/DK_pig_movements/pig_movements_anon_2016_2021.rds") |>
+    filter(DATO_FLYTNING >= dates[1], DATO_FLYTNING <= dates[2]) |>
+    mutate(ID=1:n()) |>
+    select(ID, DATO_FLYTNING, CHRNR_AFSENDER=ACHR_FROM, CHRNR_MODTAGER=ACHR_TO, ANTAL_FLYT_DYR) ->
+  tdata
+
+  stopifnot(nrow(tdata) > 0L)
+  movement_datafile <- tempfile()
+  write_csv(tdata, file=movement_datafile)
+  Sys.sleep(2L) # Some time to finish writing the file
   stopifnot(file.exists(movement_datafile))
 
   pboptions(type="txt")
   cat("Running", year_range, "...\n")
-  print(Sys.time())
+  verbose <- TRUE
 }
 
 date_col <- movenet:::movenetenv$options$movedata_cols$date
@@ -53,6 +66,8 @@ n_threads <- ifelse(movement_configfile == "Denmark_processed", 10, 4)
 ### Reformat data & create networks ###
 #######################################
 
+if(verbose) cat("Beginning analysis at", as.character(Sys.time()), "\n")
+
 #reformat movement data
 true_data <-
   movement_datafile |>
@@ -61,6 +76,8 @@ true_data <-
   getElement(1)
 
 true_network <- movedata2networkDynamic(true_data)
+
+if(verbose) cat("Start jitter_networks at", as.character(Sys.time()), "\n")
 
 jitter_networks <-
   pblapply(rep(jitter_set, n_sim), function(x){
@@ -102,6 +119,8 @@ names(jitter_networks) <- paste0("jitter (",rep(jitter_set, n_sim)," days)")
 #}
 ## This isn't necessary on Fork clusters, but these are not available on Windows
 
+if(verbose) cat("Start rounding networks at", as.character(Sys.time()), "\n")
+
 week_start <- wday(min(true_data[[date_col]]))
 rounding_networks <-
   pblapply(round_set, function(x){
@@ -114,6 +133,8 @@ names(rounding_networks)<-paste0(round_set,"ly")
 ##########################################################
 ### Fig 1 prep: Extract monthly maximum reachabilities ###
 ##########################################################
+
+if(verbose) cat("Start fig 1 prep at", as.character(Sys.time()), "\n")
 
 months_in_data <-
   extract_periods(true_data[[date_col]], "month")
@@ -131,7 +152,7 @@ monthly_max_reachabilities <- tibble(.rows = length(months_in_data))
 monthly_max_reaching_nodes <- tibble(.rows = length(months_in_data))
 max_reach_paths_month1 <- list()
 for (netw_ind in seq_along(monthly_networks)){
-  cat("Running network ", netw_ind, " of ", length(monthly_networks), "...\n", sep="")
+  cat("Running network ", netw_ind, " of ", length(monthly_networks), " at ", as.character(Sys.time()), "...\n", sep="")
   network <- monthly_networks[[netw_ind]]
   max_reachabilities_with_ids <-
     parallel_max_reachabilities_with_id(network, n_threads)
@@ -172,10 +193,15 @@ names(max_reach_paths_month1) <- names(selected_networks)
 ##########################################################
 ### Fig 2 prep: Extract overall maximum reachabilities ###
 ##########################################################
+
+if(verbose) cat("Start fig 2 prep (jitter measures) at", as.character(Sys.time()), "\n")
+
 jitter_measures <- tibble(jitter = rep(jitter_set,n_sim),
                           max_reachability = "")
 jitter_measures[, "max_reachability"] <-
   parallel_max_reachabilities(jitter_networks, n_threads)
+
+if(verbose) cat("Start fig 2 prep (round measures) at", as.character(Sys.time()), "\n")
 
 round_measures <- tibble(round = c(1,7,30.4,60.8,91.3,182.5,365),
                          max_reachability = "")
@@ -199,6 +225,6 @@ if(movement_configfile == "Denmark_processed"){
     file=str_c("mra_outputs_dk_", year_range, ".rda")
   )
 
-  print(Sys.time())
-  cat("Done\n\n\n")
 }
+
+if(verbose) cat("Finished at", as.character(Sys.time()), "\n")
