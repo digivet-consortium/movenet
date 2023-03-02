@@ -357,7 +357,8 @@ violinplot_monthly_measures <- function(monthly_data, measure_name){
     ylab(paste("Monthly", measure_name)) +
     ylim(0, NA) +
     scale_x_discrete(labels = function(x) str_wrap(as.character(x), width = 9))+
-    geom_violin(trim = FALSE)
+    geom_violin(trim = TRUE) +
+    theme_bw()
 
   p <- p + geom_boxplot(width = 0.1)
 
@@ -382,15 +383,15 @@ plot_measure_over_anonymisation_gradient <-
     measure <- colnames(data)[2]
     p <-
       ggplot(data = data,
-             aes(x = .data[[anon_amount]], y = .data[[measure]],
-                 group = .data[[anon_amount]])) +
+             aes(x = .data[[anon_amount]], y = .data[[measure]])) +
       xlab(ifelse(anonymisation == "jitter", "Jitter (days)",
                   "Rounding unit equivalent (days)")) +
       ylab(measure_name) +
-      ylim(0, NA)
+      ylim(0, NA) +
+      theme_bw()
 
     if(anonymisation == "jitter"){
-      p <- p + geom_boxplot()
+      p <- p + geom_boxplot(aes(group = .data[[anon_amount]]))
     } else {
       p <- p + geom_point()}
 
