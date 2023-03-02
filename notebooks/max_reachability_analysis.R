@@ -136,6 +136,21 @@ colnames(monthly_max_reachabilities) <- names(selected_networks)
 colnames(monthly_max_reaching_nodes) <- names(selected_networks)
 names(max_reach_paths_month1) <- names(selected_networks)
 
+#Calculate percentage correctly identified maximally reaching nodes
+pct_correct_node_id <-
+  monthly_max_reaching_nodes |>
+  #Is the monthly maximally reaching node correctly id'ed in modified networks?
+  #(If the true network has >1 max reaching node for a particular month, the
+  #result is TRUE if *at least one of these nodes* is correctly identified.)
+  apply(1,
+        function(x){sapply(x, function(y){any(y %in% x[[1]])})}) |>
+  #calculate percentage
+  rowSums() %>%
+  {.*100/length(months_in_data)} |>
+  as.list() %>%
+  as_tibble(.name_repair="minimal")
+
+
 # monthly_max_temp_degree <- tibble(.rows = length(months_in_data))
 # monthly_mean_temp_degree <- tibble(.rows = length(months_in_data))
 # monthly_median_temp_degree <- tibble(.rows = length(months_in_data))
@@ -153,9 +168,20 @@ names(max_reach_paths_month1) <- names(selected_networks)
 ### Fig 1: boxplot of monthly maximum reachabilities ###
 ########################################################
 
-# violinplot_monthly_measures(monthly_max_reachabilities, "maximum reachability")
-#
-#
+violinplot_monthly_measures(monthly_max_reachabilities, "maximum reachability")
+
+############################################################################
+### Fig 1b: % correct identification of (at least one) max reaching node ###
+############################################################################
+
+p <-
+  violinplot_monthly_measures(
+    pct_correct_node_id,
+    "maximally reaching nodes: consistency with true network (%)") +
+  ylim(0,100)
+
+plot(p)
+
 ##########################################################
 ### Fig 2 prep: Extract overall maximum reachabilities ###
 ##########################################################
@@ -172,5 +198,5 @@ round_measures[, "max_reachability"] <-
 # ##########################################################################
 # ### Fig 2: Max reachabilities for a diverse range of jitter & rounding ###
 # ##########################################################################
-# plot_measure_over_anonymisation_gradient(jitter_measures, "Max reachability", "jitter")
-# plot_measure_over_anonymisation_gradient(round_measures, "Max reachability", "rounding")
+ plot_measure_over_anonymisation_gradient(jitter_measures, "Max reachability", "jitter")
+ plot_measure_over_anonymisation_gradient(round_measures, "Max reachability", "rounding")
