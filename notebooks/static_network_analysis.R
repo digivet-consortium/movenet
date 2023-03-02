@@ -11,13 +11,13 @@
 load_all()
 library(igraph)
 library(tidyverse) #magrittr (%>%), dplyr (select, rename)
-reformatted_data <- reformat_move_data("C:/Users/cboga/OneDrive - University of Glasgow/CS3-ASF/Pig movement data structure/sample_pigs_UK_with_dep_arr_dates.csv")
+reformatted_data <- reformat_data("C:/Users/cboga/OneDrive - University of Glasgow/CS3-ASF/Pig movement data structure/sample_pigs_UK_with_dep_arr_dates.csv","movement")
 
 
 # reformat data into edgelist
 edgelist<-reformatted_data %>%
-  select(from, to, weight, dep_date, move_ID) %>% #need first 2 columns to be the nodes, others are edge attributes
-  rename(weight = weight) # turns weight into weights
+  select(departure_cph, dest_cph, qty_pigs, departure_date) %>% #need first 2 columns to be the nodes, others are edge attributes
+  rename(weight = qty_pigs) # turns weight into weights
 
 mygraph <- graph_from_data_frame(edgelist,directed=TRUE)
 
