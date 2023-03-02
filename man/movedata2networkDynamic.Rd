@@ -16,7 +16,9 @@ movedata2networkDynamic(
 \item{holding_data}{Movenet format holding data (optional)}
 
 \item{incl_nonactive_holdings}{Whether to include holdings from
-\code{holding_data} that are not present in \code{movement_data}. Default is \code{FALSE}.}
+\code{holding_data} that are not present in \code{movement_data}. Default is \code{FALSE}.
+If set to \code{TRUE}, holdings that don't trade within the period covered by
+\code{movement_data} are added to the network but set as non-active.}
 }
 \value{
 Temporal network (directed) in networkDynamic format
@@ -31,4 +33,7 @@ which may not correspond to original holding identifiers as provided in
 character format) have been set as 
 \link[networkDynamic:persistent_ids]{networkDynamic::persistent.ids} and can be accessed through
 \code{get.vertex.pid()}, or through the vertex attribute \code{true_id}.
+
+In the returned network, holdings are set to be active only during movement
+spells.
 }

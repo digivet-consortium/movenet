@@ -9,12 +9,16 @@
 #'
 #' @return Temporal network (directed) in networkDynamic format
 #'
-#' @details In the returned network, node identifiers are consecutive integers,
+#' @details
+#' In the returned network, node identifiers are consecutive integers,
 #' which may not correspond to original holding identifiers as provided in
 #' `movement_data` and/or `holding_data`. The original holding identifiers (in
 #' character format) have been set as [<`persistent identifiers`>]
 #' [networkDynamic::persistent.ids] and can be accessed through
 #' `get.vertex.pid()`, or through the vertex attribute `true_id`.
+#'
+#' In the returned network, holdings are set to be active only during movement
+#' spells.
 #'
 #' @importFrom dplyr filter select
 #' @import network
@@ -181,13 +185,15 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
     deactivate.vertices(net, v = c((nrow(holding_data)+1):network.size(net)))
   }
 
-  ######################
-  ### Return network ###
-  ######################
+  ###################################################################
+  ### Reconcile node activity with edge activity & Return network ###
+  ###################################################################
+
+  #set nodes to active only during edge spells
+  reconcile.vertex.activity(net, mode = "match.to.edges")
 
   #return network w/ true_id and vertex.pid containing original holding ids in
   #character format
-
   return(net)
 }
 
