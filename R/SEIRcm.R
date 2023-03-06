@@ -94,6 +94,8 @@ setClass("SEIRcm", contains = c("SimInf_model"))
 ##'     nodes. Specifically, \code{contact_matrix[i, j]} measures the
 ##'     relative strength of transmission from node \code{i} to node
 ##'     \code{j}.
+##' @importFrom methods as
+##' @importFrom methods validObject
 ##' @export
 ##' @examples
 ##' ## Create an SEIRcm model with 1000 initially infected nodes.

@@ -15,11 +15,11 @@ test_that("load_config() loads options from existing, valid config file w quotes
 })
 
 test_that("load_config() loads options from existing, valid config file, if given as path",{
-  expect_message(load_config("C:/Users/cboga/OneDrive - University of Glasgow/CS3-ASF/movenet/tests/testthat/test_input_files/ScotEID_testmore.yml"), "Successfully loaded config file:")
-  load_config("C:/Users/cboga/OneDrive - University of Glasgow/CS3-ASF/movenet/tests/testthat/test_input_files/ScotEID_testmore.yml")
-  expect_mapequal(movenetenv$options, yaml.load_file("C:/Users/cboga/OneDrive - University of Glasgow/CS3-ASF/movenet/tests/testthat/test_input_files/ScotEID_testmore.yml"))
-  expect_mapequal(movenetenv$options$movedata_cols, yaml.load_file("C:/Users/cboga/OneDrive - University of Glasgow/CS3-ASF/movenet/tests/testthat/test_input_files/ScotEID_testmore.yml")$movedata_cols)
-  expect_mapequal(movenetenv$options$movedata_fileopts, yaml.load_file("C:/Users/cboga/OneDrive - University of Glasgow/CS3-ASF/movenet/tests/testthat/test_input_files/ScotEID_testmore.yml")$movedata_fileopts)
+  expect_message(load_config("test_input_files/ScotEID_testmore.yml"), "Successfully loaded config file:")
+  load_config("test_input_files/ScotEID_testmore.yml")
+  expect_mapequal(movenetenv$options, yaml.load_file("test_input_files/ScotEID_testmore.yml"))
+  expect_mapequal(movenetenv$options$movedata_cols, yaml.load_file("test_input_files/ScotEID_testmore.yml")$movedata_cols)
+  expect_mapequal(movenetenv$options$movedata_fileopts, yaml.load_file("test_input_files/ScotEID_testmore.yml")$movedata_fileopts)
 })
 
 test_that("load_config() raises error when called without argument",{

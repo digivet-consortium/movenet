@@ -23,7 +23,6 @@ Imports:
     checkmate,
     dplyr,
     ggplot2,
-    igraph,
     lubridate (>= 1.9.0),
     magrittr,
     network,
@@ -37,11 +36,16 @@ Imports:
     stringr,
     tidyr,
     tsna,
-    yaml
+    yaml,
+    withr,
+    methods,
+    stringi,
+    rlang,
+    network,
+    tidyselect
 Suggests:
     knitr,
     spelling,
-    testthat (>= 3.0.0),
-    withr
+    testthat (>= 3.0.0)
 LinkingTo: SimInf
 NeedsCompilation: yes
