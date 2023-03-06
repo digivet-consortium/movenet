@@ -2,22 +2,48 @@
 ### Set-up ###
 ##############
 library(lubridate) #wday
-library(tibble) #tibble
+library(tidyverse) #tibble,str_split,str_c
 library(pbapply)
+library(tsna)  #tPath
+library(networkDynamic)  #get.vertex.id
 library(movenet)
 
 #load_all()
 
-movement_datafile <-
-  "tests/testthat/test_input_files/sample_pigs_UK_with_dep_arr_dates.csv"
-movement_configfile <- "ScotEID"
-load_config(movement_configfile)
+#movement_datafile <-
+#  "tests/testthat/test_input_files/sample_pigs_UK_with_dep_arr_dates.csv"
+#movement_configfile <- "ScotEID"
+#load_config(movement_configfile)
+verbose <- FALSE
 
-# Danish data, available to Matt only:
-# movement_datafile <- "/Users/matthewdenwood/Documents/Research/Projects/DigiVet/CS2/DK_pig_movements/svine_flytninger_2018_2020.csv"
-movement_datafile <- "/Users/matthewdenwood/Documents/Research/Projects/DigiVet/CS2/DK_pig_movements/svine_flytninger_2020.csv"
 movement_configfile <- "Denmark_processed"
 load_config(movement_configfile)
+
+## Specific code for running outputs on Matt's machine:
+if(movement_configfile == "Denmark_processed"){
+  if(length(find("year_range"))==0L){
+    year_range <- "2020_2020"
+  }
+  dates <- as.Date(paste0(str_split(year_range, "_")[[1]], c("-01-01","-12-31")))
+  stopifnot(length(dates)==2L)
+
+  # Danish data, available to Matt only:
+  readRDS("/Users/matthewdenwood/Documents/Research/Projects/DigiVet/CS2/DK_pig_movements/pig_movements_anon_2016_2021.rds") |>
+    filter(DATO_FLYTNING >= dates[1], DATO_FLYTNING <= dates[2]) |>
+    mutate(ID=1:n()) |>
+    select(ID, DATO_FLYTNING, CHRNR_AFSENDER=ACHR_FROM, CHRNR_MODTAGER=ACHR_TO, ANTAL_FLYT_DYR) ->
+  tdata
+
+  stopifnot(nrow(tdata) > 0L)
+  movement_datafile <- tempfile()
+  write_csv(tdata, file=movement_datafile)
+  Sys.sleep(2L) # Some time to finish writing the file
+  stopifnot(file.exists(movement_datafile))
+
+  pboptions(type="txt")
+  cat("Running", year_range, "...\n")
+  verbose <- TRUE
+}
 
 date_col <- movenet:::movenetenv$options$movedata_cols$date
 
@@ -40,12 +66,18 @@ n_threads <- ifelse(movement_configfile == "Denmark_processed", 10, 4)
 ### Reformat data & create networks ###
 #######################################
 
+if(verbose) cat("Beginning analysis at", as.character(Sys.time()), "\n")
+
 #reformat movement data
 true_data <-
   movement_datafile |>
-  reformat_data("movement")
+  reformat_data("movement") |>
+  anonymise("") |>
+  getElement(1)
 
 true_network <- movedata2networkDynamic(true_data)
+
+if(verbose) cat("Start jitter_networks at", as.character(Sys.time()), "\n")
 
 jitter_networks <-
   pblapply(rep(jitter_set, n_sim), function(x){
@@ -87,6 +119,8 @@ names(jitter_networks) <- paste0("jitter (",rep(jitter_set, n_sim)," days)")
 #}
 ## This isn't necessary on Fork clusters, but these are not available on Windows
 
+if(verbose) cat("Start rounding networks at", as.character(Sys.time()), "\n")
+
 week_start <- wday(min(true_data[[date_col]]))
 rounding_networks <-
   pblapply(round_set, function(x){
@@ -99,6 +133,8 @@ names(rounding_networks)<-paste0(round_set,"ly")
 ##########################################################
 ### Fig 1 prep: Extract monthly maximum reachabilities ###
 ##########################################################
+
+if(verbose) cat("Start fig 1 prep at", as.character(Sys.time()), "\n")
 
 months_in_data <-
   extract_periods(true_data[[date_col]], "month")
@@ -113,13 +149,54 @@ monthly_networks <- extract_periodic_subnetworks(selected_networks, n_threads,
                                                  months_in_data)
 
 monthly_max_reachabilities <- tibble(.rows = length(months_in_data))
+monthly_max_reaching_nodes <- tibble(.rows = length(months_in_data))
+max_reach_paths_month1 <- list()
 for (netw_ind in seq_along(monthly_networks)){
-  cat("Running network ", netw_ind, " of ", length(monthly_networks), "...\n", sep="")
+  cat("Running network ", netw_ind, " of ", length(monthly_networks), " at ", as.character(Sys.time()), "...\n", sep="")
   network <- monthly_networks[[netw_ind]]
+  max_reachabilities_with_ids <-
+    parallel_max_reachabilities_with_id(network, n_threads)
   monthly_max_reachabilities[as.character(netw_ind)] <-
-    parallel_max_reachabilities(network, n_threads)
+    sapply(max_reachabilities_with_ids,"[[",1)
+  monthly_max_reaching_nodes[[netw_ind]] <-
+    sapply(max_reachabilities_with_ids,"[[",2)
+  max_reach_paths_month1[[netw_ind]] <-
+    tPath(network[[1]],
+          v = get.vertex.id(network[[1]],
+                            max_reachabilities_with_ids[[1]][[2]][1]),
+          graph.step.time = 1)
 }
 colnames(monthly_max_reachabilities) <- names(selected_networks)
+colnames(monthly_max_reaching_nodes) <- names(selected_networks)
+names(max_reach_paths_month1) <- names(selected_networks)
+
+#Calculate percentage correctly identified maximally reaching nodes
+pct_correct_node_id <-
+  monthly_max_reaching_nodes |>
+  #Is the monthly maximally reaching node correctly id'ed in modified networks?
+  #(If the true network has >1 max reaching node for a particular month, the
+  #result is TRUE if *at least one of these nodes* is correctly identified.)
+  apply(1,
+        function(x){sapply(x, function(y){any(y %in% x[[1]])})}) |>
+  #calculate percentage
+  rowSums() %>%
+  {.*100/length(months_in_data)} |>
+  as.list() %>%
+  as_tibble(.name_repair="minimal")
+
+
+# monthly_max_temp_degree <- tibble(.rows = length(months_in_data))
+# monthly_mean_temp_degree <- tibble(.rows = length(months_in_data))
+# monthly_median_temp_degree <- tibble(.rows = length(months_in_data))
+# for (netw_ind in seq_along(monthly_networks)){
+#   cat("Running network ", netw_ind, " of ", length(monthly_networks), "...\n", sep="")
+#   network <- monthly_networks[[netw_ind]]
+#   monthly_max_temp_degree[as.character(netw_ind)] <-
+#     parallel_max_reachabilities(network, n_threads)
+# }
+# colnames(monthly_max_reachabilities) <- names(selected_networks)
+# max(colSums(deg))
+# mean(colSums)
 
 ########################################################
 ### Fig 1: boxplot of monthly maximum reachabilities ###
@@ -127,22 +204,55 @@ colnames(monthly_max_reachabilities) <- names(selected_networks)
 
 violinplot_monthly_measures(monthly_max_reachabilities, "maximum reachability")
 
+############################################################################
+### Fig 1b: % correct identification of (at least one) max reaching node ###
+############################################################################
+
+p <-
+  violinplot_monthly_measures(
+    pct_correct_node_id,
+    "maximally reaching nodes: consistency with true network (%)") +
+  ylim(0,100)
+
+plot(p)
 
 ##########################################################
 ### Fig 2 prep: Extract overall maximum reachabilities ###
 ##########################################################
+
+if(verbose) cat("Start fig 2 prep (jitter measures) at", as.character(Sys.time()), "\n")
+
 jitter_measures <- tibble(jitter = rep(jitter_set,n_sim),
                           max_reachability = "")
 jitter_measures[, "max_reachability"] <-
   parallel_max_reachabilities(jitter_networks, n_threads)
+
+if(verbose) cat("Start fig 2 prep (round measures) at", as.character(Sys.time()), "\n")
 
 round_measures <- tibble(round = c(1,7,30.4,60.8,91.3,182.5,365),
                          max_reachability = "")
 round_measures[, "max_reachability"] <-
   parallel_max_reachabilities(rounding_networks, n_threads)
 
-##########################################################################
-### Fig 2: Max reachabilities for a diverse range of jitter & rounding ###
-##########################################################################
-plot_measure_over_anonymisation_gradient(jitter_measures, "Max reachability", "jitter")
-plot_measure_over_anonymisation_gradient(round_measures, "Max reachability", "rounding")
+# ##########################################################################
+# ### Fig 2: Max reachabilities for a diverse range of jitter & rounding ###
+# ##########################################################################
+
+# plot_measure_over_anonymisation_gradient(jitter_measures, "Max reachability", "jitter")
+# plot_measure_over_anonymisation_gradient(round_measures, "Max reachability", "rounding")
+
+## Specific code for saving outputs on Matt's machine:
+if(movement_configfile == "Denmark_processed"){
+  save(
+    monthly_max_reachabilities,
+    monthly_max_reaching_nodes,
+    max_reach_paths_month1,
+    jitter_measures,
+    round_measures,
+    file=str_c("mra_outputs_dk_", year_range, ".rda")
+  )
+
+}
+
+if(verbose) cat("Finished at", as.character(Sys.time()), "\n")
+
