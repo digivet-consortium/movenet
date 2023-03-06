@@ -34,6 +34,7 @@ Imports:
     readr,
     rmarkdown,
     stringr,
+    tibble,
     tidyr,
     tsna,
     yaml,
