@@ -340,6 +340,7 @@ extract_periodic_subnetworks <- function(networks, n_threads, periods_in_data){
 #'
 #' @importFrom stringr str_wrap
 #' @importFrom tidyr pivot_longer
+#' @importFrom tidyselect everything
 #' @import ggplot2
 #'
 violinplot_monthly_measures <- function(monthly_data, measure_name){
@@ -403,4 +404,3 @@ plot_measure_over_anonymisation_gradient <-
 
     plot(p)
   }
-

@@ -90,6 +90,7 @@
 #' @importFrom dplyr group_by mutate rename summarise ungroup
 #' @importFrom lubridate floor_date
 #' @importFrom purrr has_element
+#' @importFrom rlang :=
 #'
 #' @export
 coarsen_date <- function(data, jitter,
@@ -299,6 +300,7 @@ coarsen_date <- function(data, jitter,
 #' @import checkmate
 #' @importFrom plyr round_any
 #' @importFrom purrr has_element
+#' @importFrom stats runif
 #'
 #' @export
 coarsen_weight <- function(data,
@@ -324,7 +326,7 @@ coarsen_weight <- function(data,
   assert_data_frame(data)
   assert_names(names(data),
                must.include = column)
-  assert_data_frame(data[column], type = "numeric", ncols = 1)
+  assert_data_frame(data[column], types = "numeric", ncols = 1)
   assert(
     check_numeric(jitter, len = 1, lower = 0),
     check_false(jitter, na.ok = FALSE)
@@ -500,7 +502,7 @@ anonymise <- function(data, prefix, key = NULL){
 #####################################
 ### Helper function to create key ###
 #####################################
-
+#' @importFrom stats setNames
 generate_anonymisation_key <- function(ids, prefix, n_start){
 
   ids_in_random_order <-
