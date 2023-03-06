@@ -263,6 +263,21 @@ parallel_max_reachabilities_with_id <- function(networks, n_threads){
   return(max_reachabilities_w_ids)
 }
 
+# parallel_temp_degree_stats <- function(networks, n_threads){
+#   cl <- makeCluster(n_threads)
+#   on.exit(stopCluster(cl))
+#
+#   clusterEvalQ(cl, {
+#     library("tsna")
+#   })
+#
+#   max_reachabilities <-
+#     pbsapply(networks,
+#              function(x){colSums(tDegree(x, graph.step.time = 1))}, cl=cl)
+#   return(max_reachabilities)
+# }
+
+
 #' Extract time periods covered in movement dataset
 #'
 #' @param data Date column of movement data
