@@ -41,7 +41,6 @@ Imports:
     methods,
     stringi,
     rlang,
-    network,
     tidyselect
 Suggests:
     knitr,
