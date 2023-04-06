@@ -1,4 +1,4 @@
-#' Create dynamic networks from movenet-format, anonymised movement data
+#' Create dynamic networks from movenet-format movement data
 #'
 #' @param movement_data Movenet format movement data
 #' @param holding_data Movenet format holding data (optional)
@@ -263,19 +263,71 @@ parallel_max_reachabilities_with_id <- function(networks, n_threads){
   return(max_reachabilities_w_ids)
 }
 
-# parallel_temp_degree_stats <- function(networks, n_threads){
-#   cl <- makeCluster(n_threads)
-#   on.exit(stopCluster(cl))
-#
-#   clusterEvalQ(cl, {
-#     library("tsna")
-#   })
-#
-#   max_reachabilities <-
-#     pbsapply(networks,
-#              function(x){colSums(tDegree(x, graph.step.time = 1))}, cl=cl)
-#   return(max_reachabilities)
-# }
+#' Extract summary stats for temporal network node properties, in parallel
+#'
+#' @param networks list of movement networks
+#' @param n_threads number of threads over which to parallelise
+#' @param node_property node property: "forward reachability" or "temporal degree"
+#' @param statistics list with summary function(s) to calculate, e.g.
+#'  list(median, max = max).
+#' @param identify_nodes whether you want to identify the nodes with maximal
+#'  values for `node_property` in each network. Default is `FALSE`. Requires
+#'  that max is included as a named function within `statistics`.
+#'
+#' @return named list of lists: for each network, a list consisting of:
+#'  (1) a named list `summary_statistics`, with the selected node property
+#'  summary statistic(s),
+#'  (2 - only if `identify_nodes` is set as `TRUE`) a named character vector
+#'  `node_pid_with_max_value`, with the persistent identifier(s) of the node(s)
+#'  with maximal value(s) for the selected node property.
+#'
+#' @importFrom networkDynamic get.vertex.pid
+#' @importFrom parallel makeCluster clusterEvalQ stopCluster
+#' @importFrom pbapply pblapply
+#' @importFrom tsna tReach tDegree
+#'
+#' @export
+parallel_summarise_temporal_node_properties <-
+  function(networks, n_threads, node_property, statistics,
+           identify_nodes = FALSE){
+    cl <- makeCluster(n_threads)
+    on.exit(stopCluster(cl))
+
+    clusterExport(cl, c("node_property", "statistics", "identify_nodes"),
+                  environment())
+    clusterEvalQ(cl, {
+      library("tsna")
+      library("networkDynamic")
+    })
+
+    ### NB need to add arg checks ###
+
+    node_summary_stats <-
+      pblapply(networks,
+               function(x){
+                 # Determine property for all nodes
+                 property <- {
+                   if(node_property == "forward reachability"){
+                     tReach(x, graph.step.time = 1)
+                   }else if(node_property == "temporal degree"){
+                     colSums(tDegree(x), na.rm = TRUE)}}
+                 # Calculate requested summary statistic(s)
+                 summary_stats <- lapply(statistics, function(f)(f(property)))
+                 # (Optionally) identify nodes with max/min values
+                 if(isTRUE(identify_nodes)){
+                   id_max_value <-
+                     get.vertex.pid(x, which(property == summary_stats$max))
+                 # Return summary stats, and optional node identifiers
+                   return(list(summary_statistics = summary_stats,
+                               node_pid_with_max_value = id_max_value))
+                 }else{
+                   return(list(summary_statistics = summary_stats))
+                 }},
+               cl=cl)
+    return(node_summary_stats)
+  }
+
+
 
 
 #' Extract time periods covered in movement dataset
