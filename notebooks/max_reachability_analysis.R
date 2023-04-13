@@ -6,14 +6,16 @@ library(tidyverse) #tibble,str_split,str_c
 library(pbapply)
 library(tsna)  #tPath
 library(networkDynamic)  #get.vertex.id
+library(parallel)
 library(movenet)
 
-#load_all()
 
-#movement_datafile <-
-#  "tests/testthat/test_input_files/sample_pigs_UK_with_dep_arr_dates.csv"
-#movement_configfile <- "ScotEID"
-#load_config(movement_configfile)
+load_all()
+
+movement_datafile <-
+  "tests/testthat/test_input_files/sample_pigs_UK_with_dep_arr_dates.csv"
+movement_configfile <- "ScotEID"
+load_config(movement_configfile)
 verbose <- FALSE
 
 movement_configfile <- "Denmark_processed"
@@ -71,64 +73,71 @@ if(verbose) cat("Beginning analysis at", as.character(Sys.time()), "\n")
 #reformat movement data
 true_data <-
   movement_datafile |>
-  reformat_data("movement") |>
-  anonymise("") |>
-  getElement(1)
+  reformat_data("movement")# |>
+  #anonymise("") |> #anonymise Danish data
+  #getElement(1)
 
 true_network <- movedata2networkDynamic(true_data)
 
 if(verbose) cat("Start jitter_networks at", as.character(Sys.time()), "\n")
 
-jitter_networks <-
-  pblapply(rep(jitter_set, n_sim), function(x){
-    coarsen_date(true_data, jitter = x, rounding_unit = FALSE) |>
-      movedata2networkDynamic()
+create_jitter_networks <- function(jitter_set, n_sim, n_threads, ...){
+  #To generalise into single general jitter/rounding function for package, need
+  #to mind the option to apply both jitter AND rounding. How is this best
+  #parallelised? Or otherwise need to limit to selecting jitter OR rounding.
+  #Also: mind current dependence on "true_data" in global environment!
+  #Also: clusterExport from different environments (e.g. "data"/arguments from
+  #calling env, others from global env)
+
+  cl <- makeCluster(n_threads)
+  on.exit(stopCluster(cl))
+  clusterExport(cl, c("true_data", "movement_configfile",
+                      "has_element", "floor_date", "select", "networkDynamic"))
+  clusterEvalQ(cl, {
+    library(movenet)
+    library(checkmate)
+    library(dplyr)
+    load_config(movement_configfile)
   })
+  jitter_networks <-
+    pblapply(rep(jitter_set, n_sim),
+             function(x){coarsen_date(true_data, jitter = x,
+                                      rounding_unit = FALSE, ...) |>
+                         movedata2networkDynamic()},
+             cl = cl)
+  return(jitter_networks)
+}
+
+jitter_networks <- create_jitter_networks(jitter_set, n_sim, n_threads)
 names(jitter_networks) <- paste0("jitter (",rep(jitter_set, n_sim)," days)")
 
-# create_rounding_networks <- function(round_set, n_threads, ...){
-#   cl <- makeCluster(n_threads)
-#   on.exit(stopCluster(cl))
-#   clusterExport(cl, c("coarsen_date", "movedata2networkDynamic",
-#                       "has_element", "floor_date", "select", "networkDynamic",
-#                       "movenetenv"))
-#   clusterExport(cl, ...names(), envir = environment())
-#   clusterEvalQ(cl, {
-#     library(checkmate)
-#     library(dplyr)
-#     #print(has_element(names(movenetenv$options), "movedata_cols"))
-#   })
-#   rounding_networks <-
-#     parLapply(cl, round_set,
-#               function(x){coarsen_date(rounding_unit = x, ...) |>
-#                   movedata2networkDynamic()})
-#   return(rounding_networks)
-# }
-#movenetenv is passed on to cluster (confirmed!), but somehow it raises error
-#as if config file not loaded
-
-## Comment from Matt:  on a socket type cluster the R sessions loaded are "fresh",
-## which is why the config file is not loaded. If you do the following it should
-## hopefully work (untested):
-#if(FALSE){
-#  clusterExport(cl, "movement_datafile")
-#  clusterEvalQ(cl, {
-#    library("movenet")
-#    load_config(movement_configfile)
-#  })
-#}
-## This isn't necessary on Fork clusters, but these are not available on Windows
 
 if(verbose) cat("Start rounding networks at", as.character(Sys.time()), "\n")
 
-week_start <- wday(min(true_data[[date_col]]))
-rounding_networks <-
-  pblapply(round_set, function(x){
-    coarsen_date(true_data, jitter = FALSE, rounding_unit = x,
-                 week_start = week_start) |>
-      movedata2networkDynamic()
+create_rounding_networks <- function(round_set, n_threads, ...){
+  cl <- makeCluster(n_threads)
+  on.exit(stopCluster(cl))
+  clusterExport(cl, c("true_data", "movement_configfile", "week_start",
+                      "has_element", "floor_date", "select", "networkDynamic"))
+  clusterEvalQ(cl, {
+    library(movenet)
+    library(checkmate)
+    library(dplyr)
+    load_config(movement_configfile)
   })
-names(rounding_networks)<-paste0(round_set,"ly")
+  rounding_networks <-
+    pblapply(round_set,
+             function(x){coarsen_date(true_data, jitter = FALSE,
+                                      rounding_unit = x,
+                                      week_start = week_start, ...) |>
+                         movedata2networkDynamic()},
+             cl = cl)
+  return(rounding_networks)
+}
+
+week_start <- wday(min(true_data[[date_col]]))
+rounding_networks <- create_rounding_networks(round_set, n_threads)
+names(rounding_networks) <- paste0(round_set,"ly")
 
 ##########################################################
 ### Fig 1 prep: Extract monthly maximum reachabilities ###
