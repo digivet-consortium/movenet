@@ -410,6 +410,7 @@ extract_periodic_subnetworks <- function(networks, n_threads, periods_in_data){
 #' @importFrom tidyselect everything
 #' @import ggplot2
 #'
+#' @export
 violinplot_monthly_measures <- function(monthly_data, measure_name){
 
   #Reformat to long tibble for plotting
