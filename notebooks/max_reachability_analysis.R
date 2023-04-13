@@ -163,12 +163,19 @@ max_reach_paths_month1 <- list()
 for (netw_ind in seq_along(monthly_networks)){
   cat("Running network ", netw_ind, " of ", length(monthly_networks), " at ", as.character(Sys.time()), "...\n", sep="")
   network <- monthly_networks[[netw_ind]]
+  #max_reachabilities_with_ids <-
+    #parallel_max_reachabilities_with_id(network, n_threads)
   max_reachabilities_with_ids <-
-    parallel_max_reachabilities_with_id(network, n_threads)
+    parallel_summarise_temporal_node_properties(network, n_threads,
+                                                "forward reachability",
+                                                list(max = max),
+                                                identify_nodes = TRUE)
   monthly_max_reachabilities[as.character(netw_ind)] <-
-    sapply(max_reachabilities_with_ids,"[[",1)
+    unlist(sapply(max_reachabilities_with_ids,"[[",1))
   monthly_max_reaching_nodes[[netw_ind]] <-
     sapply(max_reachabilities_with_ids,"[[",2)
+
+  #Get some example paths for plotting
   max_reach_paths_month1[[netw_ind]] <-
     tPath(network[[1]],
           v = get.vertex.id(network[[1]],
@@ -234,14 +241,24 @@ if(verbose) cat("Start fig 2 prep (jitter measures) at", as.character(Sys.time()
 jitter_measures <- tibble(jitter = rep(jitter_set,n_sim),
                           max_reachability = "")
 jitter_measures[, "max_reachability"] <-
-  parallel_max_reachabilities(jitter_networks, n_threads)
+  #parallel_max_reachabilities(jitter_networks, n_threads)
+  parallel_summarise_temporal_node_properties(jitter_networks, n_threads,
+                                              "forward reachability",
+                                              list(max = max),
+                                              identify_nodes = FALSE) |>
+  unlist()
 
 if(verbose) cat("Start fig 2 prep (round measures) at", as.character(Sys.time()), "\n")
 
 round_measures <- tibble(round = c(1,7,30.4,60.8,91.3,182.5,365),
                          max_reachability = "")
 round_measures[, "max_reachability"] <-
-  parallel_max_reachabilities(rounding_networks, n_threads)
+  #parallel_max_reachabilities(rounding_networks, n_threads)
+  parallel_summarise_temporal_node_properties(rounding_networks, n_threads,
+                                              "forward reachability",
+                                              list(max = max),
+                                              identify_nodes = FALSE) |>
+  unlist()
 
 # ##########################################################################
 # ### Fig 2: Max reachabilities for a diverse range of jitter & rounding ###
