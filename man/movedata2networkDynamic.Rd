@@ -2,7 +2,7 @@
 % Please edit documentation in R/temporal_network_helpers.R
 \name{movedata2networkDynamic}
 \alias{movedata2networkDynamic}
-\title{Create dynamic networks from movenet-format, anonymised movement data}
+\title{Create dynamic networks from movenet-format movement data}
 \usage{
 movedata2networkDynamic(
   movement_data,
@@ -24,7 +24,7 @@ If set to \code{TRUE}, holdings that don't trade within the period covered by
 Temporal network (directed) in networkDynamic format
 }
 \description{
-Create dynamic networks from movenet-format, anonymised movement data
+Create dynamic networks from movenet-format movement data
 }
 \details{
 In the returned network, node identifiers are consecutive integers,
