@@ -267,7 +267,8 @@ parallel_max_reachabilities_with_id <- function(networks, n_threads){
 #'
 #' @param networks list of movement networks
 #' @param n_threads number of threads over which to parallelise
-#' @param node_property node property: "forward reachability" or "temporal degree"
+#' @param node_property node property: one of c("forward reachability",
+#'  "temporal degree", "temporal indegree", "temporal outdegree")
 #' @param statistics list with summary function(s) to calculate, e.g.
 #'  list(median, max = max).
 #' @param identify_nodes whether you want to identify the nodes with maximal
@@ -310,7 +311,11 @@ parallel_summarise_temporal_node_properties <-
                    if(node_property == "forward reachability"){
                      tReach(x, graph.step.time = 1)
                    }else if(node_property == "temporal degree"){
-                     colSums(tDegree(x), na.rm = TRUE)}}
+                     colSums(tDegree(x), na.rm = TRUE, cmode = "freeman")
+                   }else if(node_property == "temporal indegree"){
+                     colSums(tDegree(x), na.rm = TRUE, cmode = "indegree")
+                   }else if(node_property == "temporal outdegree"){
+                     colSums(tDegree(x), na.rm = TRUE, cmode = "outdegree")}}
                  # Calculate requested summary statistic(s)
                  summary_stats <- lapply(statistics, function(f)(f(property)))
                  # (Optionally) identify nodes with max/min values
