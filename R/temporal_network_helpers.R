@@ -311,11 +311,11 @@ parallel_summarise_temporal_node_properties <-
                    if(node_property == "forward reachability"){
                      tReach(x, graph.step.time = 1)
                    }else if(node_property == "temporal degree"){
-                     colSums(tDegree(x), na.rm = TRUE, cmode = "freeman")
+                     colSums(tDegree(x, cmode = "freeman"), na.rm = TRUE)
                    }else if(node_property == "temporal indegree"){
-                     colSums(tDegree(x), na.rm = TRUE, cmode = "indegree")
+                     colSums(tDegree(x, cmode = "indegree"), na.rm = TRUE)
                    }else if(node_property == "temporal outdegree"){
-                     colSums(tDegree(x), na.rm = TRUE, cmode = "outdegree")}}
+                     colSums(tDegree(x, cmode = "outdegree"), na.rm = TRUE)}}
                  # Calculate requested summary statistic(s)
                  summary_stats <- lapply(statistics, function(f)(f(property)))
                  # (Optionally) identify nodes with max/min values
