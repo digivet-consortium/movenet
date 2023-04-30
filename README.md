@@ -33,6 +33,8 @@ outcomes of network analyses and transmission models, so as to allow
 users to find a suitable balance between the scale of anonymisation and
 the accuracy of these outcomes.
 
+![](man/figures/readme-flowchart.svg)
+
 ## Reading in and reformatting data
 
 A first step in any workflow is reading in livestock movement data (and

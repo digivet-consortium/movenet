@@ -1,0 +1,25 @@
+%%{init: {'theme':'neutral'}}%%
+flowchart TD
+    subgraph reformat ["Reading in and reformatting data"]
+    CSV["Movement/holding data file (csv)"]
+    CSV-->REFORMAT(["reformat_data()"])
+    YML["Config file (yml)"]
+    YML --> CFG(["load_config()"]) --> ENV[Movementenv options]
+    ENV --> REFORMAT
+    REFORMAT --> TBL["Movement/holding tibble"]
+    end
+    subgraph anonymisation ["Making data non-identifiable"]
+    TBL --> CDT(["coarsen_date()"]) --> ATBL["Movement/holding tibble (anonymised)"]
+    TBL --> CWT(["coarsen_weight()"]) --> ATBL
+    TBL --> ANON(["anonymise()"]) --> ATBL
+    ANON --> ANONKEY["anonymisation key"]
+    end
+    subgraph net ["Generation of networks and (basic) social network analysis"]
+    ATBL --> MKNET(["moveDataToNetworkDynamic()"])
+    MKNET --> NET[Movement network]
+    NET --> PMR(["parallel_max_reachabilities()"]) --> MR["Max reachabilities (with/without IDs)"]
+    NET --> PMRID(["parallel_max_reachabilities_with_id()"]) --> MR
+    NET --> EXPER(["extract_periods()"]) --> PER["List of periods"]
+    NET --> EXPSN(["extract_periodic_subnetworks()"]) --> PSN["List of periodic subnetworks"]
+    PER --> EXPSN
+    end
