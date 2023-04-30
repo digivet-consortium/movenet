@@ -19,7 +19,7 @@ flowchart TD
     MKNET --> NET[Movement network]
     NET --> PMR(["parallel_max_reachabilities()"]) --> MR["Max reachabilities (with/without IDs)"]
     NET --> PMRID(["parallel_max_reachabilities_with_id()"]) --> MR
-    NET --> EXPER(["extract_periods()"]) --> PER["List of periods"]
+    ATBL --> EXPER(["extract_periods()"]) --> PER["List of periods"]
     NET --> EXPSN(["extract_periodic_subnetworks()"]) --> PSN["List of periodic subnetworks"]
     PER --> EXPSN
     end
