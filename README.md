@@ -52,20 +52,99 @@ additional columns; data types for specific columns are checked, and
 where possible converted to standards (e.g. R Date format) to improve
 interoperability.
 
-(Usage/example code will be added shortly.)
+To read in and reformat some data, first we select a configuration. We
+do this using the `load_config(configfile)` function. For example, to
+load the configuration for ScotEID data, we run:
+
+``` r
+# The ScotEID configuration is loaded from ScotEID.yml into Movenet's environment.
+load_config("ScotEID")
+#> Successfully loaded config file: ScotEID
+```
+
+Next, we can use the `reformat_data(datafile, type)` function to read
+and reformat the data.
+
+``` r
+datafile <- "tests/testthat/test_input_files/sample_pigs_UK_with_dep_arr_dates.csv"
+data <- reformat_data(datafile, "movement")
+# Here we are using movement data, but we can also read and reformat holding
+# data if we change the second parameter to "holding".
+```
+
+The reformatted data is returned as a tibble. The columns are in a
+standardised order.
+
+``` r
+# Look at the first six rows of the tibble
+head(data)
+#> # A tibble: 6 × 5
+#>   departure_cph dest_cph    departure_date qty_pigs movement_reference
+#>   <chr>         <chr>       <date>            <dbl>              <dbl>
+#> 1 95/216/1100   19/818/9098 2019-02-08           97             304781
+#> 2 69/196/5890   71/939/3228 2019-08-15          167             229759
+#> 3 52/577/5349   82/501/8178 2019-09-15          115              36413
+#> 4 39/103/5541   13/282/1763 2019-10-26          125             488616
+#> 5 41/788/6464   57/418/6011 2019-10-17          109             581785
+#> 6 69/393/9398   39/947/2201 2019-10-06           72             564911
+```
 
 ## Making data non-identifiable
 
 To address concerns around commercial sensitivity, Movenet includes a
 range of functions to make livestock movement data and/or holding data
-non-identifiable. It can pseudonymise holding identifiers, and modify
-dates or weights by applying a small amount of noise or by rounding. A
-function to resample holding coordinates in a density-dependent manner
+non-identifiable. It can pseudonymise holding identifiers:
+
+``` r
+# Pseudonymise our data using the anonymise() function:
+anonymised <- anonymise(data, "FARM")
+
+data <- anonymised$data
+anonymisation_key <- anonymised$key
+
+# Now we can see the data has been pseudonymised:
+head(data)
+#> # A tibble: 6 × 5
+#>   departure_cph dest_cph departure_date qty_pigs movement_reference
+#>   <chr>         <chr>    <date>            <dbl>              <dbl>
+#> 1 FARM259       FARM42   2019-02-08           97             304781
+#> 2 FARM370       FARM136  2019-08-15          167             229759
+#> 3 FARM385       FARM395  2019-09-15          115              36413
+#> 4 FARM86        FARM280  2019-10-26          125             488616
+#> 5 FARM282       FARM122  2019-10-17          109             581785
+#> 6 FARM73        FARM105  2019-10-06           72             564911
+
+# And if desired, we can keep the anonymisation key to reverse this process later:
+head(anonymisation_key)
+#> 95/383/5454 24/630/2808 49/940/1336 39/277/9955 56/344/7278 97/665/7174 
+#>     "FARM1"     "FARM2"     "FARM3"     "FARM4"     "FARM5"     "FARM6"
+
+# anonymise() also takes an optional `key` argument to use an existing key
+```
+
+It can also modify dates or weights by applying a small amount of noise
+or by rounding:
+
+``` r
+# Use jitter to coarsen the dates
+data <- data |> coarsen_date(
+  jitter = 5, # add jitter of ±5 days
+  rounding_unit = FALSE # do not round the data
+)
+#> Warning: As 'rounding_unit' is FALSE, no rounding or summarising by date has
+#>     been performed. Arguments 'sum_weight' and '...' have been ignored.
+
+# Use rounding to coarsen the weights
+data <- data |> coarsen_weight(
+  round = 10, # round weights to the nearest multiple of 10
+  jitter = FALSE # do not jitter the data
+)
+```
+
+A function to resample holding coordinates in a density-dependent manner
 is under development. The envisaged effect is to increase data sharing
 between different countries or organisations, which is of particular
 relevance when modelling transboundary disease spread.
-
-(Usage/example code will be added shortly.)
 
 ## Generation of networks and (basic) social network analysis
 
@@ -75,7 +154,53 @@ for (temporal) social network analysis. We are currently working on
 functions in this section - e.g. creation of a pdf report with network
 measures of particular relevance to disease transmission.
 
-(A more extensive summary and usage/example code will be added shortly.)
+Currently it is already possible to generate a NetworkDynamic and
+perform some kinds of analysis:
+
+``` r
+# Create a NetworkDynamic from our data
+smallData <- head(data, n=300) # use a subset of our data so this notebook knits faster
+network <- movedata2networkDynamic(smallData)
+network
+#> NetworkDynamic properties:
+#>   distinct change times: 204 
+#>   maximal time range: 17897 until  18257 
+#> 
+#>  Dynamic (TEA) attributes:
+#>   Edge TEAs:    movement_reference.active 
+#>      qty_pigs.active 
+#> 
+#> Includes optional net.obs.period attribute:
+#>  Network observation period info:
+#>   Number of observation spells: 1 
+#>   Maximal time range observed: 17897 until 18257 
+#>   Temporal mode: continuous 
+#>   Time unit: unknown 
+#>   Suggested time increment: NA 
+#> 
+#>  Network attributes:
+#>   vertices = 364 
+#>   directed = TRUE 
+#>   hyper = FALSE 
+#>   loops = FALSE 
+#>   multiple = FALSE 
+#>   bipartite = FALSE 
+#>   net.obs.period: (not shown)
+#>   vertex.pid = true_id 
+#>   total edges= 300 
+#>     missing edges= 0 
+#>     non-missing edges= 300 
+#> 
+#>  Vertex attribute names: 
+#>     active true_id vertex.names 
+#> 
+#>  Edge attribute names: 
+#>     active movement_reference.active qty_pigs.active
+
+# Perform some analysis - find the max reachability
+parallel_max_reachabilities(list(network), n_threads=8)
+#> [1] 8
+```
 
 ## Integration of data into transmission models
 
