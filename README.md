@@ -33,11 +33,23 @@ outcomes of network analyses and transmission models, so as to allow
 users to find a suitable balance between the scale of anonymisation and
 the accuracy of these outcomes.
 
-![Flowchart split into sections corresponding to the next sections of
+The functionality made available by this package can be divided into
+four sections: reading in and reformatting data; making data
+non-identifiable; generation of networks and (basic) social network
+analysis; and integration of data into transmission models (in
+progress). The following flow chart illustrates how the key functions in
+these categories relate to one another and can be used as reference for
+how this package fits together.
+
+![Flow chart split into sections corresponding to the next sections of
 this document. It shows the general flow of usage of the Movenet
 package, and how some of the important functions can be used to
 transform the data. This is covered in more detail in the next sections
 of this document.](man/figures/readme-flowchart.svg)
+
+The remaining sections of this document explain how to use the package
+in more detail, with code samples. For even more detail, consult the
+documentation of each function.
 
 ## Reading in and reformatting data
 
