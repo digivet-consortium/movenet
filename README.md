@@ -33,7 +33,11 @@ outcomes of network analyses and transmission models, so as to allow
 users to find a suitable balance between the scale of anonymisation and
 the accuracy of these outcomes.
 
-![](man/figures/readme-flowchart.svg)
+![Flowchart split into sections corresponding to the next sections of
+this document. It shows the general flow of usage of the Movenet
+package, and how some of the important functions can be used to
+transform the data. This is covered in more detail in the next sections
+of this document.](man/figures/readme-flowchart.svg)
 
 ## Reading in and reformatting data
 

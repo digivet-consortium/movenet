@@ -29,7 +29,7 @@ Movenet facilitates a range of objectives and workflows pertaining to the proces
 -	integration of the data into transmission models;
 -	exploration of the effects of different anonymisation options on outcomes of network analyses and transmission models, so as to allow users to find a suitable balance between the scale of anonymisation and the accuracy of these outcomes. 
 
-![](man/figures/readme-flowchart.svg)
+![Flowchart split into sections corresponding to the next sections of this document. It shows the general flow of usage of the Movenet package, and how some of the important functions can be used to transform the data. This is covered in more detail in the next sections of this document.](man/figures/readme-flowchart.svg)
 
 ## Reading in and reformatting data
 A first step in any workflow is reading in livestock movement data (and optional holding data). At this stage, the challenge is the diversity of formats that movement and holding data can come in. Movenet addresses this by requiring users to provide a configuration file, indicating appropriate values for a range of factors that commonly vary between datasets, such as the separator and date format used, as well as headers of relevant columns. Example configuration files as well as an empty template are available in the `/inst/configurations` folder.  Using the appropriate configurations, data are read in and converted to a standardised Movenet format. This standardised format focuses on minimally required data (from, to, date, weight) but allows for additional columns; data types for specific columns are checked, and where possible converted to standards (e.g. R Date format) to improve interoperability. 
