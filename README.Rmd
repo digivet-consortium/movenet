@@ -39,6 +39,9 @@ A first step in any workflow is reading in livestock movement data (and optional
 # load the library using devtools
 library(devtools)
 devtools::load_all()
+
+# set the random seed so anonymised IDs are consistent
+set.seed(1)
 ```
 
 To read in and reformat some data, first we select a configuration. We do this using the `load_config(configfile)` function. For example, to load the configuration for ScotEID

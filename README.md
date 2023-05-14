@@ -111,16 +111,16 @@ head(data)
 #> # A tibble: 6 × 5
 #>   departure_cph dest_cph departure_date qty_pigs movement_reference
 #>   <chr>         <chr>    <date>            <dbl>              <dbl>
-#> 1 FARM259       FARM42   2019-02-08           97             304781
-#> 2 FARM370       FARM136  2019-08-15          167             229759
-#> 3 FARM385       FARM395  2019-09-15          115              36413
-#> 4 FARM86        FARM280  2019-10-26          125             488616
-#> 5 FARM282       FARM122  2019-10-17          109             581785
-#> 6 FARM73        FARM105  2019-10-06           72             564911
+#> 1 FARM132       FARM322  2019-02-08           97             304781
+#> 2 FARM276       FARM496  2019-08-15          167             229759
+#> 3 FARM329       FARM256  2019-09-15          115              36413
+#> 4 FARM334       FARM316  2019-10-26          125             488616
+#> 5 FARM393       FARM430  2019-10-17          109             581785
+#> 6 FARM375       FARM178  2019-10-06           72             564911
 
 # And if desired, we can keep the anonymisation key to reverse this process later:
 head(anonymisation_key)
-#> 95/383/5454 24/630/2808 49/940/1336 39/277/9955 56/344/7278 97/665/7174 
+#> 79/642/5562 95/903/2776 86/580/7898 31/473/4857 77/458/3246 52/672/6036 
 #>     "FARM1"     "FARM2"     "FARM3"     "FARM4"     "FARM5"     "FARM6"
 
 # anonymise() also takes an optional `key` argument to use an existing key
@@ -167,8 +167,8 @@ smallData <- head(data, n=300) # use a subset of our data so this notebook knits
 network <- movedata2networkDynamic(smallData)
 network
 #> NetworkDynamic properties:
-#>   distinct change times: 204 
-#>   maximal time range: 17897 until  18257 
+#>   distinct change times: 211 
+#>   maximal time range: 17898 until  18257 
 #> 
 #>  Dynamic (TEA) attributes:
 #>   Edge TEAs:    movement_reference.active 
@@ -177,7 +177,7 @@ network
 #> Includes optional net.obs.period attribute:
 #>  Network observation period info:
 #>   Number of observation spells: 1 
-#>   Maximal time range observed: 17897 until 18257 
+#>   Maximal time range observed: 17898 until 18257 
 #>   Temporal mode: continuous 
 #>   Time unit: unknown 
 #>   Suggested time increment: NA 
