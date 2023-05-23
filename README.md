@@ -12,7 +12,7 @@ common data issues such as the diversity of data formats and privacy
 preservation.
 
 We are also developing an accompanying interactive web app (temporarily
-housed [here](https://github.com/digivet-consortium/movenet_app)) to
+housed [here](https://github.com/digivet-consortium/movenetapp)) to
 cater to users who may prefer a graphical user interface.
 
 **Disclaimer:** Movenet is under active development. The way functions
