@@ -4,7 +4,7 @@ flowchart TD
     CSV["Movement/holding data file (csv)"]
     CSV-->REFORMAT(["reformat_data()"])
     YML["Config file (yml)"]
-    YML --> CFG(["load_config()"]) --> ENV[Movementenv options]
+    YML --> CFG(["load_config()"]) --> ENV[Movenetenv options]
     ENV --> REFORMAT
     REFORMAT --> TBL["Movement/holding tibble"]
     end
