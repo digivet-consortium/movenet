@@ -116,15 +116,23 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
   ########################################
 
   #Reformat data to the specific column order, and integer vertex.ids and dates,
-  #required by networkDynamic. Then create the network.
+  #required by networkDynamic
 
   movement_data[1:3] <- movement_data[1:3] |> lapply(as.numeric)
   movement_data <-
     movement_data[,c(3,3,1,2,4:length(movement_data))] |>
     data.frame(stringsAsFactors = FALSE)
 
-  net <- networkDynamic(edge.spells = movement_data, verbose = FALSE,
-                        create.TEAs = TRUE,
+  #Create activity spells for nodes, to avoid very slow reconcile.vertex.activity
+  vertex_spells <- movement_data[,c(1,2,3)] |>
+    `colnames<-`(colnames(movement_data[,c(1,2,4)]))
+  vertex_spells <- rbind(vertex_spells, movement_data[,c(1,2,4)]) |>
+    sort() |> unique()
+
+  #Create the network
+  net <- networkDynamic(edge.spells = movement_data,
+                        vertex.spells = vertex_spells,
+                        verbose = FALSE, create.TEAs = TRUE,
                         edge.TEA.names = names(movement_data)[-c(1:4)])
   #Allow multiplex graphs? (Default = FALSE)
   #This may cause trouble with certain measures. Edge spells over time will
@@ -185,12 +193,9 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
     deactivate.vertices(net, v = c((nrow(holding_data)+1):network.size(net)))
   }
 
-  ###################################################################
-  ### Reconcile node activity with edge activity & Return network ###
-  ###################################################################
-
-  #set nodes to active only during edge spells
-  reconcile.vertex.activity(net, mode = "match.to.edges")
+  ######################
+  ### Return network ###
+  ######################
 
   #return network w/ true_id and vertex.pid containing original holding ids in
   #character format
