@@ -15,7 +15,7 @@ flowchart TD
     ANON --> ANONKEY["anonymisation key"]
     end
     subgraph net ["Generation of networks and (basic) social network analysis"]
-    ATBL --> MKNET(["moveDataToNetworkDynamic()"])
+    ATBL --> MKNET(["movedata2networkDynamic()"])
     MKNET --> NET[Movement network]
     NET --> PMR(["parallel_max_reachabilities()"]) --> MR["Max reachabilities (with/without IDs)"]
     NET --> PMRID(["parallel_max_reachabilities_with_id()"]) --> MR
