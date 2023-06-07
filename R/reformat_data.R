@@ -94,6 +94,11 @@ reformat_data <- function(datafile, type){ #Could also infer type from the data
   #read_delim's original message (can be obtained with conditionMessage) only
   #mentions the first missing column it comes across.
 
+  #Also:
+  #can set col_types directly with cols({{minvars$date}} := col_date(), etc),
+  #but if something goes wrong with coltype, you get NA with a readr/vroom warning
+  #message that asks you to run problems() for details.
+
 
   #############################
   ### Reformatting key data ###
