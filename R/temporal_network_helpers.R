@@ -97,18 +97,13 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
   #(The key is later used to generate a "true_id" vertex attribute, and to set
   #vertex.pids (persistent identifiers))
 
-  if(!all(grepl("^\\d+$",node_ids)) ||
-     !identical(sort(as.integer(node_ids)), 1:max(as.integer(node_ids)))){
+  if(do_ids_need_reformatted(node_ids)){
 
-    key <- generate_anonymisation_key(node_ids, prefix = "", n_start = 1)
-    #using this instead of 'anonymise' avoids the loaded config file requirement
+    output <- reformat_ids(movement_data, holding_data, node_ids)
+    movement_data <- output$movement_data
+    holding_data <- output$holding_data
+    key <- output$key
 
-    movement_data[c(1,2)] <-
-      lapply(c(1,2), function(x){unname(key[as.character(movement_data[[x]])])})
-
-    if(!is.null(holding_data)){
-      holding_data[1] <- unname(key[as.character(holding_data[[1]])])
-    }
   }
 
   ########################################
@@ -116,15 +111,20 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
   ########################################
 
   #Reformat data to the specific column order, and integer vertex.ids and dates,
-  #required by networkDynamic. Then create the network.
+  #required by networkDynamic
 
   movement_data[1:3] <- movement_data[1:3] |> lapply(as.numeric)
   movement_data <-
     movement_data[,c(3,3,1,2,4:length(movement_data))] |>
     data.frame(stringsAsFactors = FALSE)
 
-  net <- networkDynamic(edge.spells = movement_data, verbose = FALSE,
-                        create.TEAs = TRUE,
+  #Create activity spells for nodes, to avoid very slow reconcile.vertex.activity
+  vertex_spells <- create_vertex_spells(movement_data)
+
+  #Create the network
+  net <- networkDynamic(edge.spells = movement_data,
+                        vertex.spells = vertex_spells,
+                        verbose = FALSE, create.TEAs = TRUE,
                         edge.TEA.names = names(movement_data)[-c(1:4)])
   #Allow multiplex graphs? (Default = FALSE)
   #This may cause trouble with certain measures. Edge spells over time will
@@ -185,18 +185,65 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
     deactivate.vertices(net, v = c((nrow(holding_data)+1):network.size(net)))
   }
 
-  ###################################################################
-  ### Reconcile node activity with edge activity & Return network ###
-  ###################################################################
-
-  #set nodes to active only during edge spells
-  reconcile.vertex.activity(net, mode = "match.to.edges")
+  ######################
+  ### Return network ###
+  ######################
 
   #return network w/ true_id and vertex.pid containing original holding ids in
   #character format
   return(net)
 }
 
+#' Helper function: Create activity spells for nodes, to avoid
+#' very slow reconcile.vertex.activity
+#'
+#' @param movement_data The movement data tibble
+#'
+#' @returns the vertex spells ready to be passed into networkDynamic()
+create_vertex_spells <- function(movement_data){
+  vertex_spells <- movement_data[,c(1,2,3)] |>
+    `colnames<-`(colnames(movement_data[,c(1,2,4)]))
+  vertex_spells <- rbind(vertex_spells, movement_data[,c(1,2,4)]) |>
+    sort() |> unique()
+  return(vertex_spells)
+}
+
+#' Helper function: Check whether the node ids are formatted incorrectly
+#' and need to be replaced.
+#'
+#' @param node_ids vector of node IDs (character format)
+#'
+#' @returns a boolean - true if the IDs need to be replaced, false otherwise
+do_ids_need_reformatted <- function(node_ids){
+  return(!all(grepl("^\\d+$",node_ids)) ||
+     !identical(sort(as.integer(node_ids)), 1:max(as.integer(node_ids))))
+}
+
+#' Helper function: Replaces the node ids with 1, 2, 3 etc. Also returns
+#' a key for reversing the process later.
+#'
+#' @param movement_data movement data tibble
+#' @param holding_data holding data tibble (null if not present)
+#' @param node_ids list of unique node ids in original data
+#'
+#' @returns a named list containing key (the key), movement_data
+#' (the modified movement_data tibble) and holding_data (the modified
+#' holding_data tibble if present, null otherwise)
+reformat_ids <- function(movement_data, holding_data, node_ids){
+  key <- generate_anonymisation_key(node_ids, prefix = "", n_start = 1)
+  #using this instead of 'anonymise' avoids the loaded config file requirement
+
+  movement_data[c(1,2)] <-
+    lapply(c(1,2), function(x){unname(key[as.character(movement_data[[x]])])})
+
+  if(!is.null(holding_data)){
+    holding_data[1] <- unname(key[as.character(holding_data[[1]])])
+  }
+
+  return(list(key = key,
+              movement_data = movement_data,
+              holding_data = holding_data))
+}
 
 #' Extract max reachabilities in parallel
 #'
