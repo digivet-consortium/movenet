@@ -148,7 +148,7 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
     identifiers (vertex.pid) and can be identified for each node by running
     `get.vertex.pid(network_name, vertex.id(s))`."))
   } else {
-  #else, set convert vertex.names (original holding ids if consecutive ints) to
+  #else, convert vertex.names (original holding ids if consecutive ints) to
   #character and set these as vertex attrib "true_id" [for consistency]
     set.vertex.attribute(net, 'true_id',
                          as.character(get.vertex.attribute(net,'vertex.names')))
@@ -176,7 +176,9 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
 
   if(exists("additional_holding_data", where = environment(),
             inherits = FALSE)){
-    names(additional_holding_data)[1]<-"true_id"
+    names(additional_holding_data)[1] <- "true_id"
+    additional_holding_data$vertex.names <-
+      nrow(holding_data)+(1:nrow(additional_holding_data))
     add.vertices(net, nv = sum(additional_holding_ids),
                  vattr = lapply(split(additional_holding_data,
                                       1:nrow(additional_holding_data)),
