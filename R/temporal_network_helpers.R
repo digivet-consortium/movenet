@@ -277,6 +277,12 @@ holdingids2consecints <- function(movement_data, holding_data = NULL,
     # replace_ids_w_key() does not have "as.character" as in the original below.
     # Needs testing.
     # holding_data[1] <- unname(key[as.character(holding_data[[1]])])
+
+    #if(isFALSE(incl_nonactive_holdings)){
+    # add some code to filter holding_data
+    #   - I think this allows simplification of movedata2networkDynamic
+    #}
+
   }
 
   return(list(key = key,
