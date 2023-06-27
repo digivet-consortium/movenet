@@ -491,19 +491,33 @@ anonymise <- function(data, prefix, key = NULL){
   ### Replace ids using key ###
   #############################
 
-  data[col_to_anonymise] <-
-    lapply(col_to_anonymise, function(x){unname(key[data[[x]]])})
+  replace_ids_w_key(data, col_to_anonymise, key)
 
   return(list(data = data,
               key = key))
 
 }
 
-#####################################
-### Helper function to create key ###
-#####################################
+#' Generate anonymisation key for holding identifiers
+#'
+#' `generate_anonymisation_key()` creates an anonymisation key that links
+#' existing holding identifiers with new, non-identifiable, identifiers
+#' (randomly allocated integers or prefix-integer combinations).
+#'
+#' @param ids Character vector with existing holding identifiers to generate
+#'   replacement identifiers for
+#' @param prefix Character string, to form the basis of replacement holding
+#'   identifiers. An integer will be appended to form this new identifier.
+#' @param n_start Number from which to start numbering the replacement identifiers
+#'
+#' @returns
+#' A named character vector, with original holding identifiers as names
+#' and new (non-identifiable) identifiers as values. Replacement identifiers
+#' consist of `prefix` followed by an integer. Integers have consecutive values,
+#' starting from `n_start`, and are allocated to holdings in a random order.
+#'
 #' @importFrom stats setNames
-generate_anonymisation_key <- function(ids, prefix, n_start){
+generate_anonymisation_key <- function(ids, prefix = '', n_start){
 
   ids_in_random_order <-
     if(length(ids) == 1) ids else sample(ids, size=length(ids), replace=FALSE)
@@ -514,4 +528,29 @@ generate_anonymisation_key <- function(ids, prefix, n_start){
              ids_in_random_order)
 
   return(key)
+}
+
+#' Replace holding identifiers using a key
+#'
+#' `replace_ids_w_key()` replaces holding identifiers according to a user-
+#' provided key
+#'
+#' @param data Dataframe or tibble (e.g. movement data)
+#' @param col_to_anonymise Headers or indices of columns in `data` that
+#'   contain the holding identifiers to be replaced
+#' @param key Named character vector, with original holding identifiers as names
+#'   and new identifiers as values.
+#'
+#' @returns
+#' A modified version of `data` where, within columns indicated by
+#' `col_to_anonymise`, holding identifers have been replaced according to `key`.
+#'
+replace_ids_w_key <- function(data, col_to_anonymise, key){
+
+  data[col_to_anonymise] <-
+    lapply(col_to_anonymise, function(x){
+      key[data[[x]]] %>%
+      unname()}) #key names = original holding ids; remove to anonymise!
+
+  return(data)
 }
