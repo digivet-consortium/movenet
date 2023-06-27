@@ -519,6 +519,8 @@ anonymise <- function(data, prefix, key = NULL){
 #' @importFrom stats setNames
 generate_anonymisation_key <- function(ids, prefix = '', n_start){
 
+  ids <- unique(ids)
+
   ids_in_random_order <-
     if(length(ids) == 1) ids else sample(ids, size=length(ids), replace=FALSE)
 
