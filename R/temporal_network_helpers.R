@@ -99,7 +99,8 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
 
   if(isFALSE(are_ids_consec_intchars_from_1(node_ids))){
 
-    output <- holdingids2consecints(movement_data, holding_data, node_ids)
+    output <- holdingids2consecints(movement_data, holding_data,
+                                    incl_nonactive_holdings = FALSE)
     movement_data <- output$movement_data
     holding_data <- output$holding_data
     key <- output$key
@@ -242,12 +243,25 @@ are_ids_consec_intchars_from_1 <- function(node_ids){
 #'
 #' @param movement_data Movenet format movement data tibble
 #' @param holding_data Movenet format holding data tibble (optional)
-#' @param node_ids Vector of unique node ids to replace
+#' @param incl_nonactive_holdings Whether to include holdings from
+#'   `holding_data` that are not present in `movement_data`. Default is `FALSE`.
 #'
-#' @returns a named list with `key`, `movement_data` (the modified
+#' @returns a named list with `key`, the modified `movement_data` tibble
 #' `movement_data` tibble) and `holding_data` (the modified `holding_data`
 #'  tibble if present, or `NULL` otherwise)
-holdingids2consecints <- function(movement_data, holding_data, node_ids){
+holdingids2consecints <- function(movement_data, holding_data = NULL,
+                                  incl_nonactive_holdings = FALSE){
+
+  #Define node_ids dependent on whether to only include active holdings (present
+  #in movement_data) or to also include non-active holdings (present in
+  #holding_data but not movement_data)
+  if(isFALSE(incl_nonactive_holdings)){
+    node_ids <- unique(c(movement_data[[1]], movement_data[[2]]))
+  } else if(isTRUE(incl_nonactive_holdings)){
+    node_ids <-
+      unique(c(movement_data[[1]], movement_data[[2]], holding_data[[1]]))}
+
+
   key <- generate_anonymisation_key(node_ids, prefix = "", n_start = 1)
   #using this instead of 'anonymise' avoids the loaded config file requirement
 
