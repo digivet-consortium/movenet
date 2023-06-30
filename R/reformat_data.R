@@ -37,14 +37,7 @@ reformat_data <- function(datafile, type){ #Could also infer type from the data
   ### Config file check ###
   #########################
 
-  if ((has_element(names(movenetenv$options), "movedata_cols") &
-       type == "holding") |
-      (has_element(names(movenetenv$options), "holdingdata_cols") &
-       type == "movement")){
-    stop(paste0(
-      "The loaded config file does not match the indicated type of data (",
-      type, " data). Please ensure the appropriate config file is loaded."))
-  }
+  config_file_check(type)
 
 
   ###################################
@@ -154,6 +147,30 @@ reformat_data <- function(datafile, type){ #Could also infer type from the data
   }
   return(selected_data)
 }
+
+################################################################################
+
+#######################################################################
+### Helper: assert that the given data type matches the config file ###
+#######################################################################
+
+#' config_file_check
+#'
+#' Stops execution if the config file does not match the indicated type of data
+#'
+#' @param type character (either "movement" or "holding")
+
+config_file_check <- function(type) {
+  if ((has_element(names(movenetenv$options), "movedata_cols") &
+       type == "holding") |
+      (has_element(names(movenetenv$options), "holdingdata_cols") &
+       type == "movement")){
+    stop(paste0(
+      "The loaded config file does not match the indicated type of data (",
+      type, " data). Please ensure the appropriate config file is loaded."))
+  }
+}
+
 
 ################################################################################
 
