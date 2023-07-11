@@ -206,4 +206,21 @@ test_that("error is raised, when 'coord_x' column in datafile contains character
   load_config("ScotEID")
 })
 
+test_that("error is raised by config_file_check when config doesn't match given type", {
+  load_config("test_input_files/fakeScotEID_holding.yml") # holding data
+  expect_error(config_file_check("movement"))
+  load_config("ScotEID") # movement data
+  expect_error(config_file_check("holding"))
+})
+
+test_that("error is not raised by config_file_check when config matches given type", {
+  load_config("test_input_files/fakeScotEID_holding.yml") # holding data
+  config_file_check("holding")
+  load_config("ScotEID") # movement data
+  config_file_check("movement")
+})
+
+
+
+
 movenetenv$options<-old_config
