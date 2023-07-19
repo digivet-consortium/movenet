@@ -59,6 +59,7 @@ reformat_data <- function(datafile, type){ #Could also infer type from the data
     min_keys <- c("id")
     fileopts <- movenetenv$options$holdingdata_fileopts
     cols <- movenetenv$options$holdingdata_cols
+    crs <- fileopts$coord_EPSG_code
   }
 
   decimal <- fileopts$decimal
@@ -133,10 +134,17 @@ reformat_data <- function(datafile, type){ #Could also infer type from the data
     }
   } else { #if type == "holding"
     if ("coord_x" %in% names(extra)){
-      selected_data[extra$coord_x] <-
-        reformat_numeric(selected_data[extra$coord_x], decimal)
-      selected_data[extra$coord_y] <-
-        reformat_numeric(selected_data[extra$coord_y], decimal)
+      # selected_data[extra$coord_x] <-
+      #   reformat_numeric(selected_data[extra$coord_x], decimal)
+      # selected_data[extra$coord_y] <-
+      #   reformat_numeric(selected_data[extra$coord_y], decimal)
+      selected_data["coordinates"] <-
+        reformat_coords(selected_data[extra$coord_x],
+                        selected_data[extra$coord_y],
+                        decimal, crs)
+      selected_data[extra$coord_x] <- NULL
+      selected_data[extra$coord_y] <- NULL
+      #Now might need to update movenetenv!
     }
     if ("herd_size" %in% names(extra)){
       selected_data[extra$herd_size] <-
@@ -417,3 +425,28 @@ reformat_date <- function(date_col, date_format){
                  format = date_format))
     )
 }
+
+################################################################################
+
+##################################################################
+### Helper: check numeric columns & change col type to numeric ###
+##################################################################
+
+#' @returns a tibble with sf geometry point data and attributes including crs
+#'
+#' @importFrom sf st_as_sf
+#' @importFrom tibble as_tibble
+#'
+reformat_coords <- function(coord_x_col, coord_y_col, decimal, crs){
+
+  #first reformat to numeric to ensure use of correct decimal marker
+  coord_x_col[colnames(coord_x_col)] <- reformat_numeric(coord_x_col, decimal)
+  coord_y_col[colnames(coord_y_col)] <- reformat_numeric(coord_y_col, decimal)
+
+  st_as_sf(as_tibble(c(coord_x_col, coord_y_col)),
+           coords = c(1,2),
+           na.fail = FALSE,
+           crs = crs)
+
+}
+
