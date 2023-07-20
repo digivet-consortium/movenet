@@ -2,8 +2,15 @@
 ### Set-up ###
 ##############
 
+
 library(dplyr) #for arrange and transmute
-library(SimInf)
+if(!requireNamespace("siminf4movenet")){
+  #update when have released version
+  #stop("The siminf4movenet package is not installed - run:\ninstall.packages('siminf4movenet', repos=....)")
+  stop("The siminf4movenet package is not installed - run:\ninstall_github('digivet-consortium/siminf4movenet')")
+}
+
+
 load_all()
 
 movement_datafile <- "tests/testthat/test_input_files/sample_pigs_UK_with_dep_arr_dates.csv"
@@ -43,14 +50,14 @@ load_config(movement_configfile)
 anonymisation_m <-
   movement_datafile |>
   reformat_data("movement") |>
-  anonymise("")
+  anonymise("") #to turn holding ids into numbers
 
 load_config(holding_configfile)
 
 anonymisation_h <-
   holding_datafile |>
   reformat_data("holding") |>
-  anonymise("", key=anonymisation_m$key)
+  anonymise("", key=anonymisation_m$key) #to turn holding ids into numbers
 
 nodes <- #creates a simple single-col tibble of nodes' numeric ids
   anonymisation_h$data |>
@@ -69,31 +76,45 @@ nodes <- #creates a simple single-col tibble of nodes' numeric ids
 ### Set up model ###
 ####################
 
-n <- length(nodes$id) #number of farms
+n_nodes <- length(nodes$id) #number of holdings -- don't call this n to avoid confusion w/in replicate
 
 tspan <- seq(from = 1L, to = as.integer(days), by = as.integer(stride))
 
 #Make a single random node infectious
-infected <- rep(0,n)
-infected_node <- sample(n,1)
-infected[n] <- 1
+infected <- rep(0,n_nodes)
+infected_node <- sample(n_nodes,1)
+infected[n_nodes] <- 1
 
-model <- SEIRcm(infected = infected,
-                tspan = tspan,
-                epsilon_rate = epsilon_rate,
-                epsilon_shape = epsilon_shape,
-                gamma_rate = gamma_rate,
-                gamma_shape = gamma_shape,
-                contact_matrix = contact_matrix)
+if(requireNamespace("siminf4movenet")){
+
+  model <- SEIRcm(infected = infected,
+                  tspan = tspan,
+                  epsilon_rate = epsilon_rate,
+                  epsilon_shape = epsilon_shape,
+                  gamma_rate = gamma_rate,
+                  gamma_shape = gamma_shape,
+                  contact_matrix = contact_matrix)
 
 
-#################
-### Run model ###
-#################
+  #################
+  ### Run model ###
+  #################
 
-#Summary stats of total outbreak size, for 100 simulations
-summary(replicate(n = 100, {
-  IR_at_end <- tail(trajectory(run(model))[c("I","R")], n)
-  sum(IR_at_end)
-}))
+  #If running 100 model n simulations, is it best to save run(model) or trajectories?
+  models <- replicate(n = 100, run(model))
+  trajectories <- replicate(n = 100, trajectory(run(model)))
+
+  #Summary stats of total outbreak size, for 100 simulations
+  summary(replicate(n = 100, {
+    IR_at_end <- tail(trajectory(run(model))[c("I","R")], n_nodes)
+    sum(IR_at_end)
+  }))
+
+
+
+}
+
+
+
+
 
