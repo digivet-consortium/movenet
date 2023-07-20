@@ -97,9 +97,10 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
   #(The key is later used to generate a "true_id" vertex attribute, and to set
   #vertex.pids (persistent identifiers))
 
-  if(do_ids_need_reformatted(node_ids)){
+  if(isFALSE(are_ids_consec_intchars_from_1(node_ids))){
 
-    output <- reformat_ids(movement_data, holding_data, node_ids)
+    output <- holdingids2consecints(movement_data, holding_data,
+                                    incl_nonactive_holdings = FALSE)
     movement_data <- output$movement_data
     holding_data <- output$holding_data
     key <- output$key
@@ -148,7 +149,7 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
     identifiers (vertex.pid) and can be identified for each node by running
     `get.vertex.pid(network_name, vertex.id(s))`."))
   } else {
-  #else, set convert vertex.names (original holding ids if consecutive ints) to
+  #else, convert vertex.names (original holding ids if consecutive ints) to
   #character and set these as vertex attrib "true_id" [for consistency]
     set.vertex.attribute(net, 'true_id',
                          as.character(get.vertex.attribute(net,'vertex.names')))
@@ -176,7 +177,9 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
 
   if(exists("additional_holding_data", where = environment(),
             inherits = FALSE)){
-    names(additional_holding_data)[1]<-"true_id"
+    names(additional_holding_data)[1] <- "true_id"
+    additional_holding_data$vertex.names <-
+      nrow(holding_data)+(1:nrow(additional_holding_data))
     add.vertices(net, nv = sum(additional_holding_ids),
                  vattr = lapply(split(additional_holding_data,
                                       1:nrow(additional_holding_data)),
@@ -201,43 +204,85 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
 #'
 #' @returns the vertex spells ready to be passed into networkDynamic()
 create_vertex_spells <- function(movement_data){
-  vertex_spells <- movement_data[,c(1,2,3)] |>
+  vertex_spells <- movement_data[,c(1,2,3)] %>%
     `colnames<-`(colnames(movement_data[,c(1,2,4)]))
-  vertex_spells <- rbind(vertex_spells, movement_data[,c(1,2,4)]) |>
-    sort() |> unique()
+  vertex_spells <- rbind(vertex_spells, movement_data[,c(1,2,4)]) %>%
+    sort() %>% unique()
   return(vertex_spells)
 }
 
-#' Helper function: Check whether the node ids are formatted incorrectly
-#' and need to be replaced.
+#' Are node ids consecutive "integers" (in character format), starting from 1?
+#'
+#' Checks whether node identifiers are consecutive "integers" (in character
+#' format), ranging from 1 to the total number of node ids.
+#' This is to facilitate conversion of movenet data tibbles into formats
+#' required by networkDynamic and SimInf, which need node identifiers to be
+#' consecutive integers starting from 1.
 #'
 #' @param node_ids vector of node IDs (character format)
 #'
-#' @returns a boolean - true if the IDs need to be replaced, false otherwise
-do_ids_need_reformatted <- function(node_ids){
-  return(!all(grepl("^\\d+$",node_ids)) ||
-     !identical(sort(as.integer(node_ids)), 1:max(as.integer(node_ids))))
+#' @returns a boolean - TRUE if the IDs need to be replaced, false otherwise
+are_ids_consec_intchars_from_1 <- function(node_ids){
+  return(
+    all(grepl("^\\d+$", node_ids)) && #char strings consisting of only digits...
+      identical(sort(as.integer(node_ids)), 1:length(node_ids))
+      #...which are consecutive integers from 1 to the total number of ids
+  )
 }
 
-#' Helper function: Replaces the node ids with 1, 2, 3 etc. Also returns
-#' a key for reversing the process later.
+#' Replaces node ids with consecutive "integers" (in character format), starting
+#' from 1.
 #'
-#' @param movement_data movement data tibble
-#' @param holding_data holding data tibble (null if not present)
-#' @param node_ids list of unique node ids in original data
+#' Replaces node ids with consecutive "integers" (in character format), ranging
+#' from 1 to the total number of node ids. This facilitates further conversion
+#' of movenet data tibbles into formats required by networkDynamic and SimInf,
+#' which need node identifiers to be consecutive integers starting from 1.
+#' Also returns a "key" that links original ids and new "integer" ids, so that
+#' original ids can be added as node attributes to networkDynamic and SimInf
+#' outputs.
 #'
-#' @returns a named list containing key (the key), movement_data
-#' (the modified movement_data tibble) and holding_data (the modified
-#' holding_data tibble if present, null otherwise)
-reformat_ids <- function(movement_data, holding_data, node_ids){
+#' @param movement_data Movenet format movement data tibble
+#' @param holding_data Movenet format holding data tibble (optional)
+#' @param incl_nonactive_holdings Whether to include holdings from
+#'   `holding_data` that are not present in `movement_data`. Default is `FALSE`.
+#'
+#' @returns a named list with `key`, the modified `movement_data` tibble
+#' `movement_data` tibble) and `holding_data` (the modified `holding_data`
+#'  tibble if present, or `NULL` otherwise)
+holdingids2consecints <- function(movement_data, holding_data = NULL,
+                                  incl_nonactive_holdings = FALSE){
+
+  #Define node_ids dependent on whether to only include active holdings (present
+  #in movement_data) or to also include non-active holdings (present in
+  #holding_data but not movement_data)
+  if(isFALSE(incl_nonactive_holdings)){
+    node_ids <- unique(c(movement_data[[1]], movement_data[[2]]))
+  } else if(isTRUE(incl_nonactive_holdings)){
+    node_ids <-
+      unique(c(movement_data[[1]], movement_data[[2]], holding_data[[1]]))}
+
+
   key <- generate_anonymisation_key(node_ids, prefix = "", n_start = 1)
   #using this instead of 'anonymise' avoids the loaded config file requirement
 
-  movement_data[c(1,2)] <-
-    lapply(c(1,2), function(x){unname(key[as.character(movement_data[[x]])])})
+  movement_data <- replace_ids_w_key(movement_data, c(1,2), key)
+
+  # replace_ids_w_key() does not have "as.character" as in the original below.
+  # Needs testing.
+  # movement_data[c(1,2)] <-
+  #   lapply(c(1,2), function(x){unname(key[as.character(movement_data[[x]])])})
 
   if(!is.null(holding_data)){
-    holding_data[1] <- unname(key[as.character(holding_data[[1]])])
+    holding_data <- replace_ids_w_key(holding_data, 1, key)
+    # replace_ids_w_key() does not have "as.character" as in the original below.
+    # Needs testing.
+    # holding_data[1] <- unname(key[as.character(holding_data[[1]])])
+
+    #if(isFALSE(incl_nonactive_holdings)){
+    # add some code to filter holding_data
+    #   - I think this allows simplification of movedata2networkDynamic
+    #}
+
   }
 
   return(list(key = key,
