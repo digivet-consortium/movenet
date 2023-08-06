@@ -80,8 +80,8 @@ data2contactmatrix <- function(movement_data, holding_data = NULL,
                     c("lower_boundary", "upper_boundary", "probability")),
       check_integerish(local_spread_transmission_probabilities[["lower_boundary"]],
                        lower = 0, any.missing = FALSE, all.missing = FALSE),
-      check_integerish(local_spread_transmission_probabilities[["upper_boundary"]],
-                       lower = 0, any.missing = FALSE, all.missing = FALSE),
+      check_double(local_spread_transmission_probabilities[["upper_boundary"]],
+                       lower = 0, any.missing = FALSE, all.missing = FALSE), #contains Inf -> not integerish
       check_double(local_spread_transmission_probabilities[["probability"]],
                    lower = 0, upper = 1, any.missing = FALSE, all.missing = FALSE),
       check_tibble(holding_data), #i.e. this can't be null

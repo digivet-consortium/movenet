@@ -46,21 +46,13 @@ stride = 1 #the increment (integer) between days that are recorded in the model
 #####################
 
 load_config(movement_configfile)
-
-anonymisation_m <-
-  movement_datafile |>
-  reformat_data("movement") |>
-  anonymise("") #to turn holding ids into numbers
+movement_data <- movement_datafile |> reformat_data("movement")
 
 load_config(holding_configfile)
-
-anonymisation_h <-
-  holding_datafile |>
-  reformat_data("holding") |>
-  anonymise("", key=anonymisation_m$key) #to turn holding ids into numbers
+holding_data <- holding_datafile |> reformat_data("holding")
 
 nodes <- #creates a simple single-col tibble of nodes' numeric ids
-  anonymisation_h$data |>
+  holding_data |>
   arrange(as.numeric(.data[[movenetenv$options$holdingdata_cols$id]])) |>
   transmute(id = .data[[movenetenv$options$holdingdata_cols$id]])
 
@@ -69,8 +61,15 @@ nodes <- #creates a simple single-col tibble of nodes' numeric ids
 ### Create contact matrix ###
 #############################
 
+load("inst/extdata/local_spread_probabilities_ASF_Halasa_et_al_2016.Rdata")
 # For now see notebook "data2contactmatrix.R"
-
+contact_matrix <-
+  data2contactmatrix(movement_data, holding_data, incl_nonactive_holdings = TRUE,
+                     weight_unit_transmission_probability = 1,
+                     whole_months = TRUE,
+                     local_spread_transmission_probabilities =
+                       local_spread_probabilities_ASF_Halasa_et_al_2016,
+                     additional_transmission_prob_matrices = NULL)
 
 ####################
 ### Set up model ###
