@@ -20,6 +20,18 @@ movement_configfile <- "ScotEID"
 holding_datafile <- "tests/testthat/test_input_files/test_holdingdata_generic.csv"
 holding_configfile <- "tests/testthat/test_input_files/fakeScotEID_holding.yml"
 
+weight_unit_transmission_probability = 1
+# probability of transmission via movement, per unit moved weight (e.g. per
+# pig) from an infected holding. 1 assumes all movements from infected holdings
+# are 100% infectious, regardless of weight.
+load("inst/extdata/local_spread_probabilities_ASF_Halasa_et_al_2016.Rdata")
+local_spread_transmission_probabilities = local_spread_probabilities_ASF_Halasa_et_al_2016
+# look-up table with distance-based transmission probability tiers for ASF, from
+# the DTU-DADS-ASF model
+additional_transmission_prob_matrices = NULL
+# list with any additional transmission probability matrices
+
+
 epsilon_rate = 18/(6.1) #farm-level incubation rate (same as for individual?)
 epsilon_shape = 18
 # These parameters for Epsilon come from Guinat et al. 2018, via EFSA 2020.
@@ -43,6 +55,12 @@ days = 365 #number of days to run the simulation. Default is 365 days.
 stride = 1 #the increment (integer) between days that are recorded in the model
            #U and V matrices. Default is 1 day, i.e., every day is recorded.
 
+
+n_initially_infected = 1 #number of holdings that are infected at t = 0
+incl_nonactive_holdings = TRUE
+# whether to include non-active holdings in the model (transmission via local
+# spread or other transmission routes only)
+
 #####################
 ### Reformat data ###
 #####################
@@ -57,15 +75,16 @@ holding_data <- holding_datafile |> reformat_data("holding")
 ### Create contact matrix ###
 #############################
 
-load("inst/extdata/local_spread_probabilities_ASF_Halasa_et_al_2016.Rdata")
-# For now see notebook "data2contactmatrix.R"
 contact_matrix <-
-  data2contactmatrix(movement_data, holding_data, incl_nonactive_holdings = TRUE,
-                     weight_unit_transmission_probability = 1,
+  data2contactmatrix(movement_data, holding_data,
+                     incl_nonactive_holdings = incl_nonactive_holdings,
+                     weight_unit_transmission_probability =
+                       weight_unit_transmission_probability,
                      whole_months = TRUE,
                      local_spread_transmission_probabilities =
-                       local_spread_probabilities_ASF_Halasa_et_al_2016,
-                     additional_transmission_prob_matrices = NULL)
+                       local_spread_transmission_probabilities,
+                     additional_transmission_prob_matrices =
+                       additional_transmission_prob_matrices)
 
 
 ####################
@@ -76,16 +95,16 @@ n_nodes <- ncol(contact_matrix) #number of holdings -- don't call this n to avoi
 
 tspan <- seq(from = 1L, to = as.integer(days), by = as.integer(stride))
 
-create_infected_vector <- function(n_nodes, n_infected){
+create_infected_vector <- function(n_nodes, n_initially_infected){
   infected_node_vector <- rep(0, n_nodes)
-  infected_nodes <- sample(n_nodes, n_infected)
+  infected_nodes <- sample(n_nodes, n_initially_infected)
   infected_node_vector[infected_nodes] <- 1
   return(infected_node_vector)
 }
 
 if(requireNamespace("siminf4movenet")){ #also requires SimInf for trajectory(), how does this work?
 
-  model <- siminf4movenet::SEIRcm(infected = create_infected_vector(n_nodes, 1), #n_nodes needs to correspond to ncol(contact_matrix)
+  model <- siminf4movenet::SEIRcm(infected = create_infected_vector(n_nodes, n_initially_infected), #n_nodes needs to correspond to ncol(contact_matrix)
                                   tspan = tspan,
                                   epsilon_rate = epsilon_rate,
                                   epsilon_shape = epsilon_shape,
@@ -107,9 +126,6 @@ if(requireNamespace("siminf4movenet")){ #also requires SimInf for trajectory(), 
     IR_at_end <- tail(SimInf::trajectory(run(model))[c("I","R")], n_nodes)
     sum(IR_at_end)
   }))
-
-
-
 
 }
 
