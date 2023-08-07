@@ -4,10 +4,12 @@
 
 
 library(dplyr) #for arrange and transmute
+
 if(!requireNamespace("siminf4movenet")){
   #update when have released version
   #stop("The siminf4movenet package is not installed - run:\ninstall.packages('siminf4movenet', repos=....)")
   stop("The siminf4movenet package is not installed - run:\ninstall_github('digivet-consortium/siminf4movenet')")
+  #also requires SimInf for trajectory(), how does this work?
 }
 
 
@@ -78,17 +80,19 @@ create_infected_vector <- function(n_nodes, n_infected){
   infected_node_vector <- rep(0, n_nodes)
   infected_nodes <- sample(n_nodes, n_infected)
   infected_node_vector[infected_nodes] <- 1
+  return(infected_node_vector)
 }
 
-if(requireNamespace("siminf4movenet")){
+if(requireNamespace("siminf4movenet")){ #also requires SimInf for trajectory(), how does this work?
 
-  model <- SEIRcm(infected = create_infected_vector(n_nodes, 1), #newly samples starting infected holding for each
-                  tspan = tspan,
-                  epsilon_rate = epsilon_rate,
-                  epsilon_shape = epsilon_shape,
-                  gamma_rate = gamma_rate,
-                  gamma_shape = gamma_shape,
-                  contact_matrix = contact_matrix)
+  model <- siminf4movenet::SEIRcm(infected = create_infected_vector(n_nodes, 1), #n_nodes needs to correspond to ncol(contact_matrix)
+                                  tspan = tspan,
+                                  epsilon_rate = epsilon_rate,
+                                  epsilon_shape = epsilon_shape,
+                                  gamma_rate = gamma_rate,
+                                  gamma_shape = gamma_shape,
+                                  contact_matrix = contact_matrix)
+  #this does NOT newly sample initially infected holding(s) for each model.
 
 
   #################
@@ -96,19 +100,18 @@ if(requireNamespace("siminf4movenet")){
   #################
 
   #If running 100 model n simulations, is it best to save run(model) or trajectories?
-  models <- replicate(n = 100, run(model)) #do these simulations need the same or a newly sampled starting infected node?
-  trajectories <- replicate(n = 100, trajectory(run(model)))
-
-  #Summary stats of total outbreak size, for 100 simulations
+  models <- replicate(n = 100, siminf4movenet::run(model)) #do these simulations need the same or a newly sampled starting infected node?
+  trajectories <- replicate(n = 100, SimInf::trajectory(siminf4movenet::run(model))) #trajectory["I",1] shows "I" status for c(node, timestep) for simulation 1
+  #Summary stats of total outbreak size after 365 days, for 100 simulations
   summary(replicate(n = 100, {
-    IR_at_end <- tail(trajectory(run(model))[c("I","R")], n_nodes)
+    IR_at_end <- tail(SimInf::trajectory(run(model))[c("I","R")], n_nodes)
     sum(IR_at_end)
   }))
 
 
 
-}
 
+}
 
 
 
