@@ -51,12 +51,6 @@ movement_data <- movement_datafile |> reformat_data("movement")
 load_config(holding_configfile)
 holding_data <- holding_datafile |> reformat_data("holding")
 
-nodes <- #creates a simple single-col tibble of nodes' numeric ids
-  holding_data |>
-  arrange(as.numeric(.data[[movenetenv$options$holdingdata_cols$id]])) |>
-  transmute(id = .data[[movenetenv$options$holdingdata_cols$id]])
-
-
 #############################
 ### Create contact matrix ###
 #############################
@@ -71,22 +65,24 @@ contact_matrix <-
                        local_spread_probabilities_ASF_Halasa_et_al_2016,
                      additional_transmission_prob_matrices = NULL)
 
+
 ####################
 ### Set up model ###
 ####################
 
-n_nodes <- length(nodes$id) #number of holdings -- don't call this n to avoid confusion w/in replicate
+n_nodes <- ncol(contact_matrix) #number of holdings -- don't call this n to avoid confusion w/in replicate
 
 tspan <- seq(from = 1L, to = as.integer(days), by = as.integer(stride))
 
-#Make a single random node infectious
-infected <- rep(0,n_nodes)
-infected_node <- sample(n_nodes,1)
-infected[n_nodes] <- 1
+create_infected_vector <- function(n_nodes, n_infected){
+  infected_node_vector <- rep(0, n_nodes)
+  infected_nodes <- sample(n_nodes, n_infected)
+  infected_node_vector[infected_nodes] <- 1
+}
 
 if(requireNamespace("siminf4movenet")){
 
-  model <- SEIRcm(infected = infected,
+  model <- SEIRcm(infected = create_infected_vector(n_nodes, 1), #newly samples starting infected holding for each
                   tspan = tspan,
                   epsilon_rate = epsilon_rate,
                   epsilon_shape = epsilon_shape,
@@ -100,7 +96,7 @@ if(requireNamespace("siminf4movenet")){
   #################
 
   #If running 100 model n simulations, is it best to save run(model) or trajectories?
-  models <- replicate(n = 100, run(model))
+  models <- replicate(n = 100, run(model)) #do these simulations need the same or a newly sampled starting infected node?
   trajectories <- replicate(n = 100, trajectory(run(model)))
 
   #Summary stats of total outbreak size, for 100 simulations
