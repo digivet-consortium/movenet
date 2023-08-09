@@ -58,33 +58,17 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
 
   if(!is.null(holding_data)){
 
-    #If there are any holding ids present in movement_data, but missing from
-    #holding_data, add these ids to holding_data with NAs for other columns
-    missing_holding_ids <- !(node_ids %in% holding_ids)
-    if(any(missing_holding_ids)){
-      holding_data <-
-        holding_data %>%
-        add_row("{names(holding_data)[1]}" :=
-                  node_ids[which(missing_holding_ids)])
-      holding_ids <- holding_data[[1]]
-    }
+    # deal with holding ids that are present in either holding_data or
+    # movement_data but not both
 
-    #If there are any holding ids present in holding_data but missing from
-    #movement_data, either delete these ids (if incl_nonactive_holdings == FALSE),
-    #or split these to form a new additional_holding_data dataframe, to be
-    #added as (non-active) vertices after network creation (if
-    #incl_nonactive_holdings == TRUE)
-    additional_holding_ids <- !(holding_ids %in% node_ids)
-    if(any(additional_holding_ids)){
-      if(isTRUE(incl_nonactive_holdings)){
-        additional_holding_data <-
-          holding_data %>%
-          dplyr::filter(!(.data[[names(holding_data)[1]]] %in% node_ids))
-      }
-      holding_data <-
-        holding_data %>%
-        dplyr::filter(.data[[names(holding_data)[1]]] %in% node_ids)
-    }
+    output <- holding_ids_difference(holding_ids, holding_data, node_ids,
+                                     names, incl_nonactive_holdings)
+
+    missing_holding_ids <- output$missing_holding_ids
+    holding_data <- output$holding_data
+    holding_ids <- output$holding_ids
+    additional_holding_ids <- output$additional_holding_ids
+    additional_holding_data <- output$additional_holding_data
   }
 
   #############################################
@@ -194,6 +178,50 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
   #return network w/ true_id and vertex.pid containing original holding ids in
   #character format
   return(net)
+}
+
+#' Helper function: Helps in dealing with farm IDs that are in the holding data
+#' but not in the movement data, and vice versa
+#'
+#' @returns A data structure containing the output. TODO: fix this description
+holding_ids_difference <- function(holding_ids, holding_data, node_ids, names, incl_nonactive_holdings) {
+  #If there are any holding ids present in movement_data, but missing from
+  #holding_data, add these ids to holding_data with NAs for other columns
+  missing_holding_ids <- !(node_ids %in% holding_ids)
+  if(any(missing_holding_ids)){
+    holding_data <-
+      holding_data %>%
+      add_row("{names(holding_data)[1]}" :=
+                node_ids[which(missing_holding_ids)])
+    holding_ids <- holding_data[[1]]
+  }
+
+  #If there are any holding ids present in holding_data but missing from
+  #movement_data, either delete these ids (if incl_nonactive_holdings == FALSE),
+  #or split these to form a new additional_holding_data dataframe, to be
+  #added as (non-active) vertices after network creation (if
+  #incl_nonactive_holdings == TRUE)
+  additional_holding_ids <- !(holding_ids %in% node_ids)
+  if(any(additional_holding_ids)){
+    if(isTRUE(incl_nonactive_holdings)){
+      additional_holding_data <-
+        holding_data %>%
+        dplyr::filter(!(.data[[names(holding_data)[1]]] %in% node_ids))
+    }
+    holding_data <-
+      holding_data %>%
+      dplyr::filter(.data[[names(holding_data)[1]]] %in% node_ids)
+  }
+
+  output <- list(
+    missing_holding_ids = missing_holding_ids,
+    holding_data = holding_data,
+    holding_ids = holding_ids,
+    additional_holding_ids = additional_holding_ids,
+    additional_holding_data = additional_holding_data
+  )
+
+  return(output)
 }
 
 #' Helper function: Create activity spells for nodes, to avoid
