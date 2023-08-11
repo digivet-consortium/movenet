@@ -33,13 +33,24 @@ movenetenv <- new.env()
 
 #' @rdname change_config
 #' @export
-save_config <- function(outfile){
+save_config <- function(outfile, config_type = c("movement", "holding")){
   if(missing(outfile)) stop("Argument `outfile` is missing. Please provide a path to which to save the config file to.", call. = FALSE)
   if(outfile=="") stop('"" is not a valid value for `outfile`. Please provide a path to which to save the config file to.', call. = FALSE)
+  if(!(all(config_type %in% c("movement", "holding")))) stop("Argument `config_type` must be one of 'movement', 'holding', or c('movement','holding')")
 
-  write_yaml(x = movenetenv$options, file = outfile)
+  options_to_write <- lapply(config_type, function(x) {
+    switch(
+      x,
+      "movement" = list(movedata_fileopts = movenetenv$options$movedata_fileopts,
+                        movedata_cols = movenetenv$options$movedata_cols),
+      "holding" = list(holdingdata_fileopts = movenetenv$options$holdingdata_fileopts,
+                       holdingdata_cols = movenetenv$options$holdingdata_cols)
+    )}) %>%
+    unlist(recursive = FALSE)
 
-  message(paste("Successfully saved configurations to:", outfile))
+  write_yaml(x = options_to_write, file = outfile)
+
+  message(paste("Successfully saved", paste(config_type, collapse = " and "),"configurations to:", outfile))
 }
 
 # This leaves strings/fields unquoted, but that should be fine.
