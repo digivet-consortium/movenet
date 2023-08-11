@@ -133,18 +133,13 @@ reformat_data <- function(datafile, type){ #Could also infer type from the data
                                        decimal_mark = decimal)))
     }
   } else { #if type == "holding"
-    if ("coord_x" %in% names(extra)){
-      # selected_data[extra$coord_x] <-
-      #   reformat_numeric(selected_data[extra$coord_x], decimal)
-      # selected_data[extra$coord_y] <-
-      #   reformat_numeric(selected_data[extra$coord_y], decimal)
+    if ("coord_x" %in% names(extra)){ #config validation ensures coord_x always comes with coord_y
       selected_data["coordinates"] <-
         reformat_coords(selected_data[extra$coord_x],
                         selected_data[extra$coord_y],
                         decimal, crs)
       selected_data[extra$coord_x] <- NULL
       selected_data[extra$coord_y] <- NULL
-      #Now might need to update movenetenv!
     }
     if ("herd_size" %in% names(extra)){
       selected_data[extra$herd_size] <-
