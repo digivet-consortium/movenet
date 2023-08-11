@@ -164,7 +164,7 @@ change_config <- function(...){
     if(anyDuplicated(col_opts) != 0){
       col_names <- optnames[which(optnames %in% names(c(movenetenv$options$movedata_cols, movenetenv$options$holdingdata_cols)))]
       dupl_names <- col_names[which(col_opts %in% col_opts[duplicated(col_opts)])]
-      warning(paste("Values for movedata_cols options must be unique. Ignoring options with duplicate values:", paste(dupl_names, collapse=", ")), call. = FALSE)
+      warning(paste("Values for movedata_cols / holdingdata_cols options must be unique. Ignoring options with duplicate values:", paste(dupl_names, collapse=", ")), call. = FALSE)
       opts <- opts[-which(optnames %in% dupl_names)]
       optnames <- optnames[-which(optnames %in% dupl_names)]
     }

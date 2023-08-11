@@ -32,6 +32,7 @@ Imports:
     purrr,
     readr,
     rmarkdown,
+    sf,
     stringr,
     tibble,
     tidyr,
