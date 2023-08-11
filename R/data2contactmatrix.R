@@ -231,19 +231,9 @@ create_local_spread_matrix <- function(holding_data,
 #' @importFrom sf st_as_sf st_distance
 create_distance_matrix <- function(holding_data){
 
-  #check for presence & define coords column(s), either based on movenetenv or
-  #based on data type
-  crs <- movenetenv$options$holdingdata_fileopts$coord_EPSG_code #delete if reformatting at reformat_data stage
-  coord_x <- movenetenv$options$holdingdata_cols$coord_x #delete if reformatting at reformat_data stage
-  coord_y <- movenetenv$options$holdingdata_cols$coord_y #delete if reformatting at reformat_data stage
-
   #distance matrix between farms
   distance_matrix <-
     holding_data %>%
-    #if still need to reformat from multiple numeric coordinates:
-    #st_as_sf(coords = c(coord_x, coord_y),
-    #         crs = crs) %>%
-    #if instead reformatting at reformat_data stage:
     st_as_sf(sf_column_name = "coordinates") %>% #the whole tibble needs to be converted to sf for st_distance to work
     st_distance() #dimnames are index numbers, not holding_ids
 
