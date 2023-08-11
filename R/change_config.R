@@ -23,9 +23,11 @@ load_config <- function(configfile){
   }
 
   if(validate_config(yamlfile) == TRUE){
-    movenetenv$options <- yaml.load_file(yamlfile) # Change options to contents of yaml file
+    loaded_config <- yaml.load_file(yamlfile)
+    movenetenv$options[names(loaded_config)] <- loaded_config # Changes (move|holding)data_fileopts & _cols to contents of yaml file
     message(paste("Successfully loaded config file:", configfile))
   }
+
 }
 movenetenv <- new.env()
 
