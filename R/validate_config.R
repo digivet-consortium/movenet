@@ -26,16 +26,17 @@ validate_config <- function(file){
   }
 
 
-internal_validate_config <- function(file){
+internal_validate_config <- function(file, type = NULL){
   if (!file.exists(file)){
     stop(paste0(file, ": no such file exists"))
   }
   if (isFALSE(validate_yaml(file)$test)){
     invisible(validate_yaml(file)$msg)
-  }else{
+  } else {
     yamlfile <- yaml.load_file(file)
     config_type <- sub("data", "", regmatches(names(yamlfile),regexpr("(move|holding)data",names(yamlfile)))[1])
     msg <- c(
+      validate_config_type(type, config_type),
       validate_config_root(yamlfile, config_type),
       validate_config_fileopts(yamlfile, config_type),
       validate_config_cols(yamlfile, config_type),
@@ -43,6 +44,14 @@ internal_validate_config <- function(file){
     )
     invisible(msg)
   }
+}
+
+validate_config_type <- function(type, config_type){
+  if (!is.null(type) && type == "movement" && config_type == "holding") {
+    return("Unexpected config file type. File must be a movement config file, not a holding config file")
+  } else if (!is.null(type) && type == "holding" && config_type == "move") {
+    return("Unexpected config file type. File must be a holding config file, not a movement config file")
+  } else { return(NULL) }
 }
 
 #adapted from https://rdrr.io/cran/validate/src/R/yaml.R
