@@ -10,9 +10,9 @@
 \usage{
 load_config(configfile)
 
-save_config(outfile)
+save_config(outfile, config_type = c("movement", "holding"))
 
-new_config(config_type)
+new_config(config_type = c("movement", "holding"))
 
 get_config(...)
 
