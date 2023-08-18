@@ -45,29 +45,29 @@ data2contactmatrix <- function(movement_data, holding_data = NULL,
   ### Argument checks ###
   #######################
 
-  assert_tibble(movement_data, any.missing = FALSE, all.missing = FALSE,
-                min.cols = 4)
+  assert_tibble(movement_data, all.missing = FALSE, min.cols = 4)
   assert(
     check_character(movement_data[[1]], any.missing = FALSE, all.missing = FALSE),
     check_character(movement_data[[2]], any.missing = FALSE, all.missing = FALSE),
     check_date(movement_data[[3]], any.missing = FALSE, all.missing = FALSE),
-    check_double(movement_data[[4]], finite = TRUE, any.missing = FALSE,
-                 all.missing = FALSE), #add lower = 0?
+    check_numeric(movement_data[[4]], lower = 0, finite = TRUE, any.missing = FALSE,
+                 all.missing = FALSE),
     combine = "and"
   )
   assert_tibble(holding_data, all.missing = FALSE, min.cols = 2, null.ok = TRUE)
   if(!is.null(holding_data)){
     assert(
       check_character(holding_data[[1]], any.missing = FALSE, all.missing = FALSE,
-                      unique = TRUE),
+                      unique = TRUE), #Must these be unique? And otherwise what?
       check_names(names(holding_data), must.include = "coordinates"),
       check_tibble(holding_data["coordinates"], types = "sfc_POINT",
-                   all.missing = FALSE),
+                   all.missing = FALSE), #Allow missing coordinates? And otherwise what?
       check_data_frame(local_spread_transmission_probabilities), #i.e. this can't be null
       combine = "and")
   }
   assert_logical(incl_nonactive_holdings, any.missing = FALSE, all.missing = FALSE,
                  len = 1)
+
   assert_double(weight_unit_transmission_probability, lower = 0, upper = 1,
                 finite = TRUE, any.missing = FALSE, all.missing = FALSE, len = 1)
   assert_logical(whole_months, any.missing = FALSE, all.missing = FALSE, len = 1)
@@ -80,10 +80,10 @@ data2contactmatrix <- function(movement_data, holding_data = NULL,
                     c("lower_boundary", "upper_boundary", "probability")),
       check_integerish(local_spread_transmission_probabilities[["lower_boundary"]],
                        lower = 0, any.missing = FALSE, all.missing = FALSE),
-      check_double(local_spread_transmission_probabilities[["upper_boundary"]],
-                       lower = 0, any.missing = FALSE, all.missing = FALSE), #contains Inf -> not integerish
-      check_double(local_spread_transmission_probabilities[["probability"]],
-                   lower = 0, upper = 1, any.missing = FALSE, all.missing = FALSE),
+      check_numeric(local_spread_transmission_probabilities[["upper_boundary"]],
+                    lower = 0, any.missing = FALSE, all.missing = FALSE), #contains Inf -> not integerish
+      check_numeric(local_spread_transmission_probabilities[["probability"]],
+                    lower = 0, upper = 1, any.missing = FALSE, all.missing = FALSE),
       check_tibble(holding_data), #i.e. this can't be null
       combine = "and")
   }
@@ -93,7 +93,7 @@ data2contactmatrix <- function(movement_data, holding_data = NULL,
     invisible(
       lapply(seq_along(additional_transmission_prob_matrices), function(x){
         assert_double(additional_transmission_prob_matrices[[x]], lower = 0,
-                      upper = 1, any.missing = FALSE, all.missing = FALSE,
+                      upper = 1, all.missing = FALSE, #any.missing = FALSE?
                       .var.name = names(additional_transmission_prob_matrices)[[x]])}))
     #check dimnames for each matrix - that they are included in known holding ids (from movement/holding data)?
   }
