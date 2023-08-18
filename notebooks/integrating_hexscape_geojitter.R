@@ -1,3 +1,5 @@
+load_all()
+
 holding_datafile <-
   "tests/testthat/test_input_files/test_holdingdata_generic.csv"
 holding_configfile <- "tests/testthat/test_input_files/fakeScotEID_holding.yml"
