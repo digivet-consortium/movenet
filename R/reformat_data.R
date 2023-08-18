@@ -421,9 +421,9 @@ reformat_date <- function(date_col, date_format){
 
 ################################################################################
 
-##################################################################
-### Helper: check numeric columns & change col type to numeric ###
-##################################################################
+################################################################
+### Helper: check coordinate columns & change to sf geometry ###
+################################################################
 
 #' @returns a tibble with sf geometry point data and attributes including crs
 #'
