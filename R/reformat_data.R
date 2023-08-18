@@ -108,7 +108,13 @@ reformat_data <- function(datafile, type){ #Could also infer type from the data
     opt_w_names <- colindex2name(all_data, minvars, extra)
     minvars <- opt_w_names[[1]]
     extra <- opt_w_names[[2]]
-    suppressWarnings(change_config(c(minvars, extra)))
+    opt_prefix<-switch(type,
+                       "movement" = "movedata_cols.",
+                       "holding" = "holdingdata_cols.")
+    #Add opt_prefix to name of options in minvar/extra for change_config to work
+    opts_for_change_config <- c(minvars,extra) %>%
+      purrr::set_names(paste0(opt_prefix, names(c(minvars,extra))))
+    suppressWarnings(change_config(opts_for_change_config))
   }
 
   #select columns of interest
