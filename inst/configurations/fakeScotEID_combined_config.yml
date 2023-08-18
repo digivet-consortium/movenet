@@ -1,0 +1,23 @@
+movedata_fileopts:
+  separator: ','
+  encoding: UTF-8
+  decimal: '.'
+  date_format: '%Y%m%d'
+movedata_cols:
+  move_ID: movement_reference
+  from: departure_cph
+  to: dest_cph
+  date: departure_date
+  weight: qty_pigs
+holdingdata_fileopts:
+  separator: ','
+  encoding: UTF-8
+  decimal: '.'
+  coord_EPSG_code: 27700
+  country_code: UK
+holdingdata_cols:
+  id: cph
+  coord_x: easting
+  coord_y: northing
+  type: holding_type
+  herd_size: herd_size

@@ -37,13 +37,11 @@ reformat_data <- function(datafile, type){ #Could also infer type from the data
   ### Config file check ###
   #########################
 
-  if ((has_element(names(movenetenv$options), "movedata_cols") &
-       type == "holding") |
-      (has_element(names(movenetenv$options), "holdingdata_cols") &
-       type == "movement")){
+  if ((type == "movement" & !(has_element(names(movenetenv$options), "movedata_cols"))) |
+      (type == "holding" & !(has_element(names(movenetenv$options), "holdingdata_cols")))){
     stop(paste0(
       "The loaded config file does not match the indicated type of data (",
-      type, " data). Please ensure the appropriate config file is loaded."))
+      type, " data). Please ensure an appropriate config file is loaded."))
   }
 
 
@@ -110,7 +108,13 @@ reformat_data <- function(datafile, type){ #Could also infer type from the data
     opt_w_names <- colindex2name(all_data, minvars, extra)
     minvars <- opt_w_names[[1]]
     extra <- opt_w_names[[2]]
-    suppressWarnings(change_config(c(minvars, extra)))
+    opt_prefix<-switch(type,
+                       "movement" = "movedata_cols.",
+                       "holding" = "holdingdata_cols.")
+    #Add opt_prefix to name of options in minvar/extra for change_config to work
+    opts_for_change_config <- c(minvars,extra) %>%
+      purrr::set_names(paste0(opt_prefix, names(c(minvars,extra))))
+    suppressWarnings(change_config(opts_for_change_config))
   }
 
   #select columns of interest
@@ -423,9 +427,9 @@ reformat_date <- function(date_col, date_format){
 
 ################################################################################
 
-##################################################################
-### Helper: check numeric columns & change col type to numeric ###
-##################################################################
+################################################################
+### Helper: check coordinate columns & change to sf geometry ###
+################################################################
 
 #' @returns a tibble with sf geometry point data and attributes including crs
 #'
