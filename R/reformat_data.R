@@ -37,13 +37,11 @@ reformat_data <- function(datafile, type){ #Could also infer type from the data
   ### Config file check ###
   #########################
 
-  if ((has_element(names(movenetenv$options), "movedata_cols") &
-       type == "holding") |
-      (has_element(names(movenetenv$options), "holdingdata_cols") &
-       type == "movement")){
+  if ((type == "movement" & !(has_element(names(movenetenv$options), "movedata_cols"))) |
+      (type == "holding" & !(has_element(names(movenetenv$options), "holdingdata_cols")))){
     stop(paste0(
       "The loaded config file does not match the indicated type of data (",
-      type, " data). Please ensure the appropriate config file is loaded."))
+      type, " data). Please ensure an appropriate config file is loaded."))
   }
 
 
