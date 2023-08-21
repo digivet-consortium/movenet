@@ -293,9 +293,14 @@ holdingids2consecints <- function(movement_data, holding_data = NULL,
 #delete these ids
 filter_holding_data <- function(holding_data, node_ids){
   if(any(!(holding_data[[1]] %in% node_ids))){
+    holding_ids_to_remove <- holding_data[[1]][which(!(holding_data[[1]] %in% node_ids))]
     holding_data <-
       holding_data %>%
       dplyr::filter(.data[[names(holding_data)[1]]] %in% node_ids)
+    warning(paste0("The following non-active holdings have been removed from holding_data: ",
+                   paste0(holding_ids_to_remove, collapse = ", "),
+                   "."),
+            call. = FALSE)
   }
   return(holding_data)
 }
@@ -309,6 +314,10 @@ add_rows_to_holding_data <- function(holding_data, node_ids){
       holding_data %>%
       add_row("{names(holding_data)[1]}" :=
                 node_ids[which(missing_holding_ids)])
+    warning(paste0("The following holding identifiers have been added to holding_data: ",
+                   paste0(node_ids[which(missing_holding_ids)], collapse = ", "),
+                   ". Any additional data fields have been set to NA for these holdings."),
+      call. = FALSE)
   }
   return(holding_data)
 }
