@@ -8,6 +8,7 @@ data2contactmatrix(
   movement_data,
   holding_data = NULL,
   incl_nonactive_holdings = TRUE,
+  accept_missing_coordinates = FALSE,
   weight_unit_transmission_probability = 1,
   whole_months = TRUE,
   local_spread_transmission_probabilities = NULL,

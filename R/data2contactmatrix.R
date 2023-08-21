@@ -1,4 +1,5 @@
 ### To do:
+# Make data2contactmatrix output key
 # arg checks - where to allow missing values?
 # diagonal set to 0 for movement_spread, local_spread, and overall matrices (but not additional matrices)
 # Remove matrix filtering for additional tm prob matrices?
@@ -28,11 +29,12 @@
 #'
 #' @details
 #'
-#'
+#' @importFrom sf st_is_empty
 #' @export
 data2contactmatrix <- function(movement_data, holding_data = NULL,
                                #general options
                                incl_nonactive_holdings = TRUE,
+                               accept_missing_coordinates = FALSE,
                                #options regarding movement spread matrix
                                weight_unit_transmission_probability = 1,
                                whole_months = TRUE,
@@ -50,8 +52,8 @@ data2contactmatrix <- function(movement_data, holding_data = NULL,
     check_character(movement_data[[1]], any.missing = FALSE, all.missing = FALSE),
     check_character(movement_data[[2]], any.missing = FALSE, all.missing = FALSE),
     check_date(movement_data[[3]], any.missing = FALSE, all.missing = FALSE),
-    check_numeric(movement_data[[4]], lower = 0, finite = TRUE, any.missing = FALSE,
-                 all.missing = FALSE),
+    check_numeric(movement_data[[4]], lower = 0, finite = TRUE,
+                  any.missing = FALSE, all.missing = FALSE),
     combine = "and"
   )
   assert_tibble(holding_data, all.missing = FALSE, min.cols = 2, null.ok = TRUE)
@@ -60,14 +62,28 @@ data2contactmatrix <- function(movement_data, holding_data = NULL,
       check_character(holding_data[[1]], any.missing = FALSE, all.missing = FALSE,
                       unique = TRUE), #Must these be unique? And otherwise what?
       check_names(names(holding_data), must.include = "coordinates"),
-      check_tibble(holding_data["coordinates"], types = "sfc_POINT",
-                   all.missing = FALSE), #Allow missing coordinates? And otherwise what?
       check_data_frame(local_spread_transmission_probabilities), #i.e. this can't be null
+      check_tibble(holding_data["coordinates"], types = "sfc_POINT"),
       combine = "and")
+    if(all(st_is_empty(holding_data$coordinates))){ #replaces the all.missing assertion, as missing coordinates are not coded as NAs but as empty geometries
+      stop("Assertion on 'holding_data[\"coordinates\"]' failed: Contains only empty geometries (missing coordinates).", call. = FALSE)
+    }
+    else if(isFALSE(accept_missing_coordinates) && any(st_is_empty(holding_data$coordinates))){
+      stop(paste0("Assertion on 'holding_data[\"coordinates\"]' failed: Contains",
+                  " empty geometries (missing coordinates).\nTo proceed with missing",
+                  " coordinates, use `accept_missing_coordinates = TRUE`; this will",
+                  " set local spread transmission probabilities to/from holdings",
+                  " with missing coordinates to 0.\nCoordinates missing for the ",
+                  "following holding(s): ",
+                  paste0(holding_data[[1]][which(st_is_empty(holding_data$coordinates))], collapse = ", "),
+                  "."),
+           call. = FALSE)
+    }
   }
-  assert_logical(incl_nonactive_holdings, any.missing = FALSE, all.missing = FALSE,
-                 len = 1)
-
+  assert_logical(incl_nonactive_holdings, any.missing = FALSE,
+                 all.missing = FALSE, len = 1)
+  assert_logical(accept_missing_coordinates, any.missing = FALSE,
+                 all.missing = FALSE, len = 1)
   assert_double(weight_unit_transmission_probability, lower = 0, upper = 1,
                 finite = TRUE, any.missing = FALSE, all.missing = FALSE, len = 1)
   assert_logical(whole_months, any.missing = FALSE, all.missing = FALSE, len = 1)
@@ -129,7 +145,8 @@ data2contactmatrix <- function(movement_data, holding_data = NULL,
                                   whole_months)
 
   local_spread_matrix <- create_local_spread_matrix(holding_data_intchar,
-                                                    local_spread_transmission_probabilities)
+                                                    local_spread_transmission_probabilities,
+                                                    accept_missing_coordinates)
   #ASF probability tiers saved under "inst/extdata/local_spread_probabilities_ASF_Halasa_et_al_2016.Rdata"
   # - how to use this by default if holding_data is optional?!
 
@@ -168,6 +185,7 @@ create_movement_spread_matrix <- function(movement_data,
   movement_spread_matrix <-
     movement_spread_matrix[order(as.numeric(rownames(movement_spread_matrix))),
                            order(as.numeric(colnames(movement_spread_matrix)))]
+  #This doesn't work for non-numeric holding ids
 
   diag(movement_spread_matrix) <- 0 #probability of infecting oneself through movement = 0
 
@@ -203,7 +221,17 @@ average_daily_weights <- function(movement_data, whole_months = TRUE){
 
 #' @importFrom units drop_units
 create_local_spread_matrix <- function(holding_data,
-                                       local_spread_probability_tiers){
+                                       local_spread_probability_tiers,
+                                       accept_missing_coordinates){
+
+  if(isFALSE(accept_missing_coordinates) && any(st_is_empty(holding_data$coordinates))){
+    stop(paste0("Assertion on 'holding_data[\"coordinates\"]' failed: Contains",
+                " empty geometries (missing coordinates).\nTo proceed with missing",
+                " coordinates, use `accept_missing_coordinates = TRUE`; this will",
+                " set local spread transmission probabilities to/from holdings",
+                " with missing coordinates to 0."),
+         call. = FALSE)
+  }
 
   #Create distance matrix without units
   local_spread_matrix <-
@@ -221,8 +249,18 @@ create_local_spread_matrix <- function(holding_data,
   local_spread_matrix <-
     local_spread_matrix[order(as.numeric(rownames(local_spread_matrix))),
                            order(as.numeric(colnames(local_spread_matrix)))]
+  #This doesn't work for non-numeric holding ids
 
   diag(local_spread_matrix) <- 0 #probability of infecting oneself through local spread = 0
+
+  if(isTRUE(accept_missing_coordinates) && sum(is.na(local_spread_matrix)) > 0){
+    local_spread_matrix[which(is.na(local_spread_matrix))] <- 0
+    warning(paste("Local spread transmission probabilities could not be determined",
+                  "for all pairs of holdings, due to some missing coordinates.",
+                  "Local spread transmission probabilities to/from holdings with",
+                  "missing coordinates have been set to 0."),
+            call. = FALSE)
+  }
 
   return(local_spread_matrix) #n holdings in holding_data x n holdings in holding_data
 }
