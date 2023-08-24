@@ -144,9 +144,14 @@ data2contactmatrix <- function(movement_data, holding_data = NULL,
                                   weight_unit_transmission_probability,
                                   whole_months)
 
-  local_spread_matrix <- create_local_spread_matrix(holding_data_intchar,
-                                                    local_spread_transmission_probabilities,
-                                                    accept_missing_coordinates)
+  if (!is.null(holding_data_intchar)){
+    local_spread_matrix <- create_local_spread_matrix(holding_data_intchar,
+                                                      local_spread_transmission_probabilities,
+                                                      accept_missing_coordinates)
+  } else {
+    local_spread_matrix <- NULL
+  }
+
   #ASF probability tiers saved under "inst/extdata/local_spread_probabilities_ASF_Halasa_et_al_2016.Rdata"
   # - how to use this by default if holding_data is optional?!
 
