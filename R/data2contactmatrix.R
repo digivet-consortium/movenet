@@ -23,9 +23,15 @@
 #' @param additional_transmission_prob_matrices named list with any additional
 #'   transmission probability matrices to include
 #'
-#' @return a matrix of size number of holdings x number of holdings with overall
-#' transmission probabilities, based on movements, (optionally) local spread,
-#' and (optionally) any other user-provided transmission probabilities.
+#' @return
+#' A named list with two elements:
+#' * `transmission_matrix` containing a matrix with overall daily transmission
+#' probabilities from each holding (each row) to each holding (each column),
+#' based on movements, (optionally) local spread, and (optionally) any other
+#' user-provided transmission probabilities between holdings.
+#' * `key` containing a named character vector that links original holding
+#' identifiers (as element names) and numeric node identifiers required by
+#' SimInf (as element values).
 #'
 #' @details
 #'
@@ -215,7 +221,8 @@ data2contactmatrix <- function(movement_data, holding_data = NULL,
                                          list(movement_spread_matrix,
                                               local_spread_matrix)))
 
-  return(overall_transmission_matrix)
+  return(list(transmission_matrix = overall_transmission_matrix,
+              key = key))
 }
 
 
