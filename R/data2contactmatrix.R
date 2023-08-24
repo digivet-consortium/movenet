@@ -1,6 +1,5 @@
 ### To do:
-# arg checks - where to allow missing values?
-# diagonal set to 0 for movement_spread, local_spread, and overall matrices (but not additional matrices)
+# arg checks - unique holding ids?
 # Separate out matrix processing for additional tm prob matrices into function?
 # Make saved local_spread tibble default for local_spread_probabilities?
 
@@ -28,7 +27,8 @@
 #' based on movements, (optionally) local spread, and (optionally) any other
 #' user-provided transmission probabilities between holdings. Holdings have been
 #' given new identifiers in the form of digits (format required by SimInf);
-#' the original identifiers can be looked up in the provided `key`.
+#' the original identifiers can be looked up in the provided `key`. The matrix
+#' diagonal is set to 0, corresponding to no self-infection.
 #' * `key` containing a named character vector that links original holding
 #' identifiers (element names) and numeric node identifiers (as element values).
 #'
