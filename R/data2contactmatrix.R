@@ -1,5 +1,4 @@
 ### To do:
-# Ordering of matrices doesn't work for non-numeric identifiers.
 # arg checks - unique holding ids?
 # Separate out matrix processing for additional tm prob matrices into function?
 # Make saved local_spread tibble default for local_spread_probabilities?
@@ -249,10 +248,15 @@ create_movement_spread_matrix <- function(movement_data,
   # probability of infection through movement = 1 - probability of no infection through any moved unit
   # !NOT: movement_spread_matrix <- movement_matrix * weight_unit_transmission_probability !
 
-  movement_spread_matrix <-
-    movement_spread_matrix[order(as.numeric(rownames(movement_spread_matrix))),
-                           order(as.numeric(colnames(movement_spread_matrix)))]
-  #This doesn't work for non-numeric holding ids
+  if(all(!is.na(as.numeric(rownames(movement_spread_matrix))))){
+    movement_spread_matrix <-
+      movement_spread_matrix[order(as.numeric(rownames(movement_spread_matrix))),
+                             order(as.numeric(colnames(movement_spread_matrix)))]
+  } else {
+    movement_spread_matrix <-
+      movement_spread_matrix[order(rownames(movement_spread_matrix)),
+                             order(colnames(movement_spread_matrix))]
+  }
 
   diag(movement_spread_matrix) <- 0 #probability of infecting oneself through movement = 0
 
@@ -313,10 +317,15 @@ create_local_spread_matrix <- function(holding_data,
       tier['probability']
   })
 
-  local_spread_matrix <-
-    local_spread_matrix[order(as.numeric(rownames(local_spread_matrix))),
-                           order(as.numeric(colnames(local_spread_matrix)))]
-  #This doesn't work for non-numeric holding ids
+  if(all(!is.na(as.numeric(rownames(local_spread_matrix))))){
+    local_spread_matrix <-
+      local_spread_matrix[order(as.numeric(rownames(local_spread_matrix))),
+                          order(as.numeric(colnames(local_spread_matrix)))]
+  } else {
+    local_spread_matrix <-
+      local_spread_matrix[order(rownames(local_spread_matrix)),
+                          order(colnames(local_spread_matrix))]
+  }
 
   diag(local_spread_matrix) <- 0 #probability of infecting oneself through local spread = 0
 
@@ -368,7 +377,9 @@ combine_transmission_matrices <- function(matrices){
     #included in these matrices
     m0[rownames(x), colnames(x)] <- x
     #Ensure matrix rows and columns are ordered consistently
-    m0[order(as.numeric(rownames(m0))), order(as.numeric(colnames(m0)))]
+    if(all(!is.na(as.numeric(rownames(m0))))){
+      m0[order(as.numeric(rownames(m0))), order(as.numeric(colnames(m0)))]
+    } else { m0[order(rownames(m0)), order(colnames(m0))] }
   })
 
   ## Add up probabilities ##
@@ -383,9 +394,15 @@ combine_transmission_matrices <- function(matrices){
   #Overall probability = 1 - (1-Pr(A))*(1-Pr(B))*(1-Pr(C))*etc.
   overall_matrix <- 1 - Reduce("*", complementary_matrices)
 
-  overall_matrix <-
-    overall_matrix[order(as.numeric(rownames(overall_matrix))),
-                        order(as.numeric(colnames(overall_matrix)))]
+  if(all(!is.na(as.numeric(rownames(overall_matrix))))){
+    overall_matrix <-
+      overall_matrix[order(as.numeric(rownames(overall_matrix))),
+                     order(as.numeric(colnames(overall_matrix)))]
+  } else {
+    overall_matrix <-
+      overall_matrix[order(rownames(overall_matrix)),
+                     order(colnames(overall_matrix))]
+  }
 
   diag(overall_matrix) <- 0 #probability of infecting oneself = 0
 
