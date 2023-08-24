@@ -1,4 +1,5 @@
 ### To do:
+# Ordering of matrices doesn't work for non-numeric identifiers.
 # arg checks - unique holding ids?
 # Separate out matrix processing for additional tm prob matrices into function?
 # Make saved local_spread tibble default for local_spread_probabilities?
