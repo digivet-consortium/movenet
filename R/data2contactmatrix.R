@@ -142,10 +142,10 @@ data2contactmatrix <- function(movement_data, holding_data = NULL,
   #Check that all relevant holdings covered in all matrices
   if(!is.null(additional_transmission_prob_matrices)){
     mapply(function(n){
-      m <- additional_transmission_prob_matrices[n]
+      m <- additional_transmission_prob_matrices[[n]]
       m_name <- names(additional_transmission_prob_matrices)[n]
-      if (isFALSE(all_relevant_holding_ids %in% rownames(m) &&
-                  all_relevant_holding_ids %in% colnames(m))) {
+      if (isFALSE(all(all_relevant_holding_ids %in% rownames(m)) &&
+                  all(all_relevant_holding_ids %in% colnames(m)))) {
         if(isFALSE(accept_missing_additional_tm_probabilities)){
           stop(paste0("Assertion on 'additional_transmission_prob_matrices' failed: matrix '", m_name, "' does not",
                       " contain transmission probability data for all relevant holdings. \nTo proceed with missing",
@@ -158,7 +158,7 @@ data2contactmatrix <- function(movement_data, holding_data = NULL,
                       "."),
                call. = FALSE)
         } else if(isTRUE(accept_missing_additional_tm_probabilities)) {
-          warning(paste("Matrix ", m_name, " did not include transmission probability data for all relevant holdings.",
+          warning(paste("Matrix", m_name, "did not include transmission probability data for all relevant holdings.",
                         "For this transmission route, transmission probabilities to/from missing holdings have been set to 0."),
                   call. = FALSE)
         }
@@ -180,13 +180,14 @@ data2contactmatrix <- function(movement_data, holding_data = NULL,
 
   #Replace dimnames of any additional transmission prob matrices
   if(!is.null(additional_transmission_prob_matrices)){
-    lapply(additional_transmission_prob_matrices, function(m){
-      dimnames(m) <- replace_ids_w_key(dimnames(m), c(1,2), key)
-      #This results in dimnames containing NA for any holding_ids not in key.
-      #Hence, subset matrix to relevant holding_ids only.
-      #If don't want to exclude additional holding_ids, run
-      #add_rows_to_holding_data before holdingids2consecints.
-      m <- m[na.omit(rownames(m)), na.omit(colnames(m)), drop = FALSE]})
+    additional_transmission_prob_matrices <-
+      lapply(additional_transmission_prob_matrices, function(m){
+        dimnames(m) <- replace_ids_w_key(dimnames(m), c(1,2), key)
+        #This results in dimnames containing NA for any holding_ids not in key.
+        #Hence, subset matrix to relevant holding_ids only.
+        #If don't want to exclude additional holding_ids, run
+        #add_rows_to_holding_data before holdingids2consecints.
+        m <- m[na.omit(rownames(m)), na.omit(colnames(m)), drop = FALSE]})
   }
 
   ################################################
