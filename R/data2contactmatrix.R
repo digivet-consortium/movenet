@@ -35,6 +35,7 @@ data2contactmatrix <- function(movement_data, holding_data = NULL,
                                #general options
                                incl_nonactive_holdings = TRUE,
                                accept_missing_coordinates = FALSE,
+                               accept_missing_additional_tm_probabilities = FALSE,
                                #options regarding movement spread matrix
                                weight_unit_transmission_probability = 1,
                                whole_months = TRUE,
@@ -68,17 +69,6 @@ data2contactmatrix <- function(movement_data, holding_data = NULL,
     if(all(st_is_empty(holding_data$coordinates))){ #replaces the all.missing assertion, as missing coordinates are not coded as NAs but as empty geometries
       stop("Assertion on 'holding_data[\"coordinates\"]' failed: Contains only empty geometries (missing coordinates).", call. = FALSE)
     }
-    else if(isFALSE(accept_missing_coordinates) && any(st_is_empty(holding_data$coordinates))){
-      stop(paste0("Assertion on 'holding_data[\"coordinates\"]' failed: Contains",
-                  " empty geometries (missing coordinates).\nTo proceed with missing",
-                  " coordinates, use `accept_missing_coordinates = TRUE`; this will",
-                  " set local spread transmission probabilities to/from holdings",
-                  " with missing coordinates to 0.\nCoordinates missing for the ",
-                  "following holding(s): ",
-                  paste0(holding_data[[1]][which(st_is_empty(holding_data$coordinates))], collapse = ", "),
-                  "."),
-           call. = FALSE)
-    }
   }
   assert_logical(incl_nonactive_holdings, any.missing = FALSE,
                  all.missing = FALSE, len = 1)
@@ -102,6 +92,7 @@ data2contactmatrix <- function(movement_data, holding_data = NULL,
                     lower = 0, upper = 1, any.missing = FALSE, all.missing = FALSE),
       check_tibble(holding_data), #i.e. this can't be null
       combine = "and")
+
   }
   assert_list(additional_transmission_prob_matrices, types = "matrix",
               any.missing = FALSE, all.missing = FALSE, names = "named", null.ok = TRUE)
@@ -114,6 +105,69 @@ data2contactmatrix <- function(movement_data, holding_data = NULL,
     #check dimnames for each matrix - that they are included in known holding ids (from movement/holding data)?
   }
 
+  ####################################################################
+  ### Check presence of all relevant holding ids in various inputs ###
+  ####################################################################
+
+  #Identify all relevant holding ids
+  if(isFALSE(incl_nonactive_holdings)){
+    all_relevant_holding_ids <- unique(c(movement_data[[1]], movement_data[[2]]))
+  } else if(isTRUE(incl_nonactive_holdings)){
+    all_relevant_holding_ids <-
+      unique(c(movement_data[[1]], movement_data[[2]], holding_data[[1]],
+               unlist(lapply(additional_transmission_prob_matrices, dimnames))))
+  }
+
+  if(!is.null(holding_data)){
+    #Add holding ids from additional transmission prob matrices and movement_data
+    #to holding_data, and remove any non-active holdings if relevant
+    holding_data <- holding_data %>%
+      filter_holding_data(all_relevant_holding_ids) %>%
+      add_rows_to_holding_data(all_relevant_holding_ids)
+
+    #Check that all relevant holdings have coordinates
+    if(isFALSE(accept_missing_coordinates) && any(st_is_empty(holding_data$coordinates))){
+      stop(paste0("Assertion on 'holding_data[\"coordinates\"]' failed: Contains",
+                  " empty geometries (missing coordinates).\nTo proceed with missing",
+                  " coordinates, use `accept_missing_coordinates = TRUE`; this will",
+                  " set local spread transmission probabilities to/from holdings",
+                  " with missing coordinates to 0.\nCoordinates missing for the ",
+                  "following holding(s): ",
+                  paste0(holding_data[[1]][which(st_is_empty(holding_data$coordinates))], collapse = ", "),
+                  "."),
+           call. = FALSE)
+    }
+  }
+
+  #Check that all relevant holdings covered in all matrices
+  if(!is.null(additional_transmission_prob_matrices)){
+    mapply(function(n){
+      m <- additional_transmission_prob_matrices[n]
+      m_name <- names(additional_transmission_prob_matrices)[n]
+      if (isFALSE(all_relevant_holding_ids %in% rownames(m) &&
+                  all_relevant_holding_ids %in% colnames(m))) {
+        if(isFALSE(accept_missing_additional_tm_probabilities)){
+          stop(paste0("Assertion on 'additional_transmission_prob_matrices' failed: matrix '", m_name, "' does not",
+                      " contain transmission probability data for all relevant holdings. \nTo proceed with missing",
+                      " transmission probabilities, use `accept_missing_additional_tm_probabilities = TRUE`; this will",
+                      " set additional transmission probabilities to/from missing holdings to 0.\nHoldings missing",
+                      " from matrix '", m_name, "': ",
+                      paste0(all_relevant_holding_ids[which(!(
+                        all_relevant_holding_ids %in% rownames(m) & all_relevant_holding_ids %in% colnames(m)))],
+                        collapse = ", "),
+                      "."),
+               call. = FALSE)
+        } else if(isTRUE(accept_missing_additional_tm_probabilities)) {
+          warning(paste("Matrix ", m_name, " did not include transmission probability data for all relevant holdings.",
+                        "For this transmission route, transmission probabilities to/from missing holdings have been set to 0."),
+                  call. = FALSE)
+        }
+      }},
+      seq_along(additional_transmission_prob_matrices))
+  }
+
+
+
   ######################################################################
   ### Replace holding_ids with consecutive ints, in character format ###
   ######################################################################
@@ -124,14 +178,14 @@ data2contactmatrix <- function(movement_data, holding_data = NULL,
   holding_data_intchar <- outputs$holding_data
   key <- outputs$key
 
-  #replace dimnames of any additional transmission prob matrices
+  #Replace dimnames of any additional transmission prob matrices
   if(!is.null(additional_transmission_prob_matrices)){
     lapply(additional_transmission_prob_matrices, function(m){
       dimnames(m) <- replace_ids_w_key(dimnames(m), c(1,2), key)
       #This results in dimnames containing NA for any holding_ids not in key.
       #Hence, subset matrix to relevant holding_ids only.
-      #If don't want to exclude additional holding_ids, remove the below line,
-      #and run add_rows_to_holding_data before holdingids2consecints.
+      #If don't want to exclude additional holding_ids, run
+      #add_rows_to_holding_data before holdingids2consecints.
       m <- m[na.omit(rownames(m)), na.omit(colnames(m)), drop = FALSE]})
   }
 
