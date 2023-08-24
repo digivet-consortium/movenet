@@ -37,6 +37,7 @@ Imports:
     tibble,
     tidyr,
     tsna,
+    units,
     yaml,
     withr,
     methods,

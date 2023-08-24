@@ -259,7 +259,8 @@ holdingids2consecints <- function(movement_data, holding_data = NULL,
     node_ids <- unique(c(movement_data[[1]], movement_data[[2]]))
   } else if(isTRUE(incl_nonactive_holdings)){
     node_ids <-
-      unique(c(movement_data[[1]], movement_data[[2]], holding_data[[1]]))}
+      unique(c(movement_data[[1]], movement_data[[2]], holding_data[[1]]))
+    }
 
 
   key <- generate_anonymisation_key(node_ids, prefix = "", n_start = 1)
@@ -273,22 +274,54 @@ holdingids2consecints <- function(movement_data, holding_data = NULL,
   #   lapply(c(1,2), function(x){unname(key[as.character(movement_data[[x]])])})
 
   if(!is.null(holding_data)){
-    holding_data <- replace_ids_w_key(holding_data, 1, key)
+    holding_data <-
+      holding_data %>%
+      filter_holding_data(node_ids) %>%
+      add_rows_to_holding_data(node_ids) %>%
+      replace_ids_w_key(1, key)
     # replace_ids_w_key() does not have "as.character" as in the original below.
     # Needs testing.
     # holding_data[1] <- unname(key[as.character(holding_data[[1]])])
-
-    #if(isFALSE(incl_nonactive_holdings)){
-    # add some code to filter holding_data
-    #   - I think this allows simplification of movedata2networkDynamic
-    #}
-
   }
 
   return(list(key = key,
               movement_data = movement_data,
               holding_data = holding_data))
 }
+
+#If there are any holding ids present in holding_data but missing from node_ids,
+#delete these ids
+filter_holding_data <- function(holding_data, node_ids){
+  if(any(!(holding_data[[1]] %in% node_ids))){
+    holding_ids_to_remove <- holding_data[[1]][which(!(holding_data[[1]] %in% node_ids))]
+    holding_data <-
+      holding_data %>%
+      dplyr::filter(.data[[names(holding_data)[1]]] %in% node_ids)
+    warning(paste0("The following non-active holdings have been removed from holding_data: ",
+                   paste0(holding_ids_to_remove, collapse = ", "),
+                   "."),
+            call. = FALSE)
+  }
+  return(holding_data)
+}
+
+#If there are any holding ids present in node_ids, but missing from
+#holding_data, add these ids to holding_data with NAs for other columns
+add_rows_to_holding_data <- function(holding_data, node_ids){
+  missing_holding_ids <- !(node_ids %in% holding_data[[1]])
+  if(any(missing_holding_ids)){
+    holding_data <-
+      holding_data %>%
+      add_row("{names(holding_data)[1]}" :=
+                node_ids[which(missing_holding_ids)])
+    warning(paste0("The following holding identifiers have been added to holding_data: ",
+                   paste0(node_ids[which(missing_holding_ids)], collapse = ", "),
+                   ". Any additional data fields have been set to NA for these holdings."),
+      call. = FALSE)
+  }
+  return(holding_data)
+}
+
 
 #' Extract max reachabilities in parallel
 #'
