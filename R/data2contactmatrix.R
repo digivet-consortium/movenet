@@ -1,8 +1,6 @@
 ### To do:
-# Make data2contactmatrix output key
 # arg checks - where to allow missing values?
 # diagonal set to 0 for movement_spread, local_spread, and overall matrices (but not additional matrices)
-# Remove matrix filtering for additional tm prob matrices?
 # Separate out matrix processing for additional tm prob matrices into function?
 # Make saved local_spread tibble default for local_spread_probabilities?
 
@@ -28,10 +26,11 @@
 #' * `transmission_matrix` containing a matrix with overall daily transmission
 #' probabilities from each holding (each row) to each holding (each column),
 #' based on movements, (optionally) local spread, and (optionally) any other
-#' user-provided transmission probabilities between holdings.
+#' user-provided transmission probabilities between holdings. Holdings have been
+#' given new identifiers in the form of digits (format required by SimInf);
+#' the original identifiers can be looked up in the provided `key`.
 #' * `key` containing a named character vector that links original holding
-#' identifiers (as element names) and numeric node identifiers required by
-#' SimInf (as element values).
+#' identifiers (element names) and numeric node identifiers (as element values).
 #'
 #' @details
 #'
@@ -43,7 +42,7 @@ data2contactmatrix <- function(movement_data, holding_data = NULL,
                                accept_missing_coordinates = FALSE,
                                accept_missing_additional_tm_probabilities = FALSE,
                                #options regarding movement spread matrix
-                               weight_unit_transmission_probability = 1,
+                               weight_unit_transmission_probability = 0.5,
                                whole_months = TRUE,
                                #options regarding local spread matrix
                                local_spread_transmission_probabilities = NULL, #change default to saved file in inst/extdata?
