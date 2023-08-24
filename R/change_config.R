@@ -14,7 +14,7 @@ load_config <- function(configfile){
   if(file.exists(configfile)){
     yamlfile <- configfile
   } else {
-    if(grepl(".yml",configfile)==TRUE){
+    if(isTRUE(grepl(".yml",configfile))){
       yamlfile <- system.file("configurations", configfile, package="movenet")
     } else {
       yamlfile <- system.file("configurations", paste0(configfile, ".yml"), package="movenet")
@@ -22,7 +22,7 @@ load_config <- function(configfile){
     if(yamlfile=="") stop(paste("Specified config file not found:", configfile), call. = FALSE)
   }
 
-  if(validate_config(yamlfile) == TRUE){
+  if(isTRUE(validate_config(yamlfile))){
     loaded_config <- yaml.load_file(yamlfile)
     movenetenv$options[names(loaded_config)] <- loaded_config # Changes (move|holding)data_fileopts & _cols to contents of yaml file
     message(paste("Successfully loaded config file:", configfile))

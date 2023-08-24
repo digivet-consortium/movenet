@@ -168,7 +168,7 @@ validate_config_datatype <- function(yamlfile){
     opts_char_exp <- fileopts[which(names(fileopts)!="holdingdata_fileopts.coord_EPSG_code")]
     opts_char_obs <- sapply(opts_char_exp,is.character) #tests that appropriate fileopts option values are characters
     if (!all(opts_char_obs)){
-      msg <- append(msg, sprintf("Data field(s) not in expected character format: %s", paste0(names(which(opts_char_obs==FALSE)),collapse=", ")))
+      msg <- append(msg, sprintf("Data field(s) not in expected character format: %s", paste0(names(which(isFALSE(opts_char_obs))),collapse=", ")))
     }
     opts_singlechar_exp <- c("movedata_fileopts.separator","holdingdata_fileopts.separator",
                              "movedata_fileopts.decimal","holdingdata_fileopts.decimal")
@@ -195,7 +195,7 @@ validate_config_datatype <- function(yamlfile){
     cols_int <- sapply(cols_options, is.integer) #tests that cols values are integers
     cols_charint <- (cols_char | cols_int)
     if (!all(cols_charint)){
-      msg <- append(msg, sprintf("Data field(s) not in expected character or integer format: %s", paste0(names(which(cols_charint==FALSE)),collapse=", ")))
+      msg <- append(msg, sprintf("Data field(s) not in expected character or integer format: %s", paste0(names(which(isFALSE(cols_charint))),collapse=", ")))
     }
   }
   msg
