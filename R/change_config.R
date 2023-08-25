@@ -165,12 +165,12 @@ change_config <- function(...){
       opts <- opts[-which(optnames=="holdingdata_fileopts.country_code")]
       optnames <- optnames[-which(optnames=="holdingdata_fileopts.country_code")]
     }
-    if(("movedata_fileopts.date_format" %in% optnames) & (!grepl("%(Y|y|m|b|B|AD|D|F|x|s)|^$",opts["movedata_fileopts.date_format"]))){
+    if(("movedata_fileopts.date_format" %in% optnames) & (!is_valid_date_format(opts["movedata_fileopts.date_format"]))){
       warning("Ignoring option `movedata_fileopts.date_format`, as the value doesn't appear to match readr date format specifications. See `?readr::parse_date` for guidance.", call. = FALSE)
       opts <- opts[-which(optnames=="movedata_fileopts.date_format")]
       optnames <- optnames[-which(optnames=="movedata_fileopts.date_format")]
     }
-    if(("holdingdata_fileopts.date_format" %in% optnames) & (!grepl("%(Y|y|m|b|B|AD|D|F|x|s)|^$",opts["holdingdata_fileopts.date_format"]))){
+    if(("holdingdata_fileopts.date_format" %in% optnames) & (!is_valid_date_format(opts["movedata_fileopts.date_format"]))){
       warning("Ignoring option `holdingdata_fileopts.date_format`, as the value doesn't appear to match readr date format specifications. See `?readr::parse_date` for guidance.", call. = FALSE)
       opts <- opts[-which(optnames=="holdingdata_fileopts.date_format")]
       optnames <- optnames[-which(optnames=="holdingdata_fileopts.date_format")]
@@ -256,4 +256,6 @@ change_config <- function(...){
   else{
     return(options_no_structure)
   }
-  }
+}
+
+is_valid_date_format <- function(char) grepl("%(Y|y|m|b|B|AD|D|F|x|s)|^$", char)

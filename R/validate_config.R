@@ -180,8 +180,8 @@ validate_config_datatype <- function(yamlfile){
       msg <- append(msg, "Data field `holdingdata_fileopts.country_code` doesn't have the expected format of two characters")
     }
     opts_dateformat <- c("movedata_fileopts.date_format","holdingdata_fileopts.date_format")
-    if (any(sapply(opts_dateformat,function(x){all(x %in% names(fileopts) && !grepl("%(Y|y|m|b|B|AD|D|F|x|s)|^$",fileopts[x]))}))){
-      wrongdateformat_names <- opts_dateformat[which(opts_dateformat %in% names(fileopts) & !grepl("%(Y|y|m|b|B|AD|D|F|x|s)|^$",fileopts[opts_dateformat]))]
+    if (any(sapply(opts_dateformat,function(x){all(x %in% names(fileopts) && !is_valid_date_format(fileopts[x]))}))){
+      wrongdateformat_names <- opts_dateformat[which(opts_dateformat %in% names(fileopts) & !is_valid_date_format(fileopts[opts_dateformat]))]
       msg <- append(msg, sprintf("Data field(s) do not match readr date format specifications: %s. See `?readr::parse_date` for guidance.",
                                  paste(wrongdateformat_names, collapse=", ")))
     }
