@@ -160,8 +160,8 @@ change_config <- function(...){
       opts <- opts[-which(optnames %in% nonsinglechar_names)]
       optnames <- optnames[-which(optnames %in% nonsinglechar_names)]
     }
-    if(("holdingdata_fileopts.country_code" %in% optnames) & (nchar(opts["holdingdata_fileopts.country_code"]) != 2)){
-      warning("Ignoring option `holdingdata_fileopts.country_code`, as the value doesn't have the required format (two characters)", call. = FALSE)
+    if(("holdingdata_fileopts.country_code" %in% optnames) & (!is_valid_country_code(opts["holdingdata_fileopts.country_code"]))){
+      warning("Ignoring option `holdingdata_fileopts.country_code`, as the value doesn't have the required format (two uppercase letters)", call. = FALSE)
       opts <- opts[-which(optnames=="holdingdata_fileopts.country_code")]
       optnames <- optnames[-which(optnames=="holdingdata_fileopts.country_code")]
     }
@@ -259,3 +259,4 @@ change_config <- function(...){
 }
 
 is_valid_date_format <- function(char) grepl("%(Y|y|m|b|B|AD|D|F|x|s)|^$", char)
+is_valid_country_code <- function(char) grepl("^[A-Z]{2}$", char)

@@ -176,8 +176,8 @@ validate_config_datatype <- function(yamlfile){
       nonsinglechar_names <- opts_singlechar_exp[which(opts_singlechar_exp %in% names(fileopts) & nchar(fileopts[opts_singlechar_exp]) != 1)]
       msg <- append(msg, sprintf("Data field(s) do not have the expected format of a single character: %s", paste(nonsinglechar_names, collapse=", ")))
     }
-    if (has_element(names(fileopts),"holdingdata_fileopts.country_code") && nchar(fileopts["holdingdata_fileopts.country_code"]) != 2){
-      msg <- append(msg, "Data field `holdingdata_fileopts.country_code` doesn't have the expected format of two characters")
+    if (has_element(names(fileopts),"holdingdata_fileopts.country_code") && !is_valid_country_code(fileopts["holdingdata_fileopts.country_code"])){
+      msg <- append(msg, "Data field `holdingdata_fileopts.country_code` doesn't have the expected format of two uppercase letters")
     }
     opts_dateformat <- c("movedata_fileopts.date_format","holdingdata_fileopts.date_format")
     if (any(sapply(opts_dateformat,function(x){all(x %in% names(fileopts) && !is_valid_date_format(fileopts[x]))}))){
