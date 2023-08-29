@@ -41,11 +41,15 @@ progress). The following flow chart illustrates how the key functions in
 these categories relate to one another and can be used as reference for
 how this package fits together.
 
-![Flow chart split into sections corresponding to the next sections of
-this document. It shows the general flow of usage of the Movenet
-package, and how some of the important functions can be used to
-transform the data. This is covered in more detail in the next sections
-of this document.](man/figures/readme-flowchart.svg)
+<figure>
+<img src="man/figures/readme-flowchart.svg"
+alt="Flow chart split into sections corresponding to the next sections of this document. It shows the general flow of usage of the Movenet package, and how some of the important functions can be used to transform the data. This is covered in more detail in the next sections of this document." />
+<figcaption aria-hidden="true">Flow chart split into sections
+corresponding to the next sections of this document. It shows the
+general flow of usage of the Movenet package, and how some of the
+important functions can be used to transform the data. This is covered
+in more detail in the next sections of this document.</figcaption>
+</figure>
 
 The remaining sections of this document explain how to use the package
 in more detail, with code samples. For even more detail, consult the
@@ -225,3 +229,25 @@ transmission modelling. We are currently working on functions in this
 section.
 
 (A more extensive summary and usage/example code will be added shortly.)
+
+## Setting a Default Configuration
+
+If you use Movenet with the same configuration most or all of the time,
+you may want to have Movenet automatically load a configuration file
+when the Movenet package is loaded.
+
+To do this, you should find the `movenet/R` directory (where all of the
+package’s code is located). Create a file in this directory called
+`zzz.R`. In this file, type the following code:
+
+``` r
+.onLoad <- function(libname, pkgname){
+  load_config("ScotEID")
+}
+```
+
+where `ScotEID` can be replaced with whatever configuration you wish to
+load. Now, whenever the Movenet package is loaded, this `.onLoad`
+function will be called, loading the desired configuration. See [this
+page](https://r-pkgs.org/Code.html#sec-code-onLoad-onAttach) for more
+information on `.onLoad` and zzz.R.
