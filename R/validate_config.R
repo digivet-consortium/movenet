@@ -94,11 +94,11 @@ validate_config_root <- function(yamlfile){
 validate_config_type <- function(provided_config_type, inferred_config_type){
   if (!is.null(provided_config_type) && provided_config_type == "movement" && inferred_config_type == "holding") {
     return("Unexpected config file type. File must be a movement config file, not a holding config file")
-  } else if (!is.null(provided_config_type) && provided_config_type == c("movement", "holding") && inferred_config_type == "movement") {
+  } else if (!is.null(provided_config_type) && all(provided_config_type == c("movement", "holding")) && inferred_config_type == "movement") {
     return("Unexpected config file type. File is a movement config file, not a combined config file")
   } else if (!is.null(provided_config_type) && provided_config_type == "holding" && inferred_config_type == "movement") {
     return("Unexpected config file type. File must be a holding config file, not a movement config file")
-  } else if (!is.null(provided_config_type) && provided_config_type == c("movement", "holding") && inferred_config_type == "holding") {
+  } else if (!is.null(provided_config_type) && all(provided_config_type == c("movement", "holding")) && inferred_config_type == "holding") {
     return("Unexpected config file type. File is a holding config file, not a combined config file")
   } else { return(NULL) }
 }
