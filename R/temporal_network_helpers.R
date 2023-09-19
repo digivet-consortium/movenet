@@ -570,7 +570,7 @@ violinplot_monthly_measures <- function(monthly_data, measure_name){
   plot(p)
 }
 
-#' Plot values of a measures for a varying range of jitter or rounding
+#' Plot values of a measure for a varying range of jitter or rounding
 #'
 #' @param data tibble with measure values for range of jitter or rounding
 #' @param measure_name measure name (to refer to in y axis)
