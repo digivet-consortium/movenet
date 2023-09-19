@@ -20,6 +20,8 @@ set_storage_folder("C:/Users/cboga/Documents/hexscape storage")
 
 #Manual step - Download NUTS data and stick it in storage folder
 #see instructions on https://www.costmodds.org/rsc/hexscape/
+#get around this with get_eurostat() but it's a bit noisy
+#make user responsible for shape file
 
 #Load the multipolygon map data for the selected NUTS area
 NUTS_map <- load_map(NUTS_code)
