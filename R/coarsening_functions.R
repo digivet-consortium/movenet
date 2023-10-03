@@ -459,7 +459,7 @@ anonymise <- function(data, prefix, key = NULL){
   } else {
     stop(
     "The loaded config file and the type of data (movement or holding data)
-    do not correspond. Please ensure the appropriate config file is loaded.")
+    do not correspond. Please ensure an appropriate config file is loaded.")
   }
 
 
@@ -491,7 +491,7 @@ anonymise <- function(data, prefix, key = NULL){
   ### Replace ids using key ###
   #############################
 
-  replace_ids_w_key(data, col_to_anonymise, key)
+  data <- replace_ids_w_key(data, col_to_anonymise, key)
 
   return(list(data = data,
               key = key))
