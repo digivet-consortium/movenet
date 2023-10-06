@@ -4,17 +4,17 @@
 \alias{round_weights}
 \title{Round numeric movement data}
 \usage{
-round_weights(data, column = movenetenv$options$movedata_cols$weight, unit)
+round_weights(data, unit, column = movenetenv$options$movedata_cols$weight)
 }
 \arguments{
 \item{data}{A movenet-format movement tibble.}
 
-\item{column}{Name of a single numeric column to round. By default this is
-the weight column (as specified in the loaded movement configurations).}
-
 \item{unit}{A positive number. The data in the selected column are rounded to
 the nearest multiple of this number. \code{unit} is additionally set as minimum
 possible value for the column.}
+
+\item{column}{Name of a single numeric column to round. By default this is
+the weight column (as specified in the loaded movement configurations).}
 }
 \value{
 A movement tibble like \code{data}, but with rounding applied to the selected

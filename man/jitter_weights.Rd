@@ -4,16 +4,16 @@
 \alias{jitter_weights}
 \title{Jitter (add noise to) numeric movement data}
 \usage{
-jitter_weights(data, column = movenetenv$options$movedata_cols$weight, range)
+jitter_weights(data, range, column = movenetenv$options$movedata_cols$weight)
 }
 \arguments{
 \item{data}{A movenet-format movement tibble.}
 
-\item{column}{Name of a single numeric column to jitter. By default this is
-the weight column (as specified in the loaded movement configurations).}
-
 \item{range}{A positive number, indicating the maximum amount of jitter to
 apply to the numeric data (see Details).}
+
+\item{column}{Name of a single numeric column to jitter. By default this is
+the weight column (as specified in the loaded movement configurations).}
 }
 \value{
 A movement tibble like \code{data}, but with jitter applied to the selected

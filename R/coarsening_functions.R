@@ -285,9 +285,8 @@ round_dates <- function(data, unit,
 #' @importFrom stats runif
 #'
 #' @export
-jitter_weights <- function(data,
-                           column = movenetenv$options$movedata_cols$weight,
-                           range){
+jitter_weights <- function(data, range,
+                           column = movenetenv$options$movedata_cols$weight){
 
   #########################
   ### Config file check ###
@@ -366,9 +365,8 @@ jitter_weights <- function(data,
 #' @importFrom purrr has_element
 #'
 #' @export
-round_weights <- function(data,
-                          column = movenetenv$options$movedata_cols$weight,
-                          unit){
+round_weights <- function(data, unit,
+                          column = movenetenv$options$movedata_cols$weight){
 
   #########################
   ### Config file check ###
