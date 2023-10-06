@@ -31,8 +31,7 @@ jitter_dates <- function(data, range){
   #########################
 
   if (!has_element(names(movenetenv$options), "movedata_cols")){
-    stop("The loaded configurations do not match the type of data (movement
-    data). Please ensure an appropriate config file is loaded.")
+    stop("The loaded configurations do not match the type of data (movement data). Please ensure an appropriate config file is loaded.")
   }
 
   dates <- data[[movenetenv$options$movedata_cols$date]]
@@ -327,6 +326,8 @@ jitter_weights <- function(data,
   }
 
   data[column] <- replacement_data
+
+  return(data)
 
 }
 
