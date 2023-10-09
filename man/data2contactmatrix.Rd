@@ -9,7 +9,8 @@ data2contactmatrix(
   holding_data = NULL,
   incl_nonactive_holdings = TRUE,
   accept_missing_coordinates = FALSE,
-  weight_unit_transmission_probability = 1,
+  accept_missing_additional_tm_probabilities = FALSE,
+  weight_unit_transmission_probability = 0.5,
   whole_months = TRUE,
   local_spread_transmission_probabilities = NULL,
   additional_transmission_prob_matrices = NULL
@@ -38,9 +39,18 @@ probabilities. 3 columns: lower_boundary (in metres), upper_boundary (in
 metres), probability}
 }
 \value{
-a matrix of size number of holdings x number of holdings with overall
-transmission probabilities, based on movements, (optionally) local spread,
-and (optionally) any other user-provided transmission probabilities.
+A named list with two elements:
+\itemize{
+\item \code{transmission_matrix} containing a matrix with overall daily transmission
+probabilities from each holding (each row) to each holding (each column),
+based on movements, (optionally) local spread, and (optionally) any other
+user-provided transmission probabilities between holdings. Holdings have been
+given new identifiers in the form of digits (format required by SimInf);
+the original identifiers can be looked up in the provided \code{key}. The matrix
+diagonal is set to 0, corresponding to no self-infection.
+\item \code{key} containing a named character vector that links original holding
+identifiers (element names) and numeric node identifiers (as element values).
+}
 }
 \description{
 Title
