@@ -37,13 +37,11 @@ reformat_data <- function(datafile, type){ #Could also infer type from the data
   ### Config file check ###
   #########################
 
-  if ((has_element(names(movenetenv$options), "movedata_cols") &
-       type == "holding") |
-      (has_element(names(movenetenv$options), "holdingdata_cols") &
-       type == "movement")){
+  if ((type == "movement" & !(has_element(names(movenetenv$options), "movedata_cols"))) |
+      (type == "holding" & !(has_element(names(movenetenv$options), "holdingdata_cols")))){
     stop(paste0(
       "The loaded config file does not match the indicated type of data (",
-      type, " data). Please ensure the appropriate config file is loaded."))
+      type, " data). Please ensure an appropriate config file is loaded."))
   }
 
 
@@ -59,6 +57,7 @@ reformat_data <- function(datafile, type){ #Could also infer type from the data
     min_keys <- c("id")
     fileopts <- movenetenv$options$holdingdata_fileopts
     cols <- movenetenv$options$holdingdata_cols
+    crs <- fileopts$coord_EPSG_code
   }
 
   decimal <- fileopts$decimal
@@ -94,6 +93,11 @@ reformat_data <- function(datafile, type){ #Could also infer type from the data
   #read_delim's original message (can be obtained with conditionMessage) only
   #mentions the first missing column it comes across.
 
+  #Also:
+  #can set col_types directly with cols({{minvars$date}} := col_date(), etc),
+  #but if something goes wrong with coltype, you get NA with a readr/vroom warning
+  #message that asks you to run problems() for details.
+
 
   #############################
   ### Reformatting key data ###
@@ -104,7 +108,13 @@ reformat_data <- function(datafile, type){ #Could also infer type from the data
     opt_w_names <- colindex2name(all_data, minvars, extra)
     minvars <- opt_w_names[[1]]
     extra <- opt_w_names[[2]]
-    suppressWarnings(change_config(c(minvars, extra)))
+    opt_prefix<-switch(type,
+                       "movement" = "movedata_cols.",
+                       "holding" = "holdingdata_cols.")
+    #Add opt_prefix to name of options in minvar/extra for change_config to work
+    opts_for_change_config <- c(minvars,extra) %>%
+      purrr::set_names(paste0(opt_prefix, names(c(minvars,extra))))
+    suppressWarnings(change_config(opts_for_change_config))
   }
 
   #select columns of interest
@@ -127,11 +137,13 @@ reformat_data <- function(datafile, type){ #Could also infer type from the data
                                        decimal_mark = decimal)))
     }
   } else { #if type == "holding"
-    if ("coord_x" %in% names(extra)){
-      selected_data[extra$coord_x] <-
-        reformat_numeric(selected_data[extra$coord_x], decimal)
-      selected_data[extra$coord_y] <-
-        reformat_numeric(selected_data[extra$coord_y], decimal)
+    if ("coord_x" %in% names(extra)){ #config validation ensures coord_x always comes with coord_y
+      selected_data["coordinates"] <-
+        reformat_coords(selected_data[extra$coord_x],
+                        selected_data[extra$coord_y],
+                        decimal, crs)
+      selected_data[extra$coord_x] <- NULL
+      selected_data[extra$coord_y] <- NULL
     }
     if ("herd_size" %in% names(extra)){
       selected_data[extra$herd_size] <-
@@ -412,3 +424,28 @@ reformat_date <- function(date_col, date_format){
                  format = date_format))
     )
 }
+
+################################################################################
+
+################################################################
+### Helper: check coordinate columns & change to sf geometry ###
+################################################################
+
+#' @returns a tibble with sf geometry point data and attributes including crs
+#'
+#' @importFrom sf st_as_sf
+#' @importFrom tibble as_tibble
+#'
+reformat_coords <- function(coord_x_col, coord_y_col, decimal, crs){
+
+  #first reformat to numeric to ensure use of correct decimal marker
+  coord_x_col[colnames(coord_x_col)] <- reformat_numeric(coord_x_col, decimal)
+  coord_y_col[colnames(coord_y_col)] <- reformat_numeric(coord_y_col, decimal)
+
+  st_as_sf(as_tibble(c(coord_x_col, coord_y_col)),
+           coords = c(1,2),
+           na.fail = FALSE,
+           crs = crs)
+
+}
+

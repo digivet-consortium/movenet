@@ -1,9 +1,10 @@
 #test everything with non-consecutive holding id's!!
 
 load_all()
-library(tidyverse) #
+library(tidyverse) #dplyr arrange
 library(sf) #st_as_sf(), st_distance()
 library(units) #drop_units()
+library(lubridate) #floor_date() ceiling_date
 
 movement_datafile <-
   "tests/testthat/test_input_files/sample_pigs_UK_with_dep_arr_dates.csv"
@@ -17,11 +18,11 @@ load_config(movement_configfile)
 from <- movenetenv$options$movedata_cols$from
 to <- movenetenv$options$movedata_cols$to
 weight <- movenetenv$options$movedata_cols$weight
+date <- movenetenv$options$movedata_cols$date
 
-anonymisation_m <-
-  movement_datafile |>
-  reformat_data("movement") |>
-  anonymise("")
+movement_data <-
+  movement_datafile %>%
+  reformat_data("movement")
 
 load_config(holding_configfile)
 id <- movenetenv$options$holdingdata_cols$id
@@ -29,41 +30,22 @@ crs <- movenetenv$options$holdingdata_fileopts$coord_EPSG_code
 coord_x <- movenetenv$options$holdingdata_cols$coord_x
 coord_y <- movenetenv$options$holdingdata_cols$coord_y
 
-anonymisation_h <-
-  holding_datafile |>
-  reformat_data("holding") |>
-  anonymise("", key = anonymisation_m$key)
+holding_data <-
+  holding_datafile %>%
+  reformat_data("holding")
 
-n_nodes <- length(anonymisation_h$data[[id]])
-node_idnumbers <- sort(as.numeric(anonymisation_h$data[[id]]))
+#replace holding_ids with int-chars
+outputs <- holdingids2consecints(movement_data, holding_data, TRUE)
+movement_data_intchar <- outputs$movement_data
+holding_data_intchar <- outputs$holding_data
+datakey <- outputs$key
 
+n_nodes <- length(holding_data_intchar[[id]])
+node_idnumbers <- sort(as.numeric(holding_data_intchar[[id]])) #turns int-chars into numerics
 
-
-#empty df w all possible combinations of holdings in the holding datafile
-transport_matrix <-
-  matrix(0, n_nodes, n_nodes,
-         dimnames = list(node_idnumbers, node_idnumbers))
-
-#average number of pigs transported per day between each farm
-ave_transport_data <-
-  anonymisation_m$data %>%
-    group_by(.data[[from]], .data[[to]]) %>%
-    summarise(prob = sum(.data[[weight]])/365)
-
-transport_matrix[cbind(as.numeric(ave_transport_data[[from]]),
-                       as.numeric(ave_transport_data[[to]]))] <-
-  ave_transport_data[["prob"]]
-
-
-#distance matrix between farms
-distance_matrix <-
-  anonymisation_h$data |>
-  arrange(as.numeric(anonymisation_h$data[[id]])) |>
-  st_as_sf(coords = c(coord_x, coord_y),
-           crs = crs) |>
-  st_distance() |>
-  `dimnames<-`(list(node_idnumbers,node_idnumbers))
-
+movement_spread_matrix <- create_movement_spread_matrix(movement_data_intchar,
+                                                        n_nodes, TRUE,
+                                                        transmission_probability)
 
 #matrix containing daily probabilities of becoming infected through local spread
 #using distance look-up-table from DTU-DADS-ASF Table S4 (which in turn is based
@@ -73,18 +55,31 @@ distance_matrix <-
 #from 0.1 to 0.5 km: 0.006
 #from 0.5 to 1 km: 0.002
 #from 1 to 2km: 0.000015
-local_spread <-
-  distance_matrix |>
-  drop_units()
+local_spread_tiers <- tibble(lower_boundary = c(0,100,500,1000,2000),
+                             upper_boundary = c(100,500,1000,2000,Inf),
+                             probability = c(0.1, 0.006, 0.002, 0.000015, 0))
+local_spread_probabilities_ASF_Halasa_et_al_2016 <-local_spread_tiers
+save(local_spread_probabilities_ASF_Halasa_et_al_2016,
+     file="inst/extdata/local_spread_probabilities_ASF_Halasa_et_al_2016.Rdata")
 
-local_spread[local_spread > 0 & local_spread < 100] <- 0.1
-local_spread[local_spread >= 100 & local_spread < 500] <- 0.006
-local_spread[local_spread >= 500 & local_spread < 1000] <- 0.002
-local_spread[local_spread >= 1000 & local_spread < 2000] <- 0.000015
-local_spread[local_spread >= 2000] <- 0
+local_spread_matrix <- create_local_spread_matrix(holding_data_intchar, local_spread_tiers)
 
 #combine both matrices into contact_matrix
-contact_matrix <- transport_matrix + local_spread
+#SORT THESE MATRICES FIRST, otherwise they might get combined wrong
+#probably should check dimensions too
+#movement_spread_matrix[order(as.numeric(rownames(movement_spread_matrix))),
+#                       order(as.numeric(colnames(movement_spread_matrix)))]
+contact_matrix <- movement_spread_matrix + local_spread_matrix
 
 #saveRDS(contact_matrix,
 #        contactpars_outfile)
+
+
+
+
+
+
+
+
+
+

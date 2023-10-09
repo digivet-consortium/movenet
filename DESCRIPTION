@@ -8,7 +8,8 @@ Authors@R:
              email = "Carlijn.Bogaardt@glasgow.ac.uk", role = "aut"),
       person(given = "Stefan", family = "Widgren",
              email = "stefan.widgren@sva.se", role = "aut",
-             comment = c(ORCID = "0000-0001-5745-2284")))
+             comment = c(ORCID = "0000-0001-5745-2284"))
+    )
 Description: What the package does (one paragraph).
 License: GPL (>= 3)
 Encoding: UTF-8
@@ -17,8 +18,6 @@ RoxygenNote: 7.2.3
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Language: en-GB
-Depends:
-    SimInf(>= 9.3.1)
 Imports:
     checkmate,
     dplyr,
@@ -33,10 +32,12 @@ Imports:
     purrr,
     readr,
     rmarkdown,
+    sf,
     stringr,
     tibble,
     tidyr,
     tsna,
+    units,
     yaml,
     withr,
     methods,
@@ -44,8 +45,7 @@ Imports:
     rlang,
     tidyselect
 Suggests:
+    siminf4movenet,
     knitr,
     spelling,
     testthat (>= 3.0.0)
-LinkingTo: SimInf
-NeedsCompilation: yes
