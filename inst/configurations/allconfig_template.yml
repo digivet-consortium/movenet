@@ -5,10 +5,10 @@ movedata_fileopts:
   date_format: #Date format specification used in movement datafile (see ?readr::parse_date for guidance)
 
 movedata_cols:
-  from:   #Column name or number for Identifier of origin holding/establishment/..
-  to:     #Column name or number for Identifier of destination holding/establishment/..
-  date:   #Column name or number for Date of transport (if multiple date types are available, use the one deemed most appropriate)
-  weight:     #Column name or number for movement weight (e.g. nr of pigs moved)
+  from:   #Column name or number for Identifier of origin holding
+  to:     #Column name or number for Identifier of destination holding
+  date:   #Column name or number for Date of transport
+  weight:     #Column name or number for Movement weight (e.g. nr of pigs moved)
 
 holdingdata_fileopts:
   separator:   #Separator (delimiter) character used in holding datafile
@@ -18,7 +18,7 @@ holdingdata_fileopts:
   country_code:   #Two-letter country code (required for geographical jittering) (required only if using coordinates)
 
 holdingdata_cols:
-  id:           #Identifier of holding - need to match from/to in movement data!
+  id:           #Identifier of holding - need to match from/to in movement data
   coord_x:      #Geographical coordinate (x/longitude) of holding (int or decimal, NOT degree/min/sec) (optional)
   coord_y:      #Geographical coordinate (y/latitude) of holding (int or decimal, NOT degree/min/sec) (optional)
   type:         #Type of holding or herd (optional)
