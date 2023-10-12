@@ -1,0 +1,42 @@
+url: ~
+template:
+  bootstrap: 5
+
+reference:
+- title: "Loading livestock movement datafiles"
+  desc: "Functions for loading and initial processing of datafiles"
+  contents:
+  - load_config
+  - reformat_data
+  - asciify
+- title: "Making movement data non-identifiable"
+  desc: "Functions for making movement data non-identifiable"
+  contents:
+  - anonymise
+  - starts_with("jitter")
+  - starts_with("round")
+- title: "Network analysis of movement data"
+  desc: "Functions for generating a network representation of movement data and performing network analysis"
+  contents:
+  - movedata2networkDynamic
+  - create_report
+  - extract_periodic_subnetworks
+  - extract_periods
+  - parallel_max_reachabilities
+  - parallel_max_reachabilities_with_id
+  - parallel_summarise_temporal_node_properties
+  - plot_measure_over_anonymisation_gradient
+  - violinplot_monthly_measures
+- title: "Integration of movement data into disease models"
+  desc: "Functions for integrating movement data into disease models"
+  contents:
+  - data2contactmatrix
+- title: "Configurations"
+  desc: "Functions for setting and changing movenet configurations"
+  contents:
+  - load_config
+  - validate_config
+  - get_config
+  - change_config
+  - save_config
+  - new_config

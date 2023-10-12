@@ -98,15 +98,15 @@ standardised order.
 ``` r
 # Look at the first six rows of the tibble
 head(data)
-#> # A tibble: 6 × 5
-#>   departure_cph dest_cph    departure_date qty_pigs movement_reference
-#>   <chr>         <chr>       <date>            <dbl>              <dbl>
-#> 1 95/216/1100   19/818/9098 2019-02-08           97             304781
-#> 2 69/196/5890   71/939/3228 2019-08-15          167             229759
-#> 3 52/577/5349   82/501/8178 2019-09-15          115              36413
-#> 4 39/103/5541   13/282/1763 2019-10-26          125             488616
-#> 5 41/788/6464   57/418/6011 2019-10-17          109             581785
-#> 6 69/393/9398   39/947/2201 2019-10-06           72             564911
+#> # A tibble: 6 x 4
+#>   departure_cph dest_cph    departure_date qty_pigs
+#>   <chr>         <chr>       <date>            <dbl>
+#> 1 95/216/1100   19/818/9098 2019-02-08           97
+#> 2 69/196/5890   71/939/3228 2019-08-15          167
+#> 3 52/577/5349   82/501/8178 2019-09-15          115
+#> 4 39/103/5541   13/282/1763 2019-10-26          125
+#> 5 41/788/6464   57/418/6011 2019-10-17          109
+#> 6 69/393/9398   39/947/2201 2019-10-06           72
 ```
 
 ## Making data non-identifiable
@@ -124,15 +124,15 @@ anonymisation_key <- anonymised$key
 
 # Now we can see the data has been pseudonymised:
 head(data)
-#> # A tibble: 6 × 5
-#>   departure_cph dest_cph departure_date qty_pigs movement_reference
-#>   <chr>         <chr>    <date>            <dbl>              <dbl>
-#> 1 FARM132       FARM322  2019-02-08           97             304781
-#> 2 FARM276       FARM496  2019-08-15          167             229759
-#> 3 FARM329       FARM256  2019-09-15          115              36413
-#> 4 FARM334       FARM316  2019-10-26          125             488616
-#> 5 FARM393       FARM430  2019-10-17          109             581785
-#> 6 FARM375       FARM178  2019-10-06           72             564911
+#> # A tibble: 6 x 4
+#>   departure_cph dest_cph departure_date qty_pigs
+#>   <chr>         <chr>    <date>            <dbl>
+#> 1 FARM132       FARM322  2019-02-08           97
+#> 2 FARM276       FARM496  2019-08-15          167
+#> 3 FARM329       FARM256  2019-09-15          115
+#> 4 FARM334       FARM316  2019-10-26          125
+#> 5 FARM393       FARM430  2019-10-17          109
+#> 6 FARM375       FARM178  2019-10-06           72
 
 # And if desired, we can keep the anonymisation key to reverse this process later:
 head(anonymisation_key)
@@ -147,18 +147,14 @@ or by rounding:
 
 ``` r
 # Use jitter to coarsen the dates
-data <- data |> coarsen_date(
-  jitter = 5, # add jitter of ±5 days
-  rounding_unit = FALSE # do not round the data
+data <- data |> jitter_dates(
+  range = 5 # add jitter of ±5 days
 )
-#> Warning: As 'rounding_unit' is FALSE, no rounding or summarising by date has
-#>     been performed. Arguments 'sum_weight' and '...' have been ignored.
 
 # Use rounding to coarsen the weights
-data <- data |> coarsen_weight(
-  round = 10, # round weights to the nearest multiple of 10
-  jitter = FALSE # do not jitter the data
-)
+data <- data |> round_weights(
+  unit = 10 # round weights to the nearest multiple of 10
+  )
 ```
 
 A function to resample holding coordinates in a density-dependent manner
@@ -187,8 +183,7 @@ network
 #>   maximal time range: 17898 until  18257 
 #> 
 #>  Dynamic (TEA) attributes:
-#>   Edge TEAs:    movement_reference.active 
-#>      qty_pigs.active 
+#>   Edge TEAs:    qty_pigs.active 
 #> 
 #> Includes optional net.obs.period attribute:
 #>  Network observation period info:
@@ -215,7 +210,7 @@ network
 #>     active true_id vertex.names 
 #> 
 #>  Edge attribute names: 
-#>     active movement_reference.active qty_pigs.active
+#>     active qty_pigs.active
 
 # Perform some analysis - find the max reachability
 parallel_max_reachabilities(list(network), n_threads=8)

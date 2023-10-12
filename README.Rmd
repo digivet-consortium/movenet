@@ -104,16 +104,14 @@ It can also modify dates or weights by applying a small amount of noise or by ro
 
 ```{R}
 # Use jitter to coarsen the dates
-data <- data |> coarsen_date(
-  jitter = 5, # add jitter of ±5 days
-  rounding_unit = FALSE # do not round the data
+data <- data |> jitter_dates(
+  range = 5 # add jitter of ±5 days
 )
 
 # Use rounding to coarsen the weights
-data <- data |> coarsen_weight(
-  round = 10, # round weights to the nearest multiple of 10
-  jitter = FALSE # do not jitter the data
-)
+data <- data |> round_weights(
+  unit = 10 # round weights to the nearest multiple of 10
+  )
 ```
 
 A function to resample holding coordinates in a density-dependent manner is under development. The envisaged effect is to increase data sharing between different countries or organisations, which is of particular relevance when modelling transboundary disease spread.

@@ -1,0 +1,34 @@
+---
+title: "Pseudonymising livestock movement and holding data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Pseudonymising livestock movement and holding data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+To address concerns around commercial sensitivity, movenet includes a range of 
+functions to make livestock movement data and/or holding data non-identifiable. 
+This vignette shows you how to use these.
+
+```{r setup}
+library(movenet)
+# Load a combined movement and holding config file
+load_config(system.file("configurations", "fakeScotEID_combined_config.yml", package="movenet"))
+# Load example movenet-format movement and holding tibbles
+load(system.file("data", "fake_Scottish_movement_data.rda", package="movenet"))
+load(system.file("data", "fake_Scottish_holding_data.rda", package="movenet"))
+```
+
+## Setting up your datafiles
+
+```{r}
+
+```

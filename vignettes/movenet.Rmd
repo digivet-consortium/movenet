@@ -1,10 +1,13 @@
 ---
-title: "movenet"
+title: "Getting started with movenet"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{movenet}
-  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Getting started with movenet}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r, include = FALSE}
@@ -14,6 +17,129 @@ knitr::opts_chunk$set(
 )
 ```
 
+The goal of movenet is to simplify the use of livestock movement data in
+veterinary public health. It does this by providing workflows for
+pseudonymisation, network analysis, and integration of movement and/or
+holding data into transmission models. A first step in any of these
+workflows is reading in the livestock movement data that you want to
+process or analyse.
+
+This vignette describes how to get started with movenet, by reading in
+data files and reshaping them into a common format required by all three
+movenet workflows.
+
 ```{r setup}
 library(movenet)
 ```
+
+## Reshaping livestock movement data to movenet format
+
+To read in a movement data file, first load a configurations (config)
+file, telling movenet how to read the data file, and then load the data
+file itself.
+
+### Loading a movement config file
+
+Livestock movement data can come in a diversity of shapes and formats:
+not only do different countries collect different types of trade-related
+data, they may also follow different formatting customs for, for
+example, decimal marks and dates.
+
+To ensure correct reading of the data regardless of the source, movenet
+requires users to supply a config file. The config file contains values
+for a range of properties that commonly vary between datasets, as well
+as column headers for data fields that are either required ("from", "to",
+"date", "weight") or that you want to extract along for analyses. For
+details on config file requirements and how to manage movenet
+configurations, see `vignette("configurations")`. Example config files
+and an empty template can be found in the package's `configurations`
+folder.
+
+Here is the content of an example config file, `ScotEID.yml`:
+
+```{R}
+xfun::file_string(system.file("configurations", "ScotEID.yml", package="movenet"))
+```
+
+The `ScotEID.yml` configurations can be loaded into the movenet
+environment with the function `load_config()`:
+
+```{R}
+load_config(system.file("configurations", "ScotEID.yml", package="movenet")) # Load ScotEID.yml
+
+get_config() # Inspect the configurations in the movenet environment
+```
+
+### Loading a movement data file
+
+After configurations have been loaded into the movenet environment, a
+delimited movement data file can be read in and processed.
+
+Here are the first 6 rows of an example movement data file, `fake_Scottish_movement_data.csv`:
+
+```{R}
+head(read.csv(system.file("extdata", "fake_Scottish_movement_data.csv", package="movenet"), 
+              encoding = "UTF-8"))
+```
+
+The function `reformat_data()` uses the loaded configurations to read in
+the movement data, and standardise them to movenet format, by:
+
+-   extracting columns with minimally required data, corresponding to "from" (originating holding identifier), "to" (destination holding identifier), "date", and "weight" (movement quantity). The resulting data tibble contains these columns in this
+    specific order.
+
+-   extracting along any optional columns, as indicated
+    in the loaded configurations. In the resulting data tibble, these
+    columns are located *after* the required data columns.
+
+-   checking that the date column can be parsed as dates (using the date format 
+    indicated in the configurations), and that the weight column is numeric.
+
+-   converting dates to R Date format, to improve interoperability.
+
+
+To read in a movement data file, use `reformat_data(data, type = "movement")`:
+```{R}
+movement_data <- 
+  reformat_data(system.file("extdata", "fake_Scottish_movement_data.csv", package="movenet"),
+                type = "movement")
+
+head(movement_data) # Inspect the resulting movement_data tibble
+```
+
+The movement data are now in the right format (movenet-format movement data tibble) 
+to be plugged into pseudonymisation, network analysis, and transmission modelling workflows.
+
+## Reshaping holding data to movenet format
+
+If you want to use additional holding data (e.g. coordinates or holding type) in 
+your analyses, the same process as described above can be followed for holding 
+config and data files:
+```{R}
+# Load a holding config file:
+load_config(system.file("configurations", "fakeScotEID_holding.yml", package="movenet")) 
+# Read in and reformat a holding data file:
+holding_data <- 
+  reformat_data(system.file("extdata", "fake_Scottish_holding_data.csv", package="movenet"),
+                type = "holding")
+```
+
+For holding data, the only absolutely required data column is "id" (holding identifier, 
+matching to "from" and "to" in the movement data). If you wish to include geographic 
+coordinates, "EPSG code" and "country code" are required file options, and "coord_x" 
+and "coord_y" are required data columns.
+
+In addition to extraction of required and requested optional columns, `reformat_data()` 
+performs the following data checks and standardisations on holding data:
+
+-   If the loaded configurations include values for columns with geographical 
+    coordinates ("coord_x" and "coord_y"), these columns are checked to contain 
+    numeric data, and are then reformatted to a single simple feature (sf) geometry 
+    list-column.
+    
+-   If the loaded configurations include a value for a column "herd size", this 
+    column is checked to contain numeric data.
+    
+The holding data are now in the right format (movenet-format holding data tibble) 
+to be plugged into pseudonymisation, network analysis, and transmission modelling 
+workflows.
