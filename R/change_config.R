@@ -28,8 +28,14 @@ load_config <- function(configfile){
     movenetenv$options[names(loaded_config[grep("fileopts",names(loaded_config))])] <-
       loaded_config[grep("fileopts",names(loaded_config))]
     # Change (move|holding)data_cols to contents of yaml file, but asciify column headers first
-    movenetenv$options[names(loaded_config[grep("cols",names(loaded_config))])] <-
-      list(lapply(loaded_config[[grep("cols",names(loaded_config))]],movenet::asciify))
+    list_of_lists <- loaded_config[grep("cols",names(loaded_config))]
+    lapply(seq_along(list_of_lists),
+           function(x) {
+             list_x <- lapply(seq_along(list_of_lists[[x]]),
+                              function(y) movenet::asciify(list_of_lists[[x]][y]))
+             names(list_x) <- names(list_of_lists[[x]])
+             movenetenv$options[names(list_of_lists)[x]] <- list(list_x)
+           })
 
     message(paste("Successfully loaded config file:", configfile))
   }
