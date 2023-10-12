@@ -2,10 +2,11 @@ Package: movenet
 Title: What the Package Does (One Line, Title Case)
 Version: 0.1.0-1
 Authors@R:
-    c(person(given = "Matt", family = "Denwood",
+    c(person(given = "Carlijn", family = "Bogaardt",
+             email = "Carlijn.Bogaardt@glasgow.ac.uk", role = c("aut","cre"),
+             comment = c(ORCID = "0000-0002-9322-6978")),
+      person(given = "Matt", family = "Denwood",
              email = "md@sund.ku.dk", role = c("aut", "cre")),
-      person(given = "Carlijn", family = "Bogaardt",
-             email = "Carlijn.Bogaardt@glasgow.ac.uk", role = "aut"),
       person(given = "Stefan", family = "Widgren",
              email = "stefan.widgren@sva.se", role = "aut",
              comment = c(ORCID = "0000-0001-5745-2284"))
