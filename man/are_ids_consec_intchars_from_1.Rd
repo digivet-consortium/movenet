@@ -19,3 +19,4 @@ This is to facilitate conversion of movenet data tibbles into formats
 required by networkDynamic and SimInf, which need node identifiers to be
 consecutive integers starting from 1.
 }
+\keyword{internal}

@@ -203,6 +203,8 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
 #' @param movement_data The movement data tibble
 #'
 #' @returns the vertex spells ready to be passed into networkDynamic()
+#'
+#' @keywords internal
 create_vertex_spells <- function(movement_data){
   vertex_spells <- movement_data[,c(1,2,3)] %>%
     `colnames<-`(colnames(movement_data[,c(1,2,4)]))
@@ -222,6 +224,8 @@ create_vertex_spells <- function(movement_data){
 #' @param node_ids vector of node IDs (character format)
 #'
 #' @returns a boolean - TRUE if the IDs need to be replaced, false otherwise
+#'
+#' @keywords internal
 are_ids_consec_intchars_from_1 <- function(node_ids){
   return(
     all(grepl("^\\d+$", node_ids)) && #char strings consisting of only digits...
@@ -249,6 +253,8 @@ are_ids_consec_intchars_from_1 <- function(node_ids){
 #' @returns a named list with `key`, the modified `movement_data` tibble
 #' `movement_data` tibble) and `holding_data` (the modified `holding_data`
 #'  tibble if present, or `NULL` otherwise)
+#'
+#' @keywords internal
 holdingids2consecints <- function(movement_data, holding_data = NULL,
                                   incl_nonactive_holdings = FALSE){
 
@@ -291,6 +297,7 @@ holdingids2consecints <- function(movement_data, holding_data = NULL,
 
 #If there are any holding ids present in holding_data but missing from node_ids,
 #delete these ids
+#' @keywords internal
 filter_holding_data <- function(holding_data, node_ids){
   if(any(!(holding_data[[1]] %in% node_ids))){
     holding_ids_to_remove <- holding_data[[1]][which(!(holding_data[[1]] %in% node_ids))]
@@ -307,6 +314,7 @@ filter_holding_data <- function(holding_data, node_ids){
 
 #If there are any holding ids present in node_ids, but missing from
 #holding_data, add these ids to holding_data with NAs for other columns
+#' @keywords internal
 add_rows_to_holding_data <- function(holding_data, node_ids){
   missing_holding_ids <- !(node_ids %in% holding_data[[1]])
   if(any(missing_holding_ids)){
@@ -456,9 +464,6 @@ parallel_summarise_temporal_node_properties <-
                cl=cl)
     return(node_summary_stats)
   }
-
-
-
 
 #' Extract time periods covered in movement dataset
 #'

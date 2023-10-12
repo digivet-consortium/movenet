@@ -542,6 +542,8 @@ anonymise <- function(data, prefix, key = NULL){
 #' starting from `n_start`, and are allocated to holdings in a random order.
 #'
 #' @importFrom stats setNames
+#'
+#' @keywords internal
 generate_anonymisation_key <- function(ids, prefix = '', n_start){
 
   ids <- unique(ids)
@@ -572,6 +574,7 @@ generate_anonymisation_key <- function(ids, prefix = '', n_start){
 #' A modified version of `data` where, within columns indicated by
 #' `col_to_anonymise`, holding identifers have been replaced according to `key`.
 #'
+#' @keywords internal
 replace_ids_w_key <- function(data, col_to_anonymise, key){
 
   data[col_to_anonymise] <-
