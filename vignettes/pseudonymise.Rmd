@@ -20,15 +20,77 @@ This vignette shows you how to use these.
 
 ```{r setup}
 library(movenet)
-# Load a combined movement and holding config file
+# Load a combined movement and holding config file:
 load_config(system.file("configurations", "fakeScotEID_combined_config.yml", package="movenet"))
-# Load example movenet-format movement and holding tibbles
-load(system.file("data", "fake_Scottish_movement_data.rda", package="movenet"))
-load(system.file("data", "fake_Scottish_holding_data.rda", package="movenet"))
+
+# Load example movenet-format movement and holding tibbles:
+data(fake_Scottish_movement_data, package = "movenet")
+data(fake_Scottish_holding_data, package = "movenet")
 ```
 
-## Setting up your datafiles
+## Pseudonymising holding identifiers
 
-```{r}
+The function `anonymise()` pseudonymises holding identifiers in movenet-format 
+movement or holding data tibbles, by replacing these identifiers with a number
+and an optional prefix (e.g. "FARM").
+
+It returns a pseudonymised data tibble and the applied pseudonymisation key. This 
+key can be saved for "de-pseudonymisation" of data at a later stage, or for 
+application to an overlapping dataset.
+```{R}
+# Pseudonymise movement_data by changing identifiers to FARM1-N:
+pseudonymised <- anonymise(fake_Scottish_movement_data, prefix = "FARM")
+pseudonymised_movement_data <- pseudonymised$data
+pseudonymisation_key <- pseudonymised$key
+
+head(pseudonymised_movement_data) # Inspect pseudonymised movement data
+head(pseudonymisation_key) # Inspect pseudonymisation key
+```
+
+`anonymise()` also takes an optional `key` argument, with which you can apply an existing
+pseudonymisation key to the data tibble:
+```{R}
+# Use the same key from above to substitute holding identifiers in holding_data:
+pseudonymised_holding <- anonymise(fake_Scottish_holding_data, key = pseudonymisation_key) 
+pseudonymised_holding_data <- pseudonymised_holding$data
+# Update saved key, in case additional identifiers were added from the holding datafile:
+pseudonymisation_key <- pseudonymised_holding$key 
+
+head(pseudonymised_holding_data) # Inspect pseudonymised holding data
+```
+
+## Modifying dates, weights, and optional numeric data columns
+
+movenet also has functions to modify movement dates or weights by applying a small amount 
+of noise (jittering) or by rounding:
+
+- `jitter_dates(data, range)` adds random noise of up to `range` days to movement dates.
+- `jitter_weights(data, range, column)` adds random noise of up to `range` to a numeric 
+`column` in the movement data, by default the "weight" column.
+- `round_dates(data, unit, week_start, sum_weight, ...)` rounds movement dates down to 
+the first day of the specified time `unit`. For rounding down to weeks, set the starting 
+day of the week with `week_start`. By default, data
+
+- `round_weights(data, unit, column)` rounds data in a numeric `column`, by default 
+the "weight" column, to multiples of `unit`.
+
+```{R}
+# Add jitter of up to ±5 days to movement dates:
+movedata_datesj5 <- fake_Scottish_movement_data %>% jitter_dates(range = 5) 
+head(fake_Scottish_movement_data) #original dates
+head(movedata_datesj5) #jittered dates
+
+# Add jitter of up to ±10 to movement weights:
+movedata_weightsj10 <- fake_Scottish_movement_data %>% jitter_weights(range = 10)
+head(fake_Scottish_movement_data) #original weights
+head(movedata_datesj5) #jittered weights
+
+# Round movement dates down to the first day of the month:
+movedata_months <- fake_Scottish_movement_data %>% round_dates(unit = "month", sum_weight = FALSE) 
+head(fake_Scottish_movement_data) #original dates
+head(movedata_months) #jittered dates
+
 
 ```
+
+A function to resample holding coordinates in a density-dependent manner is under development. The envisaged effect is to increase data sharing between different countries or organisations, which is of particular relevance when modelling transboundary disease spread.
