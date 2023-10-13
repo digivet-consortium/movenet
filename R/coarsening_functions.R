@@ -451,7 +451,7 @@ round_weights <- function(data, unit,
 #' @importFrom purrr has_element
 #'
 #' @export
-anonymise <- function(data, prefix, key = NULL){
+anonymise <- function(data, prefix = NULL, key = NULL){
 
   #######################
   ### Argument checks ###
