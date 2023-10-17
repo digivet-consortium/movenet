@@ -1,5 +1,5 @@
 Package: movenet
-Title: What the Package Does (One Line, Title Case)
+Title: A Toolkit Facilitating the Use of Livestock Movement Data in Veterinary Public Health
 Version: 0.1.0-1
 Authors@R:
     c(person(given = "Carlijn", family = "Bogaardt",
@@ -11,7 +11,7 @@ Authors@R:
              email = "stefan.widgren@sva.se", role = "aut",
              comment = c(ORCID = "0000-0001-5745-2284"))
     )
-Description: What the package does (one paragraph).
+Description: A set of workflows facilitating the dataflow from livestock movement data to social network analysis and disease transmission models. 'movenet' also addresses common data issues such as the diversity of data formats and privacy preservation.
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
