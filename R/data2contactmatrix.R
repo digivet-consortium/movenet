@@ -265,6 +265,7 @@ create_movement_spread_matrix <- function(movement_data,
 
 #' @importFrom dplyr group_by summarise
 #' @importFrom lubridate ceiling_date floor_date
+#' @keywords internal
 average_daily_weights <- function(movement_data, whole_months = TRUE){
 
   #doesn't assume or require from/to to be in integer/"integer"  format, i.e.
@@ -289,6 +290,7 @@ average_daily_weights <- function(movement_data, whole_months = TRUE){
 
   #output is summarised movement tibble
 }
+
 
 #' @importFrom units drop_units
 create_local_spread_matrix <- function(holding_data,
@@ -341,7 +343,6 @@ create_local_spread_matrix <- function(holding_data,
   return(local_spread_matrix) #n holdings in holding_data x n holdings in holding_data
 }
 
-
 #' @importFrom sf st_as_sf st_distance
 create_distance_matrix <- function(holding_data){
 
@@ -356,6 +357,7 @@ create_distance_matrix <- function(holding_data){
   return(distance_matrix) #n holdings in holding_data x n holdings in holding_data
 }
 
+#' @keywords internal
 combine_transmission_matrices <- function(matrices){
 
   ## Ensure matrix dimensions (n_nodes) and rows/col ordering are consistent ##

@@ -17,3 +17,4 @@ the vertex spells ready to be passed into networkDynamic()
 Helper function: Create activity spells for nodes, to avoid
 very slow reconcile.vertex.activity
 }
+\keyword{internal}

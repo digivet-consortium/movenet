@@ -2,25 +2,13 @@
 % Please edit documentation in R/change_config.R
 \name{change_config}
 \alias{change_config}
-\alias{load_config}
-\alias{save_config}
-\alias{new_config}
-\alias{get_config}
-\title{Change configurations}
+\title{Changing individual movenet configurations}
 \usage{
-load_config(configfile)
-
-save_config(outfile, config_type = c("movement", "holding"))
-
-new_config(config_type = c("movement", "holding"))
-
-get_config(...)
-
 change_config(...)
 }
 \arguments{
-\item{configname}{some description}
+\item{...}{}
 }
 \description{
-Change configurations
+Changing individual movenet configurations
 }

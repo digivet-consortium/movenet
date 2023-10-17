@@ -1,0 +1,44 @@
+---
+title: "Network analysis of livestock movement data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Network analysis of livestock movement data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+Movenet uses the [Statnet suite of packages](https://statnet.org/packages/) (e.g. NetworkDynamic and tsna) for (temporal) social network analysis. We are currently working on  the functions in this section - e.g. creation of a pdf report with network measures of particular relevance to disease transmission.
+
+```{r setup}
+library(movenet)
+
+# Load example movenet-format movement and holding tibbles into the global environment:
+data(fake_Scottish_movement_data, package = "movenet")
+data(fake_Scottish_holding_data, package = "movenet")
+```
+
+## Generating a temporal network representation
+
+Currently it is possible to generate a temporal network (networkDynamic) representation
+of movement data and optional holding data, as follows:
+
+```{R warning = FALSE}
+# Create a networkDynamic from our data
+network <- movedata2networkDynamic(fake_Scottish_movement_data,
+                                   holding_data = fake_Scottish_holding_data,
+                                   incl_nonactive_holdings = FALSE)
+network
+```
+
+## (Basic) social network analysis
+
+```{R}
+# Perform some analysis - find the maximum reachability
+parallel_max_reachabilities(list(network), n_threads = 8)
+```

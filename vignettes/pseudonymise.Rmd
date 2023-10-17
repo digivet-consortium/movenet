@@ -1,0 +1,113 @@
+---
+title: "Pseudonymising livestock movement and holding data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Pseudonymising livestock movement and holding data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+To address concerns around commercial sensitivity, movenet includes a range of 
+functions to make livestock movement data and/or holding data non-identifiable. 
+This vignette shows you how to use these.
+
+```{r setup}
+library(movenet)
+
+# Load a combined movement and holding config file:
+load_config(system.file("configurations", "fakeScotEID_combined_config.yml", package="movenet"))
+
+# Load example movenet-format movement and holding tibbles into the global environment:
+data(fake_Scottish_movement_data, package = "movenet")
+data(fake_Scottish_holding_data, package = "movenet")
+```
+
+## Pseudonymising holding identifiers
+
+The function `anonymise()` pseudonymises holding identifiers in movenet-format 
+movement or holding data tibbles, by replacing these identifiers with a number
+and an optional prefix (e.g. "FARM").
+
+It returns a pseudonymised data tibble and the applied pseudonymisation key. This 
+key can be saved for "de-pseudonymisation" of data at a later stage, or for 
+application to an overlapping dataset.
+```{R}
+# Pseudonymise movement_data by changing identifiers to FARM1-N:
+pseudonymised <- anonymise(fake_Scottish_movement_data, prefix = "FARM")
+pseudonymised_movement_data <- pseudonymised$data
+pseudonymisation_key <- pseudonymised$key
+
+head(pseudonymised_movement_data) # Inspect pseudonymised movement data
+head(pseudonymisation_key) # Inspect pseudonymisation key
+```
+
+`anonymise()` also takes an optional `key` argument, with which you can apply an existing
+pseudonymisation key to the data tibble:
+```{R}
+# Use the same key from above to substitute holding identifiers in holding_data:
+pseudonymised_holding <- anonymise(fake_Scottish_holding_data, key = pseudonymisation_key) 
+pseudonymised_holding_data <- pseudonymised_holding$data
+# Update saved key, in case additional identifiers were added from the holding datafile:
+pseudonymisation_key <- pseudonymised_holding$key 
+
+head(pseudonymised_holding_data) # Inspect pseudonymised holding data
+```
+
+## Modifying dates, weights, and optional numeric data columns
+
+movenet also has functions to modify movement dates or weights by applying a small amount 
+of noise (jittering) or by rounding:
+
+- `jitter_dates(data, range)` adds random noise of up to `range` days to movement dates.
+
+- `jitter_weights(data, range, column)` adds random noise of up to `range` to a numeric 
+`column` in the movement data, by default the "weight" column.
+
+- `round_dates(data, unit, week_start, sum_weight, ...)` rounds movement dates down to 
+the first day of the specified time `unit`. For rounding down to weeks, set the starting 
+day of the week with `week_start`. By default, weights are aggregated for all 
+movements between the same holdings over the indicated time unit (`sum_weight = TRUE`); 
+to keep movements separate, set `sum_weight = FALSE`. Alternative or additional summary 
+functions can be applied through `...`, using tidy evaluation rules.
+
+- `round_weights(data, unit, column)` rounds data in a numeric `column`, by default 
+the "weight" column, to multiples of `unit`.
+
+```{R}
+# Add jitter of up to ±5 days to movement dates:
+movedata_datesj5 <- jitter_dates(fake_Scottish_movement_data, range = 5) 
+head(fake_Scottish_movement_data) # Inspect original
+head(movedata_datesj5) # Inspect jittered dates
+
+# Add jitter of up to ±10 to movement weights:
+movedata_weightsj10 <- jitter_weights(fake_Scottish_movement_data, range = 10)
+head(movedata_weightsj10) # Inspect jittered weights
+
+# Round movement dates down to the first day of the month, but do not aggregate:
+movedata_months <- round_dates(fake_Scottish_movement_data, unit = "month", sum_weight = FALSE) 
+head(movedata_months) # Inspect rounded dates
+
+# Round movement dates down to the first day of the month, aggregate weights, and list reference numbers:
+movedata_months_aggr <- round_dates(fake_Scottish_movement_data, unit = "month", sum_weight = TRUE,
+                                    movement_reference = list(movement_reference))
+# Inspect aggregated record for holdings which have 2 movements in the same month:
+movedata_months_aggr[which(sapply(movedata_months_aggr$movement_reference, length) == 2),] 
+
+# Round movement reference numbers to the nearest multiple of 10:
+movedata_ref10 <- round_weights(fake_Scottish_movement_data, unit = 10, column = "movement_reference")
+head(movedata_ref10) # Inspect rounded movement reference numbers
+
+```
+
+
+## Modifying holding coordinates
+
+A function to resample holding coordinates in a density-dependent manner is under 
+development and will be added shortly.

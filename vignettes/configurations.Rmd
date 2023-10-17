@@ -1,0 +1,200 @@
+---
+title: "Configurations"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Configurations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Livestock movement and holding data can come in a diversity of shapes and formats. To ensure 
+correct reading of data regardless of the format, movenet requires its users to provide
+configurations, indicating how the package should read any incoming movement and holding data files.
+
+This vignette describes how to manage movenet configurations.
+
+```{r setup}
+library(movenet)
+```
+
+## Configuration files
+
+Configuration (config) files tell movenet how to read incoming data files. 
+
+There are two types of config files, each with slightly different requirements: 
+
+- movement config files, with information on how to read movement data files. Configuration groupings in these files are prefixed with `movedata_`.
+- holding config files, with information on how to read holding data files. Configuration groupings in these files are prefixed with `holdingdata_`.
+
+Movement and holding configurations can also be combined into a single config file, containing both `movedata_` and `holdingdata_` configuration groupings. These combined config files need to fulfill criteria for both movement and holding config files. 
+
+While differing in the details, movement and holding config files share a common structure, built around
+two groups of configurations: 
+
+- file and data options that commonly vary between datasets (`fileopts`)
+- column headers/indices for data fields that are either required or that you want to extract along for analyses 
+(`cols`)
+
+These groupings are visualised in the content of the example movement config file `ScotEID.yml`, and discussed in more detail in the subsections below.
+```{R}
+xfun::file_string(system.file("configurations", "ScotEID.yml", package="movenet"))
+```
+
+Various example config files and empty templates can be found in movenet's `configurations`
+folder. 
+
+
+### File and data options
+
+Configurations in the file and data options grouping (`movedata_fileopts` or `holdingdata_fileopts`) literally tell movenet how to read a data file.
+
+The following file and data options are required, and config files will not be validated or 
+loaded if these configurations are absent:
+
+- `separator`: separator (or delimiter) character used in the data file
+- `encoding`: encoding used in the data file
+- `decimal`: decimal mark used in the data file
+- `date_format`: date format specification used in the data file (required for movement config files only)
+
+Additionally, holding config files may contain several file and data options that are required if you wish to extract and process columns with geographical coordinates:
+
+- `coord_EPSG_code`: numeric part of the EPSG code for the Coordinate Reference System used in the data file
+- `country_code`: two-letter country code for the data in the data file
+
+### Column headers/indices
+
+Configurations in the column headers/indices grouping (`movedata_cols` or `holdingdata_cols`) indicate columns to be extracted from the data files. They can be provided as column headers (character) or as column indices (integer).
+
+For movement config files, the following column headers/indices are required, and movement config files will not be validated or loaded if these configurations are absent:
+
+- `from`: header/index of the column containing identifiers of the holdings of origin
+- `to`: header/index of the column containing identifiers of the destination holdings
+- `date`: header/index of the column containing movement dates
+- `weight`: header/index of the column containing movement weights/quantities
+
+For holding config files, there is only one required column header/index, and movement config files will not be validated or loaded if this configuration is absent:
+
+- `id`: header/index of the column containing holding identifiers, matching to `from`/`to` in movement data
+
+Additionally, holding config files may contain several optional column headers/indices relating to holding properties that are commonly relevant for analyses:
+
+- `coord_x`: header/index of the column containing longitudinal geographical coordinates (x/longitude) of holdings
+- `coord_y`: header/index of the column containing latitudinal geographical coordinates (y/latitude) of holdings 
+- `herd_size`: header/index of the column containing herd sizes
+
+Furthermore, in both movement and holding config files, additional column headers/indices can be included, to indicate optional columns you wish to extract along with the required columns. These optional configurations can be given any name.
+
+## Loading a configuration file
+The function `load_config()` first validates a config file, and then loads its configurations 
+into the movenet environment.
+
+Use `load_config(configfile)`, with `configfile` consisting of either the path to a 
+config file, or the name (minus extension) of a pre-installed config file.
+
+```{R}
+# Load a pre-installed config file by using just its name:
+load_config("ScotEID")
+# Alternatively, provide the path to any configurations file:
+load_config(system.file("configurations", "fakeScotEID_holding.yml", package="movenet"))
+```
+
+The movenet environment can hold one set of movement configurations and one set of holding 
+configurations at the same time.
+
+## Querying configurations
+The function `get_config()` can be used to view the configurations currently loaded 
+in the movenet environment.
+
+To view specific configurations, use `get_config(...)`, with the value of each argument 
+consisting of a character string combining the following elements: 
+
+- `"movedata_"` or `"holdingdata_"`
+- `"fileopts"` for file options, or `"cols"` for column headers
+- a full-stop followed by the configuration name, e.g. `".separator"`.
+
+Multiple configurations can be queried at once:
+```{R}
+# Query the values of specific configurations: 
+get_config("movedata_fileopts.separator", "holdingdata_cols.id")
+```
+
+Alternatively, to get a full list of loaded configurations, use `get_config()` without arguments:
+```{R}
+# Query the values of all configurations: 
+get_config()
+```
+
+## Saving configurations to a config file
+The function `save_config()` saves the currently loaded configurations to a new config 
+file.
+
+It requires the argument `outfile`, being the file name (and path) to save 
+the config file to. It also takes an argument `config_type` that indicates which 
+configurations you would like to save: accepted values are `"movement"`, `"holding"`, 
+or `c("movement", "holding")` (default).
+
+```{R eval = FALSE}
+# Save the currently loaded movement configurations to a new config file:
+save_config("saved_movement_config.yml", config_type = "movement")
+```
+
+## Copying a config file template to your working directory
+The function `new_config()` copies a config file template to your working directory. 
+
+It takes an argument `config_type` that indicates which config file template you would 
+like to copy: accepted values are `"movement"`, `"holding"`, or `c("movement", "holding")` 
+(default).
+
+```{R eval = FALSE}
+# Copy the movement config file template to your working directory:  
+new_config(config_type = "movement")
+```
+
+## Changing configurations
+The function `change_config()` can be used to change individual configurations in the 
+movenet environment. 
+
+Configuration names and new values should be passed to `change_config(...)` in `name = value` 
+format, with each configuration name consisting of a character string combining 
+the following elements: 
+
+- `"movedata_"` or `"holdingdata_"`
+- `"fileopts"` for file options, or `"cols"` for column headers
+- a full-stop followed by the configuration name, e.g. `".separator"`.
+
+Multiple configurations can be changed at once:
+```{R}
+# Change the values of specific configurations: 
+change_config("movedata_fileopts.separator" = ";", "holdingdata_cols.id" = "foo")
+# Inspect the changed values in the movenet environment:
+get_config("movedata_fileopts.separator", "holdingdata_cols.id")
+```
+
+## Setting a default configuration file
+
+If you use movenet with the same configuration most or all of the time, you may 
+want to have movenet automatically load a configuration file when the movenet package 
+is loaded.
+
+To do this, you should find the `movenet/R` directory (where the package's main 
+code is located). Create a file in this directory called `zzz.R`. In this file, 
+type the following code:
+
+```{r eval=FALSE}
+.onLoad <- function(libname, pkgname){
+  load_config("ScotEID")
+}
+```
+
+where `ScotEID` can be replaced with whatever configuration you wish
+to load. Now, whenever the movenet package is loaded, this `.onLoad`
+function will be called, loading the desired configuration. See
+[this page](https://r-pkgs.org/Code.html#sec-code-onLoad-onAttach)
+for more information on `.onLoad` and `zzz.R`.

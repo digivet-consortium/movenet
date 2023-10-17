@@ -2,7 +2,7 @@
 % Please edit documentation in R/temporal_network_helpers.R
 \name{plot_measure_over_anonymisation_gradient}
 \alias{plot_measure_over_anonymisation_gradient}
-\title{Plot values of a measures for a varying range of jitter or rounding}
+\title{Plot values of a measure for a varying range of jitter or rounding}
 \usage{
 plot_measure_over_anonymisation_gradient(data, measure_name, anonymisation)
 }
@@ -14,5 +14,5 @@ plot_measure_over_anonymisation_gradient(data, measure_name, anonymisation)
 \item{anonymisation}{"jitter" or "round(ing)"}
 }
 \description{
-Plot values of a measures for a varying range of jitter or rounding
+Plot values of a measure for a varying range of jitter or rounding
 }

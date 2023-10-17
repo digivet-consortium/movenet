@@ -4,16 +4,16 @@
 \name{movenet-package}
 \alias{movenet}
 \alias{movenet-package}
-\title{movenet: What the Package Does (One Line, Title Case)}
+\title{movenet: A Toolkit Facilitating the Use of Livestock Movement Data in Veterinary Public Health}
 \description{
-What the package does (one paragraph).
+A set of workflows facilitating the dataflow from livestock movement data to social network analysis and disease transmission models. 'movenet' also addresses common data issues such as the diversity of data formats and privacy preservation.
 }
 \author{
-\strong{Maintainer}: Matt Denwood \email{md@sund.ku.dk}
+\strong{Maintainer}: Carlijn Bogaardt \email{Carlijn.Bogaardt@glasgow.ac.uk} (\href{https://orcid.org/0000-0002-9322-6978}{ORCID})
 
 Authors:
 \itemize{
-  \item Carlijn Bogaardt \email{Carlijn.Bogaardt@glasgow.ac.uk}
+  \item Matt Denwood \email{md@sund.ku.dk}
   \item Stefan Widgren \email{stefan.widgren@sva.se} (\href{https://orcid.org/0000-0001-5745-2284}{ORCID})
 }
 

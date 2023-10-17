@@ -5,7 +5,7 @@
 \title{Anonymise data by replacing holding identifiers with prefix-integer
 combinations}
 \usage{
-anonymise(data, prefix, key = NULL)
+anonymise(data, prefix = NULL, key = NULL)
 }
 \arguments{
 \item{data}{A holding or movement data frame.}

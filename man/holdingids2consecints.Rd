@@ -33,3 +33,4 @@ Also returns a "key" that links original ids and new "integer" ids, so that
 original ids can be added as node attributes to networkDynamic and SimInf
 outputs.
 }
+\keyword{internal}

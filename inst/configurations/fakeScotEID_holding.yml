@@ -1,0 +1,13 @@
+holdingdata_fileopts:
+  separator: ","  #Separator (delimiter) character used in holding datafile
+  encoding: "UTF-8"   #Encoding used in holding datafile
+  decimal: "."    #Decimal mark used in holding datafile
+  coord_EPSG_code: 27700 #EPSG code for the Coordinate Reference System used (numeric part only)
+  country_code: "UK"
+
+holdingdata_cols:
+  id: "cph"          #Identifier of holding - need to match from/to in movement data!
+  coord_x: "easting"    #Geographical coordinate (x/longitude) of holding (int or decimal, NOT degree/min/sec)
+  coord_y: "northing"      #Geographical coordinate (y/latitude) of holding (int or decimal, NOT degree/min/sec)
+  type: "holding_type"         #Type of holding or herd
+  herd_size: "herd_size"    #Size of herd
