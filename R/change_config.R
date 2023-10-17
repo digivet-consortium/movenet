@@ -1,13 +1,18 @@
-#' @name change_config
-#' @title Change configurations
+#' @title Loading a movenet configurations file
 #'
-#' @param configname some description
+#' @description Loads configurations from a .yml format config file into the movenet
+#'  environment, so that movenet knows how to read the data files provided to it.
 #'
 #' @importFrom yaml yaml.load_file write_yaml
-#' @importFrom purrr flatten modify
-
-
-#' @rdname change_config
+#'
+#' @param configfile Either the path to a movenet configurations file, or the name
+#'  (minus extension) of a pre-installed configurations file.
+#'
+#' @details
+#'
+#' @return
+#'
+#'
 #' @export
 load_config <- function(configfile){
   if(missing(configfile)) stop("Argument `configfile` is missing. Please provide either the name of a preinstalled config file, or the path of the config file you wish to load.", call. = FALSE)
@@ -43,7 +48,6 @@ load_config <- function(configfile){
 }
 movenetenv <- new.env()
 
-#' @rdname change_config
 #' @export
 save_config <- function(outfile, config_type = c("movement", "holding")){
   if(missing(outfile)) stop("Argument `outfile` is missing. Please provide a path to which to save the config file to.", call. = FALSE)
@@ -68,7 +72,6 @@ save_config <- function(outfile, config_type = c("movement", "holding")){
 # This leaves strings/fields unquoted, but that should be fine.
 
 
-#' @rdname change_config
 #' @export
 new_config <- function(config_type = c("movement", "holding")){
 
@@ -86,7 +89,7 @@ new_config <- function(config_type = c("movement", "holding")){
 }
 
 
-#' @rdname change_config
+#' @importFrom purrr flatten
 #' @export
 get_config <- function(...){
   #requires options to be plugged in w/names like "movedata_fileopts.separator".
@@ -112,8 +115,9 @@ get_config <- function(...){
   }
 }
 
-#' @rdname change_config
+
 #' @export
+#' @importFrom purrr modify
 #' @importFrom utils relist
 change_config <- function(...){
   #set aliases: set_config, set_option, set_options?

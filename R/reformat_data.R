@@ -1,4 +1,4 @@
-#' @title Reading and reformatting of animal movement or holding data
+#' @title Reading and reformatting of livestock movement or holding data
 #'
 #' @description
 #' Reformats movement or holding data from a delimited file into a common
