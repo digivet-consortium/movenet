@@ -1,22 +1,22 @@
-url: ~
+url: https://digivet-consortium.github.io/movenet/
 template:
   bootstrap: 5
-
 reference:
-- title: "Loading and reformatting of data files"
-  desc: "Functions for loading and initial processing of data files"
+- title: Loading and reformatting of data files
+  desc: Functions for loading and initial processing of data files
   contents:
   - load_config
   - reformat_data
   - asciify
-- title: "Pseudonymising movement or holding data"
-  desc: "Functions for making data non-identifiable"
+- title: Pseudonymising movement or holding data
+  desc: Functions for making data non-identifiable
   contents:
   - anonymise
   - starts_with("jitter")
   - starts_with("round")
-- title: "Network analysis of movement data"
-  desc: "Functions for generating network representations of movement data and performing network analyses"
+- title: Network analysis of movement data
+  desc: Functions for generating network representations of movement data and performing
+    network analyses
   contents:
   - movedata2networkDynamic
   - create_report
@@ -27,12 +27,11 @@ reference:
   - parallel_summarise_temporal_node_properties
   - plot_measure_over_anonymisation_gradient
   - violinplot_monthly_measures
-- title: "Integration of movement data into disease models"
-  desc: "Functions for integrating movement and holding data into disease models"
-  contents:
-  - data2contactmatrix
-- title: "Configurations"
-  desc: "Functions for setting and changing movenet configurations"
+- title: Integration of movement data into disease models
+  desc: Functions for integrating movement and holding data into disease models
+  contents: data2contactmatrix
+- title: Configurations
+  desc: Functions for setting and changing movenet configurations
   contents:
   - load_config
   - validate_config
@@ -40,9 +39,8 @@ reference:
   - change_config
   - save_config
   - new_config
-
 articles:
-- title:
+- title: ~
   navbar: ~
   contents:
   - movenet
@@ -50,3 +48,4 @@ articles:
   - network-analysis
   - transmission-models
   - configurations
+

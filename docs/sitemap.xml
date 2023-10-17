@@ -61,6 +61,9 @@
     <loc>/reference/generate_anonymisation_key.html</loc>
   </url>
   <url>
+    <loc>/reference/get_config.html</loc>
+  </url>
+  <url>
     <loc>/reference/holdingids2consecints.html</loc>
   </url>
   <url>
@@ -73,10 +76,16 @@
     <loc>/reference/jitter_weights.html</loc>
   </url>
   <url>
+    <loc>/reference/load_config.html</loc>
+  </url>
+  <url>
     <loc>/reference/movedata2networkDynamic.html</loc>
   </url>
   <url>
     <loc>/reference/movenet-package.html</loc>
+  </url>
+  <url>
+    <loc>/reference/new_config.html</loc>
   </url>
   <url>
     <loc>/reference/parallel_max_reachabilities.html</loc>
@@ -101,6 +110,9 @@
   </url>
   <url>
     <loc>/reference/round_weights.html</loc>
+  </url>
+  <url>
+    <loc>/reference/save_config.html</loc>
   </url>
   <url>
     <loc>/reference/validate_config.html</loc>
