@@ -4,10 +4,22 @@
     <loc>/404.html</loc>
   </url>
   <url>
+    <loc>/articles/configurations.html</loc>
+  </url>
+  <url>
     <loc>/articles/index.html</loc>
   </url>
   <url>
     <loc>/articles/movenet.html</loc>
+  </url>
+  <url>
+    <loc>/articles/network-analysis.html</loc>
+  </url>
+  <url>
+    <loc>/articles/pseudonymise.html</loc>
+  </url>
+  <url>
+    <loc>/articles/transmission-models.html</loc>
   </url>
   <url>
     <loc>/authors.html</loc>

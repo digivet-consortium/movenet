@@ -42,14 +42,14 @@ file itself.
 
 Livestock movement data can come in a diversity of shapes and formats:
 not only do different countries collect different types of trade-related
-data, they may also follow different formatting customs for, for
+data, they may also follow different data formatting customs for, for
 example, decimal marks and dates.
 
 To ensure correct reading of the data regardless of the source, movenet
 requires users to supply a config file. The config file contains values
 for a range of properties that commonly vary between datasets, as well
-as column headers for data fields that are either required ("from", "to",
-"date", "weight") or that you want to extract along for analyses. For
+as column headers for data fields that are either required (`from`, `to`,
+`date`, `weight`) or that you want to extract along for analyses. For
 details on config file requirements and how to manage movenet
 configurations, see `vignette("configurations")`. Example config files
 and an empty template can be found in the package's `configurations`
@@ -85,15 +85,14 @@ head(read.csv(system.file("extdata", "fake_Scottish_movement_data.csv", package=
 The function `reformat_data()` uses the loaded configurations to read in
 the movement data, and standardise them to movenet format, by:
 
--   extracting columns with minimally required data, corresponding to "from" (originating holding identifier), "to" (destination holding identifier), "date", and "weight" (movement quantity). The resulting data tibble contains these columns in this
-    specific order.
+-   extracting columns with minimally required data, corresponding to `from` (originating holding identifier), `to` (destination holding identifier), `date`, and `weight` (movement quantity). The resulting data tibble contains these columns in this specific order.
 
 -   extracting along any optional columns, as indicated
     in the loaded configurations. In the resulting data tibble, these
     columns are located *after* the required data columns.
 
--   checking that the date column can be parsed as dates (using the date format 
-    indicated in the configurations), and that the weight column is numeric.
+-   checking that the `date` column can be parsed as dates (using the date format 
+    indicated in the configurations), and that the `weight` column is numeric.
 
 -   converting dates to R Date format, to improve interoperability.
 
@@ -124,20 +123,20 @@ holding_data <-
                 type = "holding")
 ```
 
-For holding data, the only absolutely required data column is "id" (holding identifier, 
-matching to "from" and "to" in the movement data). If you wish to include geographic 
-coordinates, "EPSG code" and "country code" are required file options, and "coord_x" 
-and "coord_y" are required data columns.
+For holding data, the only absolutely required data column is `id` (holding identifier, 
+matching to `from` and `to` in the movement data). If you wish to include geographic 
+coordinates, `coord_EPSG_code` and `country_code` are required file options, and `coord_x` 
+and `coord_y` are required data columns.
 
 In addition to extraction of required and requested optional columns, `reformat_data()` 
 performs the following data checks and standardisations on holding data:
 
--   If the loaded configurations include values for columns with geographical 
-    coordinates ("coord_x" and "coord_y"), these columns are checked to contain 
+-   If the loaded configurations include headers/indices for columns with geographical 
+    coordinates (`coord_x` and `coord_y`), these columns are checked to contain 
     numeric data, and are then reformatted to a single simple feature (sf) geometry 
     list-column.
     
--   If the loaded configurations include a value for a column "herd size", this 
+-   If the loaded configurations include a header/index for a column `herd_size`, this 
     column is checked to contain numeric data.
     
 The holding data are now in the right format (movenet-format holding data tibble) 

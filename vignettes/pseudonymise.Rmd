@@ -20,10 +20,11 @@ This vignette shows you how to use these.
 
 ```{r setup}
 library(movenet)
+
 # Load a combined movement and holding config file:
 load_config(system.file("configurations", "fakeScotEID_combined_config.yml", package="movenet"))
 
-# Load example movenet-format movement and holding tibbles:
+# Load example movenet-format movement and holding tibbles into the global environment:
 data(fake_Scottish_movement_data, package = "movenet")
 data(fake_Scottish_holding_data, package = "movenet")
 ```
@@ -65,32 +66,48 @@ movenet also has functions to modify movement dates or weights by applying a sma
 of noise (jittering) or by rounding:
 
 - `jitter_dates(data, range)` adds random noise of up to `range` days to movement dates.
+
 - `jitter_weights(data, range, column)` adds random noise of up to `range` to a numeric 
 `column` in the movement data, by default the "weight" column.
+
 - `round_dates(data, unit, week_start, sum_weight, ...)` rounds movement dates down to 
 the first day of the specified time `unit`. For rounding down to weeks, set the starting 
-day of the week with `week_start`. By default, data
+day of the week with `week_start`. By default, weights are aggregated for all 
+movements between the same holdings over the indicated time unit (`sum_weight = TRUE`); 
+to keep movements separate, set `sum_weight = FALSE`. Alternative or additional summary 
+functions can be applied through `...`, using tidy evaluation rules.
 
 - `round_weights(data, unit, column)` rounds data in a numeric `column`, by default 
 the "weight" column, to multiples of `unit`.
 
 ```{R}
 # Add jitter of up to ±5 days to movement dates:
-movedata_datesj5 <- fake_Scottish_movement_data %>% jitter_dates(range = 5) 
-head(fake_Scottish_movement_data) #original dates
-head(movedata_datesj5) #jittered dates
+movedata_datesj5 <- jitter_dates(fake_Scottish_movement_data, range = 5) 
+head(fake_Scottish_movement_data) # Inspect original
+head(movedata_datesj5) # Inspect jittered dates
 
 # Add jitter of up to ±10 to movement weights:
-movedata_weightsj10 <- fake_Scottish_movement_data %>% jitter_weights(range = 10)
-head(fake_Scottish_movement_data) #original weights
-head(movedata_datesj5) #jittered weights
+movedata_weightsj10 <- jitter_weights(fake_Scottish_movement_data, range = 10)
+head(movedata_weightsj10) # Inspect jittered weights
 
-# Round movement dates down to the first day of the month:
-movedata_months <- fake_Scottish_movement_data %>% round_dates(unit = "month", sum_weight = FALSE) 
-head(fake_Scottish_movement_data) #original dates
-head(movedata_months) #jittered dates
+# Round movement dates down to the first day of the month, but do not aggregate:
+movedata_months <- round_dates(fake_Scottish_movement_data, unit = "month", sum_weight = FALSE) 
+head(movedata_months) # Inspect rounded dates
 
+# Round movement dates down to the first day of the month, aggregate weights, and list reference numbers:
+movedata_months_aggr <- round_dates(fake_Scottish_movement_data, unit = "month", sum_weight = TRUE,
+                                    movement_reference = list(movement_reference))
+# Inspect aggregated record for holdings which have 2 movements in the same month:
+movedata_months_aggr[which(sapply(movedata_months_aggr$movement_reference, length) == 2),] 
+
+# Round movement reference numbers to the nearest multiple of 10:
+movedata_ref10 <- round_weights(fake_Scottish_movement_data, unit = 10, column = "movement_reference")
+head(movedata_ref10) # Inspect rounded movement reference numbers
 
 ```
 
-A function to resample holding coordinates in a density-dependent manner is under development. The envisaged effect is to increase data sharing between different countries or organisations, which is of particular relevance when modelling transboundary disease spread.
+
+## Modifying holding coordinates
+
+A function to resample holding coordinates in a density-dependent manner is under 
+development and will be added shortly.

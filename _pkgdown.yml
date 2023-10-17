@@ -3,20 +3,20 @@ template:
   bootstrap: 5
 
 reference:
-- title: "Loading livestock movement datafiles"
-  desc: "Functions for loading and initial processing of datafiles"
+- title: "Loading and reformatting of data files"
+  desc: "Functions for loading and initial processing of data files"
   contents:
   - load_config
   - reformat_data
   - asciify
-- title: "Making movement data non-identifiable"
-  desc: "Functions for making movement data non-identifiable"
+- title: "Pseudonymising movement or holding data"
+  desc: "Functions for making data non-identifiable"
   contents:
   - anonymise
   - starts_with("jitter")
   - starts_with("round")
 - title: "Network analysis of movement data"
-  desc: "Functions for generating a network representation of movement data and performing network analysis"
+  desc: "Functions for generating network representations of movement data and performing network analyses"
   contents:
   - movedata2networkDynamic
   - create_report
@@ -28,7 +28,7 @@ reference:
   - plot_measure_over_anonymisation_gradient
   - violinplot_monthly_measures
 - title: "Integration of movement data into disease models"
-  desc: "Functions for integrating movement data into disease models"
+  desc: "Functions for integrating movement and holding data into disease models"
   contents:
   - data2contactmatrix
 - title: "Configurations"
@@ -40,3 +40,13 @@ reference:
   - change_config
   - save_config
   - new_config
+
+articles:
+- title:
+  navbar: ~
+  contents:
+  - movenet
+  - pseudonymise
+  - network-analysis
+  - transmission-models
+  - configurations
