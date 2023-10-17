@@ -1,123 +1,123 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>/404.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/404.html</loc>
   </url>
   <url>
-    <loc>/articles/configurations.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/articles/configurations.html</loc>
   </url>
   <url>
-    <loc>/articles/index.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/articles/index.html</loc>
   </url>
   <url>
-    <loc>/articles/movenet.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/articles/movenet.html</loc>
   </url>
   <url>
-    <loc>/articles/network-analysis.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/articles/network-analysis.html</loc>
   </url>
   <url>
-    <loc>/articles/pseudonymise.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/articles/pseudonymise.html</loc>
   </url>
   <url>
-    <loc>/articles/transmission-models.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/articles/transmission-models.html</loc>
   </url>
   <url>
-    <loc>/authors.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/authors.html</loc>
   </url>
   <url>
-    <loc>/index.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/index.html</loc>
   </url>
   <url>
-    <loc>/LICENSE.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/LICENSE.html</loc>
   </url>
   <url>
-    <loc>/reference/anonymise.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/anonymise.html</loc>
   </url>
   <url>
-    <loc>/reference/are_ids_consec_intchars_from_1.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/are_ids_consec_intchars_from_1.html</loc>
   </url>
   <url>
-    <loc>/reference/asciify.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/asciify.html</loc>
   </url>
   <url>
-    <loc>/reference/change_config.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/change_config.html</loc>
   </url>
   <url>
-    <loc>/reference/create_report.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/create_report.html</loc>
   </url>
   <url>
-    <loc>/reference/create_vertex_spells.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/create_vertex_spells.html</loc>
   </url>
   <url>
-    <loc>/reference/data2contactmatrix.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/data2contactmatrix.html</loc>
   </url>
   <url>
-    <loc>/reference/extract_periodic_subnetworks.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/extract_periodic_subnetworks.html</loc>
   </url>
   <url>
-    <loc>/reference/extract_periods.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/extract_periods.html</loc>
   </url>
   <url>
-    <loc>/reference/generate_anonymisation_key.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/generate_anonymisation_key.html</loc>
   </url>
   <url>
-    <loc>/reference/get_config.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/get_config.html</loc>
   </url>
   <url>
-    <loc>/reference/holdingids2consecints.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/holdingids2consecints.html</loc>
   </url>
   <url>
-    <loc>/reference/index.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/index.html</loc>
   </url>
   <url>
-    <loc>/reference/jitter_dates.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/jitter_dates.html</loc>
   </url>
   <url>
-    <loc>/reference/jitter_weights.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/jitter_weights.html</loc>
   </url>
   <url>
-    <loc>/reference/load_config.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/load_config.html</loc>
   </url>
   <url>
-    <loc>/reference/movedata2networkDynamic.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/movedata2networkDynamic.html</loc>
   </url>
   <url>
-    <loc>/reference/movenet-package.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/movenet-package.html</loc>
   </url>
   <url>
-    <loc>/reference/new_config.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/new_config.html</loc>
   </url>
   <url>
-    <loc>/reference/parallel_max_reachabilities.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/parallel_max_reachabilities.html</loc>
   </url>
   <url>
-    <loc>/reference/parallel_max_reachabilities_with_id.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/parallel_max_reachabilities_with_id.html</loc>
   </url>
   <url>
-    <loc>/reference/parallel_summarise_temporal_node_properties.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/parallel_summarise_temporal_node_properties.html</loc>
   </url>
   <url>
-    <loc>/reference/plot_measure_over_anonymisation_gradient.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/plot_measure_over_anonymisation_gradient.html</loc>
   </url>
   <url>
-    <loc>/reference/reformat_data.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/reformat_data.html</loc>
   </url>
   <url>
-    <loc>/reference/replace_ids_w_key.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/replace_ids_w_key.html</loc>
   </url>
   <url>
-    <loc>/reference/round_dates.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/round_dates.html</loc>
   </url>
   <url>
-    <loc>/reference/round_weights.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/round_weights.html</loc>
   </url>
   <url>
-    <loc>/reference/save_config.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/save_config.html</loc>
   </url>
   <url>
-    <loc>/reference/validate_config.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/validate_config.html</loc>
   </url>
   <url>
-    <loc>/reference/violinplot_monthly_measures.html</loc>
+    <loc>https://digivet-consortium.github.io/movenet/reference/violinplot_monthly_measures.html</loc>
   </url>
 </urlset>
