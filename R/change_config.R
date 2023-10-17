@@ -48,6 +48,11 @@ load_config <- function(configfile){
 }
 movenetenv <- new.env()
 
+#' @title Saving configurations to a movenet config file
+#' @param outfile
+#'
+#' @param config_type
+#'
 #' @export
 save_config <- function(outfile, config_type = c("movement", "holding")){
   if(missing(outfile)) stop("Argument `outfile` is missing. Please provide a path to which to save the config file to.", call. = FALSE)
@@ -71,7 +76,9 @@ save_config <- function(outfile, config_type = c("movement", "holding")){
 
 # This leaves strings/fields unquoted, but that should be fine.
 
-
+#' @title Copying a config file template to your working directory
+#' @param config_type
+#'
 #' @export
 new_config <- function(config_type = c("movement", "holding")){
 
@@ -88,7 +95,9 @@ new_config <- function(config_type = c("movement", "holding")){
   message(paste0("Saved ", template_name, " to working directory. It can be found at: ", getwd(), "/", template_name))
 }
 
-
+#' @title Querying movenet configurations
+#' @param ...
+#'
 #' @importFrom purrr flatten
 #' @export
 get_config <- function(...){
@@ -115,7 +124,9 @@ get_config <- function(...){
   }
 }
 
-
+#' @title Changing individual movenet configurations
+#' @param ...
+#'
 #' @export
 #' @importFrom purrr modify
 #' @importFrom utils relist

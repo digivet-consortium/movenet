@@ -2,7 +2,7 @@
 % Please edit documentation in R/reformat_data.R
 \name{reformat_data}
 \alias{reformat_data}
-\title{Reading and reformatting of animal movement or holding data}
+\title{Reading and reformatting of livestock movement or holding data}
 \usage{
 reformat_data(datafile, type)
 }
