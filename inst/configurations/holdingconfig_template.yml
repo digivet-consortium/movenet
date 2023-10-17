@@ -6,7 +6,7 @@ holdingdata_fileopts:
   country_code:   #Two-letter country code (required for geographical jittering) (required only if using coordinates)
 
 holdingdata_cols:
-  id:           #Identifier of holding - need to match from/to in movement data!
+  id:           #Identifier of holding - need to match from/to in movement data
   coord_x:      #Geographical coordinate (x/longitude) of holding (int or decimal, NOT degree/min/sec) (optional)
   coord_y:      #Geographical coordinate (y/latitude) of holding (int or decimal, NOT degree/min/sec) (optional)
   type:         #Type of holding or herd (optional)
