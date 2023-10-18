@@ -1,5 +1,5 @@
 pandoc: 3.1.1
-pkgdown: 2.0.6
+pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
   configurations: configurations.html
@@ -7,7 +7,7 @@ articles:
   network-analysis: network-analysis.html
   pseudonymise: pseudonymise.html
   transmission-models: transmission-models.html
-last_built: 2023-10-17T23:09Z
+last_built: 2023-10-18T00:29Z
 urls:
   reference: https://digivet-consortium.github.io/movenet/reference
   article: https://digivet-consortium.github.io/movenet/articles
