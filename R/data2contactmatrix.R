@@ -319,7 +319,7 @@ create_local_spread_matrix <- function(holding_data,
       tier['probability']
   })
 
-  if(all(!is.na(as.numeric(rownames(local_spread_matrix))))){
+  if(all(!is.na(suppressWarnings(as.numeric(rownames(local_spread_matrix)))))){
     local_spread_matrix <-
       local_spread_matrix[order(as.numeric(rownames(local_spread_matrix))),
                           order(as.numeric(colnames(local_spread_matrix)))]
