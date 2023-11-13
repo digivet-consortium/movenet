@@ -94,6 +94,7 @@ data <- data.frame(distance_thresholds_in_meters,
 ggplot(data = data) +
   xlab("Distance-based transmission threshold (m)") +
   ylab("Holdings included in largest component (%)") +
-  geom_line(aes(x = distance_thresholds_in_meters, y = true_data, col = "True")) +
+  labs(colour = "Dataset") +
+  geom_line(aes(x = distance_thresholds_in_meters, y = true_data, col = "True data")) +
   geom_line(aes(x = distance_thresholds_in_meters, y = anon_data, col = "Anonymised")) +
   theme_bw()
