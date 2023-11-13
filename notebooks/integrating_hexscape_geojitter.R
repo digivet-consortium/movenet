@@ -1,4 +1,7 @@
-load_all()
+library(movenet)
+library(hexscape)
+library(tidyverse)
+library(sf)
 
 holding_datafile <-
   "tests/testthat/test_input_files/test_holdingdata_generic.csv"
@@ -11,9 +14,6 @@ holding_data <- reformat_data(holding_datafile, "holding")
 NUTS_code <- "DK032"
 crs <- movenet:::movenetenv$options$holdingdata_fileopts$coord_EPSG_code
 
-library(hexscape)
-library("tidyverse")
-library("sf")
 
 #make hexscape storage folder on hard drive
 set_storage_folder("C:/Users/cboga/Documents/hexscape storage")
@@ -62,7 +62,11 @@ holding_data <- st_as_sf(holding_data, sf_column_name = "coordinates")
 
 #Creating random points
 holding_data_w_random_points <-
-  randomise_voronoi(NUTS_farmland_map, holding_data, randomise_size = 5L, verbose = 1L)
+  randomise_voronoi(NUTS_farmland_map, holding_data, randomise_size = 5L,
+                    from_type = "point",
+                    to_type = "centroid",
+                    mask_landscape = FALSE,
+                    verbose = 1L)
 
 # Don't need the plotting code below, but it's useful to check #
 #Plot to see original & randomised points, with changes marked by black lines
