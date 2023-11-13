@@ -84,10 +84,16 @@ anon_data <-
 
 stopCluster(cl)
 
-data <- data.frame(distance_thresholds_in_meters, true_data, anon_data)
+n_holdings <- nrow(holding_data)
+data <- data.frame(distance_thresholds_in_meters,
+                   true_data = true_data*100/n_holdings,
+                   anon_data = anon_data*100/n_holdings)
 
 ### Plotting ###
 
 ggplot(data = data) +
-  geom_line(aes(x = distance_thresholds_in_meters, y = true_data, col = "blue")) +
-  geom_line(aes(x = distance_thresholds_in_meters, y = anon_data, col = "red"))
+  xlab("Distance-based transmission threshold (m)") +
+  ylab("Holdings included in largest component (%)") +
+  geom_line(aes(x = distance_thresholds_in_meters, y = true_data, col = "True")) +
+  geom_line(aes(x = distance_thresholds_in_meters, y = anon_data, col = "Anonymised")) +
+  theme_bw()
