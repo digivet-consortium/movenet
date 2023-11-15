@@ -1,3 +1,4 @@
+#' @export
 SEIRcm_ASF <- function(infected, tspan, contact_matrix){
 
   if(!requireNamespace("siminf4movenet")){
@@ -38,6 +39,7 @@ SEIRcm_ASF <- function(infected, tspan, contact_matrix){
   }
 }
 
+#' @export
 create_random_infected_vector <- function(n_nodes, n_initially_infected){
   infected_node_vector <- rep(0, n_nodes) #n_nodes needs to correspond to ncol(contact_matrix)
   infected_nodes <- sample(n_nodes, n_initially_infected)
@@ -45,6 +47,7 @@ create_random_infected_vector <- function(n_nodes, n_initially_infected){
   return(infected_node_vector)
 }
 
+#' @export
 create_specified_infected_vector <- function(infected_holdings, key){
   infected_node_vector <- rep(0, length(key))
   infected_nodes <- as.numeric(key[which(names(key) %in% infected_holdings)])
@@ -52,6 +55,7 @@ create_specified_infected_vector <- function(infected_holdings, key){
   return(infected_node_vector)
 }
 
+#' @export
 get_cumulative_infected <- function(trajectories, n_simulations, n_nodes){
   sapply(1:n_simulations, function(x){
     cumul_df <- data.frame(cumul_infected = trajectories[["I",x]] + trajectories[["R",x]])

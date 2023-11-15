@@ -8,6 +8,13 @@
 \description{
 A set of workflows facilitating the dataflow from livestock movement data to social network analysis and disease transmission models. 'movenet' also addresses common data issues such as the diversity of data formats and privacy preservation.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://digivet-consortium.github.io/movenet/}
+}
+
+}
 \author{
 \strong{Maintainer}: Carlijn Bogaardt \email{Carlijn.Bogaardt@glasgow.ac.uk} (\href{https://orcid.org/0000-0002-9322-6978}{ORCID})
 
