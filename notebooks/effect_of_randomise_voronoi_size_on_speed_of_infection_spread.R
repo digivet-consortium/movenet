@@ -165,7 +165,7 @@ anon_ribbons <-
   lapply(seq_along(anonymised_data),
        function(idx){
          geom_ribbon(data = anonymised_data[[idx]],
-                     aes(x = as.numeric(row.names(data)), ymin = Min, ymax = Max,
+                     aes(x = as.numeric(row.names(anonymised_data[[idx]])), ymin = Min, ymax = Max,
                          fill = eval(names(colour_palette)[idx+1])),
                      alpha = 0.2)
        })
@@ -174,7 +174,7 @@ anon_lines <-
   lapply(seq_along(anonymised_data),
          function(idx){
            geom_line(data = anonymised_data[[idx]],
-                     aes(x=as.numeric(row.names(data)), y = Mean,
+                     aes(x = as.numeric(row.names(anonymised_data[[idx]])), y = Mean,
                          colour = eval(names(colour_palette)[idx+1])))
          })
 
