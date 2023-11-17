@@ -307,11 +307,38 @@ create_local_spread_matrix <- function(holding_data,
   }
 
   #Create distance matrix without units
-  local_spread_matrix <-
+  distance_matrix <-
     holding_data %>%
     create_distance_matrix %>%
     drop_units()
 
+  local_spread_matrix <-
+    replace_distances_with_probabilities(distance_matrix,
+                                         local_spread_probability_tiers,
+                                         accept_missing_coordinates)
+
+  return(local_spread_matrix) #n holdings in holding_data x n holdings in holding_data
+}
+
+#' @importFrom sf st_as_sf st_distance
+create_distance_matrix <- function(holding_data){
+
+  #distance matrix between farms
+  distance_matrix <-
+    holding_data %>%
+    st_as_sf(sf_column_name = "coordinates") %>% #the whole tibble needs to be converted to sf for st_distance to work
+    st_distance() #dimnames are index numbers, not holding_ids
+
+  dimnames(distance_matrix) <- list(holding_data[[1]],holding_data[[1]])
+
+  return(distance_matrix) #n holdings in holding_data x n holdings in holding_data
+}
+
+replace_distances_with_probabilities <- function(distance_matrix,
+                                                 local_spread_probability_tiers,
+                                                 accept_missing_coordinates){
+
+  local_spread_matrix <- distance_matrix
   #Replace distances with probabilities from look-up table
   apply(local_spread_probability_tiers, 1, function(tier){
     local_spread_matrix[local_spread_matrix >= tier['lower_boundary'] & #define columns by header or index?
@@ -340,21 +367,7 @@ create_local_spread_matrix <- function(holding_data,
             call. = FALSE)
   }
 
-  return(local_spread_matrix) #n holdings in holding_data x n holdings in holding_data
-}
-
-#' @importFrom sf st_as_sf st_distance
-create_distance_matrix <- function(holding_data){
-
-  #distance matrix between farms
-  distance_matrix <-
-    holding_data %>%
-    st_as_sf(sf_column_name = "coordinates") %>% #the whole tibble needs to be converted to sf for st_distance to work
-    st_distance() #dimnames are index numbers, not holding_ids
-
-  dimnames(distance_matrix) <- list(holding_data[[1]],holding_data[[1]])
-
-  return(distance_matrix) #n holdings in holding_data x n holdings in holding_data
+  return(local_spread_matrix)
 }
 
 #' @keywords internal
