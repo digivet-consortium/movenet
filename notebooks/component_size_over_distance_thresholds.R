@@ -10,6 +10,7 @@ library(hexscape)
 library(pbapply)
 library(units)
 library(RColorBrewer)
+library(parallel)
 
 #data and config files  <- PLEASE CHANGE TO SUITABLE DK FILES
 holding_configfile <- "fakeScotEID_holding"
