@@ -1,50 +1,79 @@
+##############
+### Set-up ###
+##############
+
 library(movenet)
 library(network)
 library(sna)
 library(magrittr)
 library(hexscape)
+library(pbapply)
+library(units)
+library(RColorBrewer)
 
-### OPTIONS ###
-
-#holding files
+#data and config files  <- PLEASE CHANGE TO SUITABLE DK FILES
 holding_configfile <- "fakeScotEID_holding"
 holding_datafile <- "inst/extdata/fake_Scottish_holding_data.csv"
 
 #randomise_voronoi
-map = NUTS_farmland_map
-randomise_size = 5L
+map = NUTS_farmland_map   # <- PLEASE CHANGE TO SUITABLE DK MAP
+randomise_size_range = c(5L,10L,15L,20L)
 from_type = "point"
 to_type = "centroid"
 mask_landscape = FALSE
 
-#range of distance thresholds over which to loop
-distance_thresholds_in_meters <- seq(0,100000,500)
+#range of distance thresholds over which to loop  <- Needs playing around with to identify useful range for DK
+distance_thresholds_in_meters <- seq(0,100000,1000)
 
 #n_threads
 n_threads = 4
 
-### "SCRIPT" (not quite) ###
+#####################
+### Reformat data ###
+#####################
 
 load_config(holding_configfile)
 holding_data <- reformat_data(holding_datafile, "holding")
 
-#"anonymise" coordinates
-anonymised_holdings <-
-  randomise_voronoi(map = map,
-                    points = st_as_sf(holding_data, sf_column_name = "coordinates"),
-                    randomise_size = randomise_size,
-                    from_type = from_type,
-                    to_type = to_type,
-                    mask_landscape = mask_landscape)
+#############################
+### Anonymise coordinates ###
+#############################
+
+anonymised_data <-
+  lapply(randomise_size_range,
+         function(x){
+             randomise_voronoi(map = map,
+                               points = st_as_sf(holding_data, sf_column_name = "coordinates"),
+                               randomise_size = x,
+                               from_type = from_type, to_type = to_type,
+                               mask_landscape = mask_landscape)
+         })
+names(anonymised_data) <- randomise_size_range
+
+#################################################
+### Create distance matrices for all datasets ###
+#################################################
+
+distance_matrices <-
+  lapply(c("true" = list(holding_data), anonymised_data),
+         function(x) { movenet:::create_distance_matrix(x) %>% units::drop_units()})
+
+#Have separated this out from calculate_max_comp_size_for_distance_threshold below,
+#as this is a slow step that would otherwise be repeated unnecessarily
+
+
+####################################################################
+### Calculate maximum component size for each distance threshold ###
+####################################################################
 
 #function to calc max comp size
 calculate_max_comp_size_for_distance_threshold <-
-  function(holding_data, distance_threshold){
+  function(distance_matrix, distance_threshold){
 
     #create distance-based transmission probability matrix for holding_data
     local_spread_matrix <-
-      movenet:::create_local_spread_matrix(
-        holding_data,
+      movenet:::replace_distances_with_probabilities(
+        distance_matrix,
         local_spread_probability_tiers =
           data.frame(lower_boundary = c(0, distance_threshold),
                      upper_boundary = c(distance_threshold, Inf),
@@ -62,39 +91,61 @@ calculate_max_comp_size_for_distance_threshold <-
   }
 
 
-## loop over distance threshold ##
+#loop over distance thresholds
 cl <- makeCluster(n_threads)
-clusterExport(cl, c("holding_data", "anonymised_holdings",
-                    "calculate_max_comp_size_for_distance_threshold"))
+clusterExport(cl, c("distance_matrices",
+                    "calculate_max_comp_size_for_distance_threshold",
+                    "distance_thresholds_in_meters"))
 clusterEvalQ(cl, {
   library(movenet)
   library(magrittr)
   library(sna)
   library(network)
+  library(pbapply)
 })
 
-true_data <-
-  pbsapply(distance_thresholds_in_meters, function(n){
-    calculate_max_comp_size_for_distance_threshold(holding_data, n)}, cl = cl)
-
-
-anon_data <-
-  pbsapply(distance_thresholds_in_meters, function(n){
-    calculate_max_comp_size_for_distance_threshold(anonymised_holdings, n)}, cl = cl)
-
+max_comp_sizes <-
+  lapply(distance_matrices,
+         function(m){pbsapply(distance_thresholds_in_meters,
+                              function(n){calculate_max_comp_size_for_distance_threshold(m, n)},
+                              cl = cl)})
 stopCluster(cl)
 
+
+###############################
+### Processing for plotting ###
+###############################
+
 n_holdings <- nrow(holding_data)
-data <- data.frame(distance_thresholds_in_meters,
-                   true_data = true_data*100/n_holdings,
-                   anon_data = anon_data*100/n_holdings)
 
+max_comp_sizes <-
+  max_comp_sizes %>%
+  as_tibble() %>%
+  mutate(across(everything(), ~ .x*100/n_holdings))
+
+max_comp_sizes["threshold"] <- distance_thresholds_in_meters
+
+
+################
 ### Plotting ###
+################
 
-ggplot(data = data) +
+colour_palette <- brewer.pal(length(randomise_size_range)+1, "Set3")
+names(colour_palette) <- c("True data", paste("Randomise_size =",randomise_size_range))
+
+anon_lines <-
+  lapply(seq(2,length(max_comp_sizes)-1),
+         function(idx) {
+           geom_line(data = max_comp_sizes,
+                     aes(x = threshold, y = get(names(max_comp_sizes)[idx]),
+                         colour = eval(names(colour_palette)[idx])))})
+
+ggplot(data = max_comp_sizes) +
   xlab("Distance-based transmission threshold (m)") +
   ylab("Holdings included in largest component (%)") +
-  labs(colour = "Dataset") +
-  geom_line(aes(x = distance_thresholds_in_meters, y = true_data, col = "True data")) +
-  geom_line(aes(x = distance_thresholds_in_meters, y = anon_data, col = "Anonymised")) +
-  theme_bw()
+  labs(colour = "Legend") +
+  scale_colour_manual(breaks = names(colour_palette), values = colour_palette) +
+  theme_bw() +
+  geom_line(aes(x = threshold, y = true, col = "True data")) +
+  anon_lines
+
