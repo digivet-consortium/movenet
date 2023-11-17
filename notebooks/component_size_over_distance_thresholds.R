@@ -54,6 +54,38 @@ n_threads = 4
 #load_config(holding_configfile)
 #holding_data <- reformat_data(holding_datafile, "holding")
 
+
+
+####################################################################
+### Calculate maximum component size for each distance threshold ###
+####################################################################
+
+#function to calc max comp size
+calculate_max_comp_size_for_distance_threshold <-
+  function(distance_matrix, distance_threshold){
+
+    #create distance-based transmission probability matrix for holding_data
+    local_spread_matrix <-
+      movenet:::replace_distances_with_probabilities(
+        distance_matrix,
+        local_spread_probability_tiers =
+          data.frame(lower_boundary = c(0, distance_threshold),
+            upper_boundary = c(distance_threshold, Inf),
+            probability = c(1,0)),
+        accept_missing_coordinates = FALSE)
+
+    #create network and calculate max component size
+    max_component_size <-
+      network(local_spread_matrix, directed = FALSE) %>%
+      component.dist(connected = "weak") %>%
+      extract2("csize") %>%
+      max
+
+    return(max_component_size)
+  }
+
+
+
 #############################
 ### Anonymise coordinates ###
 #############################
@@ -105,35 +137,6 @@ distance_matrices
 
 #Have separated this out from calculate_max_comp_size_for_distance_threshold below,
 #as this is a slow step that would otherwise be repeated unnecessarily
-
-
-####################################################################
-### Calculate maximum component size for each distance threshold ###
-####################################################################
-
-#function to calc max comp size
-calculate_max_comp_size_for_distance_threshold <-
-  function(distance_matrix, distance_threshold){
-
-    #create distance-based transmission probability matrix for holding_data
-    local_spread_matrix <-
-      movenet:::replace_distances_with_probabilities(
-        distance_matrix,
-        local_spread_probability_tiers =
-          data.frame(lower_boundary = c(0, distance_threshold),
-                     upper_boundary = c(distance_threshold, Inf),
-                     probability = c(1,0)),
-        accept_missing_coordinates = FALSE)
-
-    #create network and calculate max component size
-    max_component_size <-
-      network(local_spread_matrix, directed = FALSE) %>%
-      component.dist(connected = "weak") %>%
-      extract2("csize") %>%
-      max
-
-    return(max_component_size)
-  }
 
 
 
