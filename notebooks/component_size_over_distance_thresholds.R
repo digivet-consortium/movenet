@@ -140,11 +140,11 @@ calculate_max_comp_size_for_distance_threshold <-
 distance_matrices |>
   expand_grid(Threshold = distance_thresholds_in_meters) |>
   mutate(Row = 1:n()) |>
-  slice_sample(prop=0.1) |>  ## Just to randomise the order so that the ETA is more reasonable
+  slice_sample(prop=1) |>  ## Just to randomise the order so that the ETA is more reasonable
   group_split(Row) |>
   pblapply(function(x){
     x |> select(-DistanceMatrix) |> mutate(Size = calculate_max_comp_size_for_distance_threshold(x$DistanceMatrix[[1L]], x$Threshold))
-  }) |>
+  }, cl=cl) |>
   bind_rows() |>
   arrange(RandomiseSize, Iteration, Threshold) |>
   mutate(Proportion = Size/nrow(holding_data) * 100) ->
