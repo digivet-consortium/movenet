@@ -11,13 +11,31 @@ library(pbapply)
 library(units)
 library(RColorBrewer)
 library(parallel)
+library(sf)
+library(tidyverse)
 
-#data and config files  <- PLEASE CHANGE TO SUITABLE DK FILES
-holding_configfile <- "fakeScotEID_holding"
-holding_datafile <- "inst/extdata/fake_Scottish_holding_data.csv"
+if(.Platform$OS.type=="unix"){
+
+  (goldfinger::gy_load(dk_pigfile))
+  st_crs(farms) <- 25832
+  holding_data <- farms |> mutate(Animals = BSTRK_1501+BSTRK_1502+BSTRK_1504) |> filter(str_detect(Type, "K\\u00f8d"), !is.na(Animals), Animals>=20L) |> select(CHR_ID, coordinates=geometry) |> st_transform(st_crs(3035))
+
+  load_corine("DK") |>
+    filter(CLC_Label1 == "Agricultural areas") |>
+    summarise(Area = sum(Area), geometry = st_union(geometry)) ->
+    map
+
+}else{
+  #data and config files  <- PLEASE CHANGE TO SUITABLE DK FILES
+  holding_configfile <- "fakeScotEID_holding"
+  holding_datafile <- "inst/extdata/fake_Scottish_holding_data.csv"
+  load_config(holding_configfile)
+  holding_data <- reformat_data(holding_datafile, "holding")
+
+  map = NUTS_farmland_map   # <- PLEASE CHANGE TO SUITABLE DK MAP
+}
 
 #randomise_voronoi
-map = NUTS_farmland_map   # <- PLEASE CHANGE TO SUITABLE DK MAP
 randomise_size_range = c(5L,10L,15L,20L)
 from_type = "point"
 to_type = "centroid"
@@ -33,21 +51,21 @@ n_threads = 4
 ### Reformat data ###
 #####################
 
-load_config(holding_configfile)
-holding_data <- reformat_data(holding_datafile, "holding")
+#load_config(holding_configfile)
+#holding_data <- reformat_data(holding_datafile, "holding")
 
 #############################
 ### Anonymise coordinates ###
 #############################
 
 anonymised_data <-
-  lapply(randomise_size_range,
+  pblapply(randomise_size_range,
          function(x){
              randomise_voronoi(map = map,
                                points = st_as_sf(holding_data, sf_column_name = "coordinates"),
                                randomise_size = x,
                                from_type = from_type, to_type = to_type,
-                               mask_landscape = mask_landscape)
+                               mask_landscape = mask_landscape, verbose=0L)
          })
 names(anonymised_data) <- randomise_size_range
 
@@ -56,7 +74,7 @@ names(anonymised_data) <- randomise_size_range
 #################################################
 
 distance_matrices <-
-  lapply(c("true" = list(holding_data), anonymised_data),
+  pblapply(c("true" = list(holding_data), anonymised_data),
          function(x) { movenet:::create_distance_matrix(x) %>% units::drop_units()})
 
 #Have separated this out from calculate_max_comp_size_for_distance_threshold below,
@@ -92,18 +110,22 @@ calculate_max_comp_size_for_distance_threshold <-
   }
 
 
-#loop over distance thresholds
-cl <- makeCluster(n_threads)
-clusterExport(cl, c("distance_matrices",
-                    "calculate_max_comp_size_for_distance_threshold",
-                    "distance_thresholds_in_meters"))
-clusterEvalQ(cl, {
-  library(movenet)
-  library(magrittr)
-  library(sna)
-  library(network)
-  library(pbapply)
-})
+if(.Platform$OS.type=="unix"){
+  cl <- makeForkCluster(10L)
+}else{
+  #loop over distance thresholds
+  cl <- makeCluster(n_threads)
+  clusterExport(cl, c("distance_matrices",
+    "calculate_max_comp_size_for_distance_threshold",
+    "distance_thresholds_in_meters"))
+  clusterEvalQ(cl, {
+    library(movenet)
+    library(magrittr)
+    library(sna)
+    library(network)
+    library(pbapply)
+  })
+}
 
 max_comp_sizes <-
   lapply(distance_matrices,
