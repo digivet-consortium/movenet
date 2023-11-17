@@ -42,7 +42,7 @@ to_type = "centroid"
 mask_landscape = FALSE
 
 #range of distance thresholds over which to loop  <- Needs playing around with to identify useful range for DK
-distance_thresholds_in_meters <- seq(0,100000,1000)
+# distance_thresholds_in_meters <- seq(0,25000,1000)
 
 #n_threads
 n_threads = 4
@@ -67,7 +67,7 @@ anonymised_data <-
                                from_type = from_type, to_type = to_type,
                                mask_landscape = mask_landscape, verbose=0L)
          })
-names(anonymised_data) <- randomise_size_range
+names(anonymised_data) <- as.character(randomise_size_range)
 
 #################################################
 ### Create distance matrices for all datasets ###
@@ -111,7 +111,8 @@ calculate_max_comp_size_for_distance_threshold <-
 
 
 if(.Platform$OS.type=="unix"){
-  cl <- makeForkCluster(10L)
+  ## Note: memory requirements are quite high, even with a fork cluster
+  cl <- makeForkCluster(6L)
 }else{
   #loop over distance thresholds
   cl <- makeCluster(n_threads)
@@ -127,26 +128,27 @@ if(.Platform$OS.type=="unix"){
   })
 }
 
-max_comp_sizes <-
-  lapply(distance_matrices,
-         function(m){pbsapply(distance_thresholds_in_meters,
-                              function(n){calculate_max_comp_size_for_distance_threshold(m, n)},
-                              cl = cl)})
+expand_grid(Dataset = factor(names(distance_matrices), levels=names(distance_matrices)), Threshold = seq(0,25000,1000)) |>
+  slice_sample(prop=1) |>  ## Just to randomise the order so that the ETA is more reasonable
+  group_split(Dataset, Threshold) |>
+  pblapply(function(x){
+    x |> mutate(Size = calculate_max_comp_size_for_distance_threshold(distance_matrices[[x$Dataset]], x$Threshold))
+  }) |>
+  bind_rows() |>
+  arrange(Dataset, Threshold) |>
+  mutate(Proportion = Size/nrow(holding_data) * 100) ->
+  max_comp_sizes
+
 stopCluster(cl)
 
 
-###############################
-### Processing for plotting ###
-###############################
+ggplot(max_comp_sizes, aes(x=Threshold, y=Proportion, col=Dataset)) +
+  geom_line() +
+  geom_point() +
+  theme_light()
+ggsave("output.pdf")
+saveRDS(max_comp_sizes, "max_comp_sizes.rds")
 
-n_holdings <- nrow(holding_data)
-
-max_comp_sizes <-
-  max_comp_sizes %>%
-  as_tibble() %>%
-  mutate(across(everything(), ~ .x*100/n_holdings))
-
-max_comp_sizes["threshold"] <- distance_thresholds_in_meters
 
 
 ################
