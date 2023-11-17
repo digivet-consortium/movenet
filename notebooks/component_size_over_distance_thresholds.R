@@ -36,13 +36,13 @@ if(.Platform$OS.type=="unix"){
 }
 
 #randomise_voronoi
-randomise_size_range = c(5L,10L,15L,20L)
+randomise_size_range = c(5L,10L,15L,20L,50L,100L)
 from_type = "point"
 to_type = "centroid"
 mask_landscape = FALSE
 
 #range of distance thresholds over which to loop  <- Needs playing around with to identify useful range for DK
-# distance_thresholds_in_meters <- seq(0,25000,1000)
+distance_thresholds_in_meters <- seq(0,25000,250)
 
 #n_threads
 n_threads = 4
@@ -58,24 +58,50 @@ n_threads = 4
 ### Anonymise coordinates ###
 #############################
 
-anonymised_data <-
-  pblapply(randomise_size_range,
-         function(x){
-             randomise_voronoi(map = map,
-                               points = st_as_sf(holding_data, sf_column_name = "coordinates"),
-                               randomise_size = x,
-                               from_type = from_type, to_type = to_type,
-                               mask_landscape = mask_landscape, verbose=0L)
-         })
-names(anonymised_data) <- as.character(randomise_size_range)
+if(.Platform$OS.type=="unix"){
+  ## Note: memory requirements are quite high, even with a fork cluster
+  cl <- makeForkCluster(6L)
+}else{
+  #loop over distance thresholds
+  cl <- makeCluster(n_threads)
+  clusterExport(cl, c("distance_matrices",
+    "calculate_max_comp_size_for_distance_threshold",
+    "distance_thresholds_in_meters"))
+  clusterEvalQ(cl, {
+    library(movenet)
+    library(magrittr)
+    library(sna)
+    library(network)
+    library(pbapply)
+  })
+}
+
+
+expand_grid(RandomiseSize = randomise_size_range, Iteration = 1:10, FromType = from_type, ToType = to_type, MaskLandscape = mask_landscape) |>
+  mutate(Row = 1:n()) |>
+  group_split(Row) |>
+  pblapply(function(x){
+    hh <- randomise_voronoi(map = map,
+      points = st_as_sf(holding_data, sf_column_name = "coordinates"),
+      randomise_size = x$RandomiseSize,
+      from_type = x$FromType, to_type = x$ToType,
+      mask_landscape = x$MaskLandscape, verbose=0L)
+    x |> mutate(Holdings = list(hh))
+  }, cl=cl) |>
+  c(list(tibble(RandomiseSize = 0L, Iteration = 0L, FromType = NA_character_, ToType = NA_character_, MaskLandscape = NA, Holdings = list(holding_data)))) ->
+  anonymised_data
 
 #################################################
 ### Create distance matrices for all datasets ###
 #################################################
 
-distance_matrices <-
-  pblapply(c("true" = list(holding_data), anonymised_data),
-         function(x) { movenet:::create_distance_matrix(x) %>% units::drop_units()})
+anonymised_data |>
+  pblapply(function(x){
+    dm <- movenet:::create_distance_matrix(x$Holdings[[1L]]) %>% units::drop_units()
+    x |> select(-Holdings) |> mutate(DistanceMatrix = list(dm))
+  }, cl=cl) |>
+  bind_rows() ->
+distance_matrices
 
 #Have separated this out from calculate_max_comp_size_for_distance_threshold below,
 #as this is a slow step that would otherwise be repeated unnecessarily
@@ -110,45 +136,34 @@ calculate_max_comp_size_for_distance_threshold <-
   }
 
 
-if(.Platform$OS.type=="unix"){
-  ## Note: memory requirements are quite high, even with a fork cluster
-  cl <- makeForkCluster(6L)
-}else{
-  #loop over distance thresholds
-  cl <- makeCluster(n_threads)
-  clusterExport(cl, c("distance_matrices",
-    "calculate_max_comp_size_for_distance_threshold",
-    "distance_thresholds_in_meters"))
-  clusterEvalQ(cl, {
-    library(movenet)
-    library(magrittr)
-    library(sna)
-    library(network)
-    library(pbapply)
-  })
-}
 
-expand_grid(Dataset = factor(names(distance_matrices), levels=names(distance_matrices)), Threshold = seq(0,25000,1000)) |>
-  slice_sample(prop=1) |>  ## Just to randomise the order so that the ETA is more reasonable
-  group_split(Dataset, Threshold) |>
+distance_matrices |>
+  expand_grid(Threshold = distance_thresholds_in_meters) |>
+  mutate(Row = 1:n()) |>
+  slice_sample(prop=0.1) |>  ## Just to randomise the order so that the ETA is more reasonable
+  group_split(Row) |>
   pblapply(function(x){
-    x |> mutate(Size = calculate_max_comp_size_for_distance_threshold(distance_matrices[[x$Dataset]], x$Threshold))
+    x |> select(-DistanceMatrix) |> mutate(Size = calculate_max_comp_size_for_distance_threshold(x$DistanceMatrix[[1L]], x$Threshold))
   }) |>
   bind_rows() |>
-  arrange(Dataset, Threshold) |>
+  arrange(RandomiseSize, Iteration, Threshold) |>
   mutate(Proportion = Size/nrow(holding_data) * 100) ->
   max_comp_sizes
 
 stopCluster(cl)
 
 
-ggplot(max_comp_sizes, aes(x=Threshold, y=Proportion, col=Dataset)) +
+ggplot(max_comp_sizes, aes(x=Threshold, y=Proportion, col=factor(RandomiseSize))) +
   geom_line() +
   geom_point() +
   theme_light()
 ggsave("output.pdf")
 saveRDS(max_comp_sizes, "max_comp_sizes.rds")
 
+file.copy("output.pdf", "~/Dropbox/SimRes/output.pdf", overwrite = TRUE)
+file.copy("max_comp_sizes.rds", "~/Dropbox/SimRes/max_comp_sizes.rds", overwrite = TRUE)
+
+stop("DONE")
 
 
 ################
