@@ -206,6 +206,8 @@ names(anonymised_data) <- randomise_size_range
 
 if(!is.null(cl)) stopCluster(cl)
 
+save(anonymised_data, randomise_size_range, true_data, file="siminf_res.rda")
+
 ################
 ### Plotting ###
 ################
@@ -247,3 +249,5 @@ p <-
   anon_lines
 
 plot(p)
+ggsave("siminf_plot.pdf")
+
