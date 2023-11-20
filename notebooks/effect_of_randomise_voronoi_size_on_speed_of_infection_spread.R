@@ -4,8 +4,11 @@
 
 library(movenet)
 library(hexscape)
+library(sf)
 library(pbapply)
+library(parallel)
 library(RColorBrewer)
+
 if(!requireNamespace("siminf4movenet")){
   #update when have released version
   #stop("The siminf4movenet package is not installed - run:\ninstall.packages('siminf4movenet', repos=....)")
@@ -15,14 +18,43 @@ if(!requireNamespace("SimInf")){
   stop("The SimInf package is not installed - run:\ninstall.packages('SimInf')")
 }
 
-#data and config files  <- PLEASE CHANGE TO SUITABLE DK FILES
-movement_configfile <- "ScotEID"
-holding_configfile <- "fakeScotEID_holding"
-movement_datafile <- "inst/extdata/fake_Scottish_movement_data.csv"
-holding_datafile <- "inst/extdata/fake_Scottish_holding_data.csv"
+if(.Platform$OS.type=="unix"){
 
-#randomise_voronoi options
-map = NUTS_farmland_map #  <- PLEASE INSERT MAP
+  (goldfinger::gy_load(dk_pigfile))
+  st_crs(farms) <- 25832
+  holding_data <- farms |>
+    mutate(Animals = BSTRK_1501+BSTRK_1502+BSTRK_1504) |>
+    filter(str_detect(Type, "K\\u00f8d"), !is.na(Animals), Animals>=20L) |>
+    select(cph=CHR_ID, herd_size=Animals, holding_type=Type, coordinates=geometry) |>
+    st_transform(st_crs(3035)) |>
+    mutate(cph = as.character(cph)) |>
+    group_by(cph) |>
+    arrange(desc(herd_size)) |>
+    slice(1L)
+
+  movements |>
+    filter(CHR_FROM %in% holding_data$cph, CHR_TO %in% holding_data$cph) |>
+    select(departure_cph = CHR_FROM, dest_cph = CHR_TO, departure_date = DATO_FLYTNING, qty_pigs = ANTAL_FLYT_DYR) |>
+    mutate(across(c(departure_cph, dest_cph), as.character)) ->
+    movement_data
+
+  load_corine("DK") |>
+    filter(CLC_Label1 == "Agricultural areas") |>
+    summarise(Area = sum(Area), geometry = st_union(geometry)) ->
+    map
+
+}else{
+  #data and config files  <- PLEASE CHANGE TO SUITABLE DK FILES
+  movement_configfile <- "ScotEID"
+  holding_configfile <- "fakeScotEID_holding"
+  movement_datafile <- "inst/extdata/fake_Scottish_movement_data.csv"
+  holding_datafile <- "inst/extdata/fake_Scottish_holding_data.csv"
+
+  #randomise_voronoi options
+  map = NUTS_farmland_map #  <- PLEASE INSERT MAP
+
+}
+
 randomise_size_range = c(5L,10L,15L,20L)
 from_type = "point"
 to_type = "centroid"
@@ -52,7 +84,11 @@ whole_months = TRUE
 # movement weights. FALSE considers the data capture to start on 3 Jan, leaving
 # only considering 29 days of Jan when calculating average movement weights.
 
-infected_holdings = c("68/575/1991", "86/580/7898") # <- PLEASE CHANGE TO DANISH HOLDING ID(s)
+## We will select the infected_holdings based on proximity to a forest in southern Jutland:
+incursion_point <- st_sfc(st_point(c(9.305717069633731, 54.83314782219914)), crs=st_crs("WGS84")) |> st_transform(st_crs(map))
+ggplot() + geom_sf(data=map) + geom_sf(data=incursion_point, col="red")
+
+#infected_holdings = c("68/575/1991", "86/580/7898") # <- PLEASE CHANGE TO DANISH HOLDING ID(s)
 #identifiers of farms infected at t = 0
 
 #Time over which to run model
@@ -66,12 +102,12 @@ n_simulations = 100 #number of simulations for model (same initially infected no
 #####################
 ### Reformat data ###
 #####################
-
-load_config(movement_configfile)
-movement_data <- movement_datafile |> reformat_data("movement")
-load_config(holding_configfile)
-holding_data <- holding_datafile |> reformat_data("holding")
-
+if(FALSE){
+  load_config(movement_configfile)
+  movement_data <- movement_datafile |> reformat_data("movement")
+  load_config(holding_configfile)
+  holding_data <- holding_datafile |> reformat_data("holding")
+}
 
 ###########################
 ### Prepare & run model ###
@@ -95,8 +131,16 @@ add_summary_stats <- function(cumul_infected, n_nodes, n_simulations){
 data2modeloutput <- function(movement_data, holding_data,
                              incl_nonactive_holdings,
                              weight_unit_transmission_probability,
-                             whole_months, infected_holdings, tspan,
+                             whole_months, incursion_point, tspan,
                              n_simulations){
+
+  holding_data |>
+    arrange(st_distance(coordinates, incursion_point)[,1L]) |>
+    as_tibble() |>
+    slice(1L:3L) |>
+    pull(cph) ->
+    infected_holdings
+
   contacts <-
     holding_data %>%
     data2contactmatrix(movement_data, .,
@@ -128,15 +172,22 @@ data2modeloutput <- function(movement_data, holding_data,
 #Run model on true data
 true_data <- data2modeloutput(movement_data, holding_data, incl_nonactive_holdings,
                               weight_unit_transmission_probability, whole_months,
-                              infected_holdings, tspan, n_simulations)
+                              incursion_point, tspan, n_simulations)
 
 
 ############################################################
 ### Anonymise coordinates & run model on anonymised data ###
 ############################################################
 
+if(.Platform$OS.type=="unix"){
+  ## Note: memory requirements are quite high, even with a fork cluster
+  cl <- makeForkCluster(6L)
+}else{
+  cl <- NULL
+}
+
 anonymised_data <-
-  lapply(randomise_size_range,
+  pblapply(randomise_size_range,
          function(x){
            anon_holding_data <-
              randomise_voronoi(map = map,
@@ -147,12 +198,13 @@ anonymised_data <-
            output <- data2modeloutput(movement_data, anon_holding_data,
                                       incl_nonactive_holdings,
                                       weight_unit_transmission_probability,
-                                      whole_months, infected_holdings, tspan,
+                                      whole_months, incursion_point, tspan,
                                       n_simulations)
            return(output)
-           })
+           }, cl=cl)
 names(anonymised_data) <- randomise_size_range
 
+if(!is.null(cl)) stopCluster(cl)
 
 ################
 ### Plotting ###
