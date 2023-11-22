@@ -179,9 +179,10 @@ true_data <- data2modeloutput(movement_data, holding_data, incl_nonactive_holdin
 ### Anonymise coordinates & run model on anonymised data ###
 ############################################################
 
-if(.Platform$OS.type=="unix"){
+if(FALSE && .Platform$OS.type=="unix"){
   ## Note: memory requirements are quite high, even with a fork cluster
   cl <- makeForkCluster(6L)
+  clusterSetRNGStream(cl)
 }else{
   cl <- NULL
 }

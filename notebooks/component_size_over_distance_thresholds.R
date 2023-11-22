@@ -93,6 +93,7 @@ calculate_max_comp_size_for_distance_threshold <-
 if(.Platform$OS.type=="unix"){
   ## Note: memory requirements are quite high, even with a fork cluster
   cl <- makeForkCluster(6L)
+  clusterSetRNGStream(cl)
 }else{
   #loop over distance thresholds
   cl <- makeCluster(n_threads)
