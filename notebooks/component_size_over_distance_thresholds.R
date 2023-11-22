@@ -118,7 +118,8 @@ expand_grid(RandomiseSize = randomise_size_range, Iteration = 1:10, FromType = f
       points = st_as_sf(holding_data, sf_column_name = "coordinates"),
       randomise_size = x$RandomiseSize,
       from_type = x$FromType, to_type = x$ToType,
-      mask_landscape = x$MaskLandscape, verbose=0L)
+      mask_landscape = x$MaskLandscape, verbose=0L) |>
+      mutate(coordinates = RandomPoint)
     x |> mutate(Holdings = list(hh))
   }, cl=cl) |>
   c(list(tibble(RandomiseSize = 0L, Iteration = 0L, FromType = NA_character_, ToType = NA_character_, MaskLandscape = NA, Holdings = list(holding_data)))) ->

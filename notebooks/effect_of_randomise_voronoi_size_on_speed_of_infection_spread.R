@@ -137,7 +137,7 @@ data2modeloutput <- function(movement_data, holding_data,
   holding_data |>
     arrange(st_distance(coordinates, incursion_point)[,1L]) |>
     as_tibble() |>
-    slice(1L:3L) |>
+    slice(1L:5L) |>
     pull(cph) ->
     infected_holdings
 
@@ -179,7 +179,7 @@ true_data <- data2modeloutput(movement_data, holding_data, incl_nonactive_holdin
 ### Anonymise coordinates & run model on anonymised data ###
 ############################################################
 
-if(FALSE && .Platform$OS.type=="unix"){
+if(.Platform$OS.type=="unix"){
   ## Note: memory requirements are quite high, even with a fork cluster
   cl <- makeForkCluster(6L)
   clusterSetRNGStream(cl)
@@ -195,7 +195,9 @@ anonymised_data <-
                                points = st_as_sf(holding_data, sf_column_name = "coordinates"),
                                randomise_size = x,
                                from_type = from_type, to_type = to_type,
-                               mask_landscape = mask_landscape)
+                               mask_landscape = mask_landscape) |>
+             ## Ensure that the original points are not used:
+             mutate(coordinates = RandomPoint)
            output <- data2modeloutput(movement_data, anon_holding_data,
                                       incl_nonactive_holdings,
                                       weight_unit_transmission_probability,
@@ -252,3 +254,5 @@ p <-
 plot(p)
 ggsave("siminf_plot.pdf")
 
+file.copy("siminf_plot.pdf", "~/Dropbox/SimRes/siminf_plot.pdf", overwrite = TRUE)
+file.copy("siminf_res.rda", "~/Dropbox/SimRes/siminf_res.rda", overwrite = TRUE)
