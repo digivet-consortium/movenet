@@ -215,7 +215,7 @@ anonymised_data <-
                                       n_simulations)
            return(output)
            }, cl=cl)
-names(anonymised_data) <- randomise_size_range
+names(anonymised_data) <- rep(randomise_size_range, each=10L) |> format() |> str_replace_all(" ", "0")
 
 if(!is.null(cl)) stopCluster(cl)
 
@@ -270,3 +270,15 @@ plot(p)
 ggsave("siminf_plot.pdf")
 
 file.copy("siminf_plot.pdf", "~/Dropbox/SimRes/siminf_plot.pdf", overwrite = TRUE)
+
+seq_along(anonymised_data) |>
+  lapply(function(x) tibble(Iteration=x, RandomiseSize = names(anonymised_data)[x], Time=tspan, Mean = anonymised_data[[x]]$Mean)) |>
+  bind_rows() |>
+  bind_rows(
+    tibble(Iteration=0, RandomiseSize = "0", Time=tspan, Mean = true_data$Mean)
+  ) |>
+  ggplot(aes(x=Time, y=Mean, col=RandomiseSize, group=Iteration)) +
+  geom_line() +
+  facet_wrap(~RandomiseSize) +
+  theme_light()
+ggsave("siminf_plot_means.pdf")
