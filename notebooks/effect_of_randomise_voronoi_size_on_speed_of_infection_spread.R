@@ -238,7 +238,7 @@ anon_ribbons <-
        function(idx){
          geom_ribbon(data = anonymised_data[[idx]],
                      aes(x = as.numeric(row.names(anonymised_data[[idx]])), ymin = Min, ymax = Max,
-                         fill = eval(names(colour_palette)[idx+1])),
+                         fill = eval(names(colour_palette)[ceiling(idx/10)+1])),
                      alpha = 0.2)
        })
 
@@ -247,7 +247,7 @@ anon_lines <-
          function(idx){
            geom_line(data = anonymised_data[[idx]],
                      aes(x = as.numeric(row.names(anonymised_data[[idx]])), y = Mean,
-                         colour = eval(names(colour_palette)[idx+1])))
+                         colour = eval(names(colour_palette)[ceiling(idx/10)+1])))
          })
 
 p <-
@@ -259,11 +259,11 @@ p <-
                       values = colour_palette) +
   scale_fill_manual(values = colour_palette, guide = "none") +
   theme_bw() +
-  geom_ribbon(aes(x = as.numeric(row.names(true_data)), ymin = Min, ymax = Max,
-                  fill = "True data"),
-              alpha = 0.2) +
+  #geom_ribbon(aes(x = as.numeric(row.names(true_data)), ymin = Min, ymax = Max,
+  #                fill = "True data"),
+  #            alpha = 0.2) +
   geom_line(aes(x=as.numeric(row.names(true_data)), y = Mean, colour = "True data")) +
-  anon_ribbons +
+  #anon_ribbons +
   anon_lines
 
 plot(p)
