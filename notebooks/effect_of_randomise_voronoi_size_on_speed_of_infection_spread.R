@@ -55,7 +55,7 @@ if(.Platform$OS.type=="unix"){
 
 }
 
-randomise_size_range = c(5L,10L,15L,20L)
+randomise_size_range = c(5L,10L,15L,20L,50L,100L)
 from_type = "point"
 to_type = "centroid"
 mask_landscape = FALSE
@@ -198,7 +198,7 @@ if(.Platform$OS.type=="unix"){
 }
 
 anonymised_data <-
-  pblapply(randomise_size_range,
+  pblapply(rep(randomise_size_range, each=10L),
          function(x){
            anon_holding_data <-
              randomise_voronoi(map = map,
@@ -220,6 +220,11 @@ names(anonymised_data) <- randomise_size_range
 if(!is.null(cl)) stopCluster(cl)
 
 save(anonymised_data, randomise_size_range, true_data, file="siminf_res.rda")
+file.copy("siminf_res.rda", "~/Dropbox/SimRes/siminf_res.rda", overwrite = TRUE)
+
+
+## TODO: below here might need tweaking now that we have multiple iterations of the same randomise size range
+
 
 ################
 ### Plotting ###
@@ -265,4 +270,3 @@ plot(p)
 ggsave("siminf_plot.pdf")
 
 file.copy("siminf_plot.pdf", "~/Dropbox/SimRes/siminf_plot.pdf", overwrite = TRUE)
-file.copy("siminf_res.rda", "~/Dropbox/SimRes/siminf_res.rda", overwrite = TRUE)
