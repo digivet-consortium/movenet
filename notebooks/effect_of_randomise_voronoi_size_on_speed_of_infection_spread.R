@@ -91,6 +91,23 @@ ggplot() + geom_sf(data=map) + geom_sf(data=incursion_point, col="red")
 #infected_holdings = c("68/575/1991", "86/580/7898") # <- PLEASE CHANGE TO DANISH HOLDING ID(s)
 #identifiers of farms infected at t = 0
 
+if(FALSE){
+  ## Code to find the best (worst?) place to start an epidemic:
+  movement_data |> count(departure_cph) |> arrange(desc(n)) |> slice(1:40) |>
+    mutate(MeanOutbreak =
+      pbsapply(departure_cph, function(x){
+        data2modeloutput(movement_data, holding_data, incl_nonactive_holdings,
+                       weight_unit_transmission_probability, whole_months,
+                       x, tspan, 10L) |> pull(Mean) |> max()
+      }, cl=10L)
+    ) ->
+    find_start
+  # Row index 8 has the highest outbreak potential
+}
+
+infected_holdings <- movement_data |> count(departure_cph) |> arrange(desc(n)) |> slice(8L) |> pull(departure_cph)
+
+
 #Time over which to run model
 days = 365 #number of days to run the simulation. Default is 365 days.
 stride = 1 #the increment (integer) between days that are recorded in the model
@@ -131,15 +148,8 @@ add_summary_stats <- function(cumul_infected, n_nodes, n_simulations){
 data2modeloutput <- function(movement_data, holding_data,
                              incl_nonactive_holdings,
                              weight_unit_transmission_probability,
-                             whole_months, incursion_point, tspan,
+                             whole_months, infected_holdings, tspan,
                              n_simulations){
-
-  holding_data |>
-    arrange(st_distance(coordinates, incursion_point)[,1L]) |>
-    as_tibble() |>
-    slice(1L:5L) |>
-    pull(cph) ->
-    infected_holdings
 
   contacts <-
     holding_data %>%
@@ -172,7 +182,7 @@ data2modeloutput <- function(movement_data, holding_data,
 #Run model on true data
 true_data <- data2modeloutput(movement_data, holding_data, incl_nonactive_holdings,
                               weight_unit_transmission_probability, whole_months,
-                              incursion_point, tspan, n_simulations)
+                              infected_holdings, tspan, n_simulations)
 
 
 ############################################################
@@ -201,7 +211,7 @@ anonymised_data <-
            output <- data2modeloutput(movement_data, anon_holding_data,
                                       incl_nonactive_holdings,
                                       weight_unit_transmission_probability,
-                                      whole_months, incursion_point, tspan,
+                                      whole_months, infected_holdings, tspan,
                                       n_simulations)
            return(output)
            }, cl=cl)
