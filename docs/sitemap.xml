@@ -70,6 +70,12 @@
     <loc>https://digivet-consortium.github.io/movenet/reference/index.html</loc>
   </url>
   <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/infer_config_type.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/internal_validate_config.html</loc>
+  </url>
+  <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/jitter_dates.html</loc>
   </url>
   <url>
@@ -116,6 +122,24 @@
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/validate_config.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/validate_config_cols.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/validate_config_datatype.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/validate_config_fileopts.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/validate_config_root.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/validate_config_type.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/validate_yaml.html</loc>
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/violinplot_monthly_measures.html</loc>
