@@ -96,7 +96,7 @@ All configurations within a \code{cols} grouping must have unique values.
 validate_config(system.file("configurations", "fakeScotEID_holding.yml", package="movenet"))
 
 # Validate an invalid config file (empty template)
-validate_config(system.file("configurations", "holdingconfig_template.yml", package="movenet"))
+try(validate_config(system.file("configurations", "holdingconfig_template.yml", package="movenet")))
 
 }
 \seealso{

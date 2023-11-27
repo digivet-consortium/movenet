@@ -94,11 +94,24 @@ movenetenv <- new.env()
 #'   in the movenet environment. If this is successful, a message is printed.
 #'
 #' @examples
+#' # Set-up: Save movenet environment with current configurations
+#' movenetenv <- movenet:::movenetenv
+#' old_config <- movenetenv$options
+#'
+#' # Load a config file
+#' load_config(system.file("configurations", "ScotEID.yml", package="movenet"))
+#'
 #' # Save the currently loaded movement configurations to a new config file in `tempdir()`
-#' save_config(paste0(tempdir(),"\\saved_movement_config.yml"))
-#' readr::read_file(paste0(tempdir(),"\\saved_movement_config.yml")) #Examine file contents
-#' # Clean-up: Remove the saved file
+#' save_config(paste0(tempdir(),"\\saved_movement_config.yml"), "movement")
+#'
+#' #Examine file contents
+#' xfun::file_string(paste0(tempdir(),"\\saved_movement_config.yml"))
+#'
+#' # Clean-up: Remove the saved file and reinstate previous configurations
 #' file.remove(paste0(tempdir(),"\\saved_movement_config.yml"))
+#' movenetenv$options <- old_config
+#' rm("old_config", "movenetenv")
+#'
 #'
 #' @seealso `vignette("configurations")` for an explanation of the movenet
 #'   config system.
@@ -142,7 +155,10 @@ save_config <- function(outfile, config_type = c("movement", "holding")){
 #' @examples
 #' # Copy the movement config file template to your working directory
 #' new_config(config_type = "movement")
-#' readr::read_file(paste0(getwd(),"/movementconfig_template.yml")) #Examine file contents
+#'
+#' # Examine file contents
+#' xfun::file_string(paste0(getwd(),"/movementconfig_template.yml"))
+#'
 #' # Clean-up: Remove the saved file
 #' file.remove(paste0(getwd(),"/movementconfig_template.yml"))
 #'
@@ -196,11 +212,23 @@ new_config <- function(config_type = c("movement", "holding")){
 #' warning if the configurations are unset or ambiguous.
 #'
 #' @examples
+#' # Set-up: Save movenet environment with current configurations
+#' movenetenv <- movenet:::movenetenv
+#' old_config <- movenetenv$options
+#'
+#' # Load a config file
+#' load_config(system.file("configurations", "fakeScotEID_holding.yml", package="movenet"))
+#' get_config() #Examine configurations
+#'
 #' # Query the values of all configurations
 #' get_config()
 #'
 #' # Query the values of specific configurations
-#' get_config("movedata_fileopts.separator", "holdingdata_cols.id")
+#' get_config("holdingdata_fileopts.separator", "holdingdata_cols.id")
+#'
+#' # Clean-up: Reinstate previous configurations
+#' movenetenv$options <- old_config
+#' rm("old_config", "movenetenv")
 #'
 #' @family configurations-related functions
 #' @seealso `vignette("configurations")` for an explanation of the movenet

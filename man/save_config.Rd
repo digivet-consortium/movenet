@@ -27,11 +27,24 @@ environment to a new config file of the type indicated by \code{config_type}.
 N.B.: The resulting config file is not automatically validated.
 }
 \examples{
+# Set-up: Save movenet environment with current configurations
+movenetenv <- movenet:::movenetenv
+old_config <- movenetenv$options
+
+# Load a config file
+load_config(system.file("configurations", "ScotEID.yml", package="movenet"))
+
 # Save the currently loaded movement configurations to a new config file in `tempdir()`
-save_config(paste0(tempdir(),"\\\\saved_movement_config.yml"))
-readr::read_file(paste0(tempdir(),"\\\\saved_movement_config.yml")) #Examine file contents
-# Clean-up: Remove the saved file
+save_config(paste0(tempdir(),"\\\\saved_movement_config.yml"), "movement")
+
+#Examine file contents
+xfun::file_string(paste0(tempdir(),"\\\\saved_movement_config.yml"))
+
+# Clean-up: Remove the saved file and reinstate previous configurations
 file.remove(paste0(tempdir(),"\\\\saved_movement_config.yml"))
+movenetenv$options <- old_config
+rm("old_config", "movenetenv")
+
 
 }
 \seealso{

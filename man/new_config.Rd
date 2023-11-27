@@ -23,7 +23,10 @@ directory.
 \examples{
 # Copy the movement config file template to your working directory
 new_config(config_type = "movement")
-readr::read_file(paste0(getwd(),"/movementconfig_template.yml")) #Examine file contents
+
+# Examine file contents
+xfun::file_string(paste0(getwd(),"/movementconfig_template.yml"))
+
 # Clean-up: Remove the saved file
 file.remove(paste0(getwd(),"/movementconfig_template.yml"))
 

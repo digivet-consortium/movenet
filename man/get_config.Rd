@@ -42,11 +42,23 @@ unset), a warning is displayed.
 }
 }
 \examples{
+# Set-up: Save movenet environment with current configurations
+movenetenv <- movenet:::movenetenv
+old_config <- movenetenv$options
+
+# Load a config file
+load_config(system.file("configurations", "fakeScotEID_holding.yml", package="movenet"))
+get_config() #Examine configurations
+
 # Query the values of all configurations
 get_config()
 
 # Query the values of specific configurations
-get_config("movedata_fileopts.separator", "holdingdata_cols.id")
+get_config("holdingdata_fileopts.separator", "holdingdata_cols.id")
+
+# Clean-up: Reinstate previous configurations
+movenetenv$options <- old_config
+rm("old_config", "movenetenv")
 
 }
 \seealso{
