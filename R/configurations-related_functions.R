@@ -1,17 +1,45 @@
-#' @title Loading a movenet configurations file
+#' Load configurations from a config file into the movenet environment
 #'
-#' @description Loads configurations from a .yml format config file into the movenet
-#'  environment, so that movenet knows how to read the data files provided to it.
+#' `load_config()` checks that the provided `configfile` is valid, and then loads
+#' its content into the movenet environment. This lets the movenet package know
+#' how to read and interpret upcoming input data files.
 #'
-#' @importFrom yaml yaml.load_file write_yaml
+#' @details Values of configurations representing column headers or indices (in
+#'   the config file `fileopts` section) are converted to ASCII-compliant and
+#'   syntactically valid names before being loaded into in the environment.
 #'
-#' @param configfile Either the path to a movenet configurations file, or the name
-#'  (minus extension) of a pre-installed configurations file.
+#' @param configfile Either the path to a YAML-format movenet config file, or the name of a
+#'   pre-installed config file in the movenet package's `configurations` folder.
 #'
-#' @details
+#' @returns No return value, but `load_config()` has the effect of copying the
+#'   provided configurations into the movenet environment. If this is
+#'   successful, a message is printed.
 #'
-#' @return
+#' @examples
+#' # Set-up: Save movenet environment with current configurations
+#' movenetenv <- movenet:::movenetenv
+#' old_config <- movenetenv$options
 #'
+#' # Load a config file using a path
+#' load_config(system.file("configurations", "fakeScotEID_holding.yml", package="movenet"))
+#' get_config() #Examine configurations
+#'
+#' # Alternatively, load a pre-installed config file by using just its name
+#' load_config("ScotEID.yml")
+#' get_config() #Examine configurations
+#'
+#' # Clean-up: Reinstate previous configurations
+#' movenetenv$options <- old_config
+#' rm("old_config", "movenetenv")
+#'
+#' @seealso
+#' * [validate_config()] for the underlying config file validation process.
+#' * [asciify()] for the underlying ASCIIfication process.
+#' * `vignette("configurations")` for an explanation of the movenet config system.
+#' * `list.files(system.file("configurations", package = "movenet"))` for a list of pre-installed templates and validated config files.
+#' @family configurations-related functions
+#'
+#' @importFrom yaml yaml.load_file
 #'
 #' @export
 load_config <- function(configfile){
@@ -48,11 +76,35 @@ load_config <- function(configfile){
 }
 movenetenv <- new.env()
 
-#' @title Saving configurations to a movenet config file
-#' @param outfile
+#' Save current configurations to a config file
 #'
-#' @param config_type
+#' `save_config()` saves the configurations currently set in the movenet
+#' environment to a new config file of the type indicated by `config_type`.
 #'
+#' @details N.B.: The resulting config file is not automatically validated.
+#'
+#' @param outfile The name and path of the file to which the configurations will
+#'   be saved.
+#' @param config_type Character vector representing the type of configurations
+#'   to save: one of `c("movement", "holding")` (default, resulting in a
+#'   combined config file), `"movement"` or `"holding"`.
+#'
+#' @returns No return value, but `save_config()` has the effect of writing a
+#'   YAML-format config file containing (a subset of) the configurations found
+#'   in the movenet environment. If this is successful, a message is printed.
+#'
+#' @examples
+#' # Save the currently loaded movement configurations to a new config file in `tempdir()`
+#' save_config(paste0(tempdir(),"\\saved_movement_config.yml"))
+#' readr::read_file(paste0(tempdir(),"\\saved_movement_config.yml")) #Examine file contents
+#' # Clean-up: Remove the saved file
+#' file.remove(paste0(tempdir(),"\\saved_movement_config.yml"))
+#'
+#' @seealso `vignette("configurations")` for an explanation of the movenet
+#'   config system.
+#' @family configurations-related functions
+#'
+#' @importFrom yaml write_yaml
 #' @export
 save_config <- function(outfile, config_type = c("movement", "holding")){
   if(missing(outfile)) stop("Argument `outfile` is missing. Please provide a path to which to save the config file to.", call. = FALSE)
@@ -74,10 +126,29 @@ save_config <- function(outfile, config_type = c("movement", "holding")){
   message(paste("Successfully saved", paste(config_type, collapse = " and "),"configurations to:", outfile))
 }
 
-# This leaves strings/fields unquoted, but that should be fine.
-
-#' @title Copying a config file template to your working directory
-#' @param config_type
+#' Copy a config file template to your working directory
+#'
+#' `new_config()` copies an empty config file template to the current working
+#' directory.
+#'
+#' @param config_type Character vector representing the type of config file for
+#'   which to copy the template: one of `c("movement", "holding")` (default,
+#'   indicating the combined config file template), `"movement"` or `"holding"`.
+#'
+#' @returns No return value, but `new_config()` has the effect of writing a
+#'   YAML-format config file template to the current working directory. If this
+#'   is successful, a message is printed.
+#'
+#' @examples
+#' # Copy the movement config file template to your working directory
+#' new_config(config_type = "movement")
+#' readr::read_file(paste0(getwd(),"/movementconfig_template.yml")) #Examine file contents
+#' # Clean-up: Remove the saved file
+#' file.remove(paste0(getwd(),"/movementconfig_template.yml"))
+#'
+#' @family configurations-related functions
+#' @seealso `vignette("configurations")` for an explanation of the movenet
+#'   config system.
 #'
 #' @export
 new_config <- function(config_type = c("movement", "holding")){
@@ -85,7 +156,7 @@ new_config <- function(config_type = c("movement", "holding")){
   if(is.null(config_type) || !(all(config_type %in% c("movement", "holding")))) stop("Argument `config_type` must be one of 'movement', 'holding', or c('movement','holding')")
 
   # Save the template for editing:
-  if(config_type == c("movement", "holding")){
+  if(all(c("movement", "holding") %in% config_type)){
     template_name <- "allconfig_template.yml"
   } else {
     template_name <- paste0(config_type,"config_template.yml")
@@ -95,8 +166,45 @@ new_config <- function(config_type = c("movement", "holding")){
   message(paste0("Saved ", template_name, " to working directory. It can be found at: ", getwd(), "/", template_name))
 }
 
-#' @title Querying movenet configurations
-#' @param ...
+#' Get the values of configurations currently set in the movenet environment
+#'
+#' `get_config()` allows the user to examine the values of one or more
+#' configurations as currently set in the movenet environment.
+#'
+#' @details ## Configuration names
+#'
+#' Each configuration name must follow the `"datatype_configtype.configname"`
+#' format, consisting of the following elements:
+#' * `datatype`: Type of data the configuration applies to. Either `movedata` or `holdingdata`.
+#' * `configtype`: Type of configuration. Either `fileopts` (file options) or `cols` (column headers/indices).
+#' * `configname`: Name of the specific configuration.
+#'
+#' For example: `"movedata_fileopts.separator"`, `"holdingdata_cols.id"`
+#'
+#' `get_config()` uses partial matching for configuration names. If a
+#' configuration name is ambiguous or unrecognised (e.g. if the configuration is
+#' unset), a warning is displayed.
+#'
+#' @param ... One or more configuration names, in the form of individual
+#'   character strings, a character vector, or a list.
+#'
+#' @returns
+#' * If no arguments are provided, an unstructured named list of all configurations
+#' as currently set in the movenet environment.
+#' * If one or more configuration names are provided, an unstructured named list
+#' with the current value of these configurations, or an empty named list and a
+#' warning if the configurations are unset or ambiguous.
+#'
+#' @examples
+#' # Query the values of all configurations
+#' get_config()
+#'
+#' # Query the values of specific configurations
+#' get_config("movedata_fileopts.separator", "holdingdata_cols.id")
+#'
+#' @family configurations-related functions
+#' @seealso `vignette("configurations")` for an explanation of the movenet
+#'   config system.
 #'
 #' @importFrom purrr flatten
 #' @export
@@ -124,12 +232,84 @@ get_config <- function(...){
   }
 }
 
-#' @title Changing individual movenet configurations
-#' @param ...
+#' Change individual configurations in the movenet environment
 #'
-#' @export
+#' `change_config()` allows the user to set the value of one or more
+#' configurations in the movenet environment. Any requested changes are
+#' validated before being made.
+#'
+#' @details ## Configuration names
+#'
+#' Each configuration name must follow the `"datatype_configtype.configname"`
+#' format, consisting of the following elements:
+#' * `datatype`: Type of data the configuration applies to. Either `movedata` or `holdingdata`.
+#' * `configtype`: Type of configuration. Either `fileopts` (file options) or `cols` (column headers/indices).
+#' * `configname`: Name of the specific configuration.
+#'
+#' For example: `"movedata_fileopts.separator"`, `"holdingdata_cols.id"`
+#'
+#' `change_config()` uses partial matching for configuration names. If a
+#' configuration name is ambiguous or unrecognised (e.g. if the configuration is
+#' unset), the requested change is ignored and a warning is displayed.
+#'
+#' ## Configuration values
+#' Before configuration values are set, their data format is validated.
+#' Valid configuration data formats are as follows:
+#' * `(move|holding)data_fileopts.separator`: A single character.
+#' * `(move|holding)data_fileopts.decimal`: A single character.
+#' * `(move|holding)data_fileopts.encoding`: A character string.
+#' * `(move|holding)data_fileopts.date_format`: A character string matching readr date format specifications. See [readr::parse_date()] for
+#' guidance.
+#' * `holdingdata_fileopts.country_code`: A character string consisting of two upper-case letters.
+#' * `holdingdata_fileopts.coord_EPSG_code`: A single integer.
+#' * `(move|holding)data_cols` configurations: A character string or a single integer.
+#'  All configurations within `movedata_cols` or `holdingdata_cols` must have unique values.
+#'
+#' Configurations can't be set to `NULL`.
+#'
+#' If a configuration value is invalid, the requested change is ignored and a
+#' warning is displayed.
+#'
+#' @param ... One or more configurations to change, using `name = value` format.
+#'   These can be provided in the form of individual name-value pairs, as a
+#'   named character vector, or as a named list.
+#'
+#' @returns
+#' * If one or more configuration name-value pairs are provided, a structured
+#' named list of the values of all configurations in the movenet environment,
+#' as they were before the function call (returned invisibly).
+#' As side effect, any provided configurations are changed in the movenet environment.
+#' If a configuration name is ambiguous or unrecognised, or if a requested change
+#' would result in an invalid configuration value, the requested configuration
+#' change is ignored and a warning is displayed.
+#' * If no arguments are provided, an unstructured named list of all configurations as currently set in the movenet environment.
+#'
+#' @examples
+#' # Set-up: Save movenet environment with current configurations
+#' movenetenv <- movenet:::movenetenv
+#' old_config <- movenetenv$options
+#'
+#' # Load a config file and examine current configurations
+#' load_config(system.file("configurations", "fakeScotEID_holding.yml", package="movenet"))
+#' get_config("holdingdata_fileopts.separator", "holdingdata_cols.id") #Examine configurations
+#'
+#' # Change configurations
+#' change_config(holdingdata_fileopts.sep = ".", holdingdata_cols.id = "identifier")
+#' get_config("holdingdata_fileopts.separator", "holdingdata_cols.id") #Examine changed configurations
+#'
+#' # Clean-up: Reinstate previous configurations
+#' movenetenv$options <- old_config
+#' rm("old_config", "movenetenv")
+#'
+#' @family configurations-related functions
+#' @seealso
+#' * [readr::parse_date()] for guidance on date format specification strings.
+#' * `vignette("configurations")` for an explanation of the movenet
+#' config system.
+#'
 #' @importFrom purrr modify
 #' @importFrom utils relist
+#' @export
 change_config <- function(...){
   #set aliases: set_config, set_option, set_options?
   #remove behaviour to invisibly return old options [no longer trying to copy base R options system]?
@@ -155,7 +335,7 @@ change_config <- function(...){
       valinoldopts_opts <- opts[which(opts %in% options_no_structure)]
       valinoldopts_names <- optnames[which(opts %in% options_no_structure)]
       unchanged_names <- valinoldopts_names[which(sapply(valinoldopts_opts,function(x){
-        if(names(options_no_structure)[which(options_no_structure == x)] %in% optnames){
+        if(any(names(options_no_structure)[which(options_no_structure == x)] %in% optnames)){
           opts[which(optnames == names(options_no_structure)[which(options_no_structure == x)])] == x
         } else {FALSE}
       }))]

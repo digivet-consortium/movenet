@@ -7,8 +7,109 @@
 validate_config(file)
 }
 \arguments{
-\item{file}{config file (yml format) to validate}
+\item{file}{Path of the config file to validate.}
+}
+\value{
+\itemize{
+\item If the provided config file is valid, \code{TRUE} (returned invisibly).
+\item If the provided config file is not valid, an error is raised, with a message
+indicating the reason(s) validation has failed.
+}
 }
 \description{
-Validate a movenet config file
+\code{validate_config()} validates that \code{file} is a valid movenet config file, by checking that:
+\itemize{
+\item \code{file} can be parsed as a YAML string.
+\item All required top-level, \code{fileopts}, and \code{cols} configuration keys are present in \code{file}.
+\item All configuration values follow data format requirements.
 }
+}
+\details{
+\subsection{Config file types}{
+
+There are three types of config files, each with slightly different requirements:
+\itemize{
+\item Movement config files, with information on how to read movement data files. Configuration groupings in these files are prefixed with \code{"movedata_"}.
+\item Holding config files, with information on how to read holding data files. Configuration groupings in these files are prefixed with \code{"holdingdata_"}.
+\item Combined config files, containing both \code{"movedata_"} and \code{"holdingdata_"} configuration groupings. These need to fulfill criteria for both movement and holding config files.
+}
+}
+
+\subsection{Top-level configuration key requirements}{
+
+Config files must contain each of two types of configuration groupings:
+\itemize{
+\item File and data options that commonly vary between datasets. Indicated by top-level key \code{movedata_fileopts} or \code{holdingdata_fileopts}.
+\item Column headers/indices for data fields that are either required or that you want to extract along for analyses. Indicated by top-level key \code{movedata_cols} or \code{holdingdata_cols}.
+}
+}
+
+\subsection{\code{fileopts} configurations and data format requirements}{
+
+Within each \code{fileopts} grouping, the following configurations are required, with the value taking the indicated format:
+\itemize{
+\item \code{separator}: Separator (or delimiter) used in the data file. Format: Single character.
+\item \code{decimal}: Decimal mark used in the data file. Format: Single character.
+\item \code{encoding}: Encoding used in the data file. Format: Character string.
+}
+
+Additionally, required for \code{movedata_fileopts}:
+\itemize{
+\item \code{date_format}: Date format specification used in the movement data file. Format: Character string matching readr date format specifications. See \code{\link[readr:parse_datetime]{readr::parse_date()}} for
+guidance.
+}
+
+Additionally, required for \code{holdingdata_fileopts}, if geographical coordinates are to be included in data extraction:
+\itemize{
+\item \code{country_code}: Two-letter country code for the data in the holding data file. Format: Character string consisting of two upper-case letters.
+\item \code{coord_EPSG_code}: Numeric part of the EPSG code for the Coordinate Reference System used in the holding data file. Format: Single integer.
+}
+}
+
+\subsection{\code{cols} configurations and data format requirements}{
+
+Within \code{movedata_cols} groupings, the following configurations are required:
+\itemize{
+\item \code{from}: Header/index of the column containing identifiers of the holdings of origin.
+\item \code{to}: Header/index of the column containing identifiers of the destination holdings.
+\item \code{date}: Header/index of the column containing movement dates.
+\item \code{weight}: Header/index of the column containing movement weights/quantities.
+}
+
+For \code{holdingdata_cols}, there is only one required configuration:
+\itemize{
+\item \code{id}: Header/index of the column containing holding identifiers (matching to \code{from}/\code{to} in movement data).
+}
+
+Additionally, for inclusion of geographical coordinates, \code{holdingdata_cols} requires the following configurations:
+\itemize{
+\item \code{coord_x}: Header/index of the column containing longitudinal geographical coordinates (x/longitude) of holdings
+\item \code{coord_y}: Header/index of the column containing latitudinal geographical coordinates (y/latitude) of holdings
+}
+
+All \code{cols} configuration values must either be a character string or a single integer.
+All configurations within a \code{cols} grouping must have unique values.
+}
+}
+\examples{
+# Validate a valid config file
+validate_config(system.file("configurations", "fakeScotEID_holding.yml", package="movenet"))
+
+# Validate an invalid config file (empty template)
+validate_config(system.file("configurations", "holdingconfig_template.yml", package="movenet"))
+
+}
+\seealso{
+\itemize{
+\item \code{vignette("configurations")} for an explanation of the movenet config system.
+\item \code{list.files(system.file("configurations", package = "movenet"))} for a list of list of pre-installed templates and validated config files.
+}
+
+Other configurations-related functions: 
+\code{\link{change_config}()},
+\code{\link{get_config}()},
+\code{\link{load_config}()},
+\code{\link{new_config}()},
+\code{\link{save_config}()}
+}
+\concept{configurations-related functions}
