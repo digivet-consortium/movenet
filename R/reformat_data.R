@@ -240,7 +240,7 @@ reformat_data <- function(datafile, type){ #Could also infer type from the data
 ################################################################################
 
 #' Convert character strings to unique, ASCII-compliant, and syntactically
-#' valid column names.
+#' valid column names
 #'
 #' `asciify()` replaces non-ASCII punctuation, symbols, and Latin letters with
 #' approximate ASCII-range equivalents, and ensures that resulting character
