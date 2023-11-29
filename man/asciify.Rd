@@ -3,7 +3,7 @@
 \name{asciify}
 \alias{asciify}
 \title{Convert character strings to unique, ASCII-compliant, and syntactically
-valid column names.}
+valid column names}
 \usage{
 asciify(x)
 }
