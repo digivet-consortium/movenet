@@ -56,6 +56,8 @@ if(.Platform$OS.type=="unix"){
 }
 
 randomise_size_range = c(5L,10L,15L,20L,50L,100L)
+## For quick analysis for Jess:
+# randomise_size_range = c(5L,10L,20L)
 from_type = "point"
 to_type = "centroid"
 mask_landscape = FALSE
@@ -201,18 +203,6 @@ data2modeloutput <- function(movement_data, holding_data,
 true_data <- data2modeloutput(movement_data, holding_data, incl_nonactive_holdings,
                               weight_unit_transmission_probability, whole_months,
                               infected_holdings, tspan, n_simulations)
-ggplot(true_data) +
-  xlab("Time (days)") +
-  ylab("Holdings infected (%)") +
-  labs(colour = "Legend") +
-  scale_colour_manual(breaks = names(colour_palette),
-    values = colour_palette) +
-  scale_fill_manual(values = colour_palette, guide = "none") +
-  theme_bw() +
-  #geom_ribbon(aes(x = as.numeric(row.names(true_data)), ymin = Min, ymax = Max,
-  #                fill = "True data"),
-  #            alpha = 0.2) +
-  geom_line(aes(x=as.numeric(row.names(true_data)), y = Mean, colour = "True data"))
 
 ############################################################
 ### Anonymise coordinates & run model on anonymised data ###
