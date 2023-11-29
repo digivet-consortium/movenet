@@ -302,14 +302,44 @@ ggsave("siminf_plot.pdf")
 
 file.copy("siminf_plot.pdf", "~/Dropbox/SimRes/siminf_plot.pdf", overwrite = TRUE)
 
+RandomiseSize_labels<-as.list(c("True data",paste("Resampling area size:",c(5,20,50), "Voronoi cells")))
+names(RandomiseSize_labels)<-c("0","005","020","050")
+RandomiseSize_labeller <- function(variable, value){return(RandomiseSize_labels[as.character(value)])}
+
+
 seq_along(anonymised_data) |>
   lapply(function(x) tibble(Iteration=x, RandomiseSize = names(anonymised_data)[x], Time=tspan, Mean = anonymised_data[[x]]$Mean)) |>
   bind_rows() |>
   bind_rows(
     tibble(Iteration=0, RandomiseSize = "0", Time=tspan, Mean = true_data$Mean)
   ) |>
+  filter(RandomiseSize %in% c("0","005","020","050")) |>
   ggplot(aes(x=Time, y=Mean, col=RandomiseSize, group=Iteration)) +
   geom_line() +
-  facet_wrap(~RandomiseSize) +
-  theme_light()
-ggsave("siminf_plot_means.pdf")
+  xlim(0,150) +
+  xlab("Time (days)") +
+  ylab("Cumulative infected holdings (%), mean over 100 simulations") +
+  #facet_wrap(~RandomiseSize, labeller = RandomiseSize_labeller) +
+  theme_bw(base_size = 15) +
+  #guides(col = "none")
+  labs(colour = "Resampling area size") +
+  scale_colour_discrete(labels=c("True data",paste(c(5,20,50), "Voronoi cells"))) +
+  theme(legend.position = c(0.8, 0.2))
+#ggsave("siminf_plot_facets.pdf")
+ggsave("siminf_plot_all.pdf")
+
+seq_along(anonymised_data) |>
+  lapply(function(x){tibble(Iteration=x, RandomiseSize = names(anonymised_data)[x], Value = as.numeric(anonymised_data[[x]][150,1:100]))}) |>
+  bind_rows() |>
+  bind_rows(
+    tibble(Iteration=0, RandomiseSize = "0", Value = as.numeric(true_data[365,1:100]))
+  ) |>
+  filter(RandomiseSize %in% c("0","005","020","050")) |>
+  ggplot(aes(x=factor(RandomiseSize), y=Value, fill = RandomiseSize)) +
+  geom_boxplot() +
+  scale_x_discrete(labels = c("True data", "5", "20", "50")) +
+  xlab("Resampling area size (n Voronoi cells)") +
+  ylab("Cumulative infected holdings (%) at t = 150") +
+  theme_bw(base_size = 15) +
+  guides(fill = "none")
+ggsave("siminf_boxplot_4cat.pdf")

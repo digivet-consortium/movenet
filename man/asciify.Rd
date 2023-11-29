@@ -2,13 +2,43 @@
 % Please edit documentation in R/reformat_data.R
 \name{asciify}
 \alias{asciify}
-\title{asciify}
+\title{Convert character strings to unique, ASCII-compliant, and syntactically
+valid column names}
 \usage{
 asciify(x)
 }
 \arguments{
-\item{x}{character}
+\item{x}{Character vector to be coerced to unique, ASCII-compliant, and
+syntactically valid names. This is coerced to character if necessary.}
+}
+\value{
+Character vector of the same length as \code{x}, with each changed to a
+unique, ASCII-compliant and syntactically valid name.
 }
 \description{
-asciify
+\code{asciify()} replaces non-ASCII punctuation, symbols, and Latin letters with
+approximate ASCII-range equivalents, and ensures that resulting character
+strings are unique and syntactically valid column names.
 }
+\details{
+This helper function is used within \code{\link[=load_config]{load_config()}} and
+\code{\link[=reformat_data]{reformat_data()}} to avoid potential issues with accents and other
+non-ASCII symbols in data file column headers.
+}
+\examples{
+asciify(c("Fr\u00E5nppn", "Avf\u00E4rdsdatum"))
+asciify(c("a and b", "a-and-b"))
+
+}
+\seealso{
+\itemize{
+\item \code{\link[stringi:stri_trans_general]{stringi::stri_trans_general()}} and
+\url{https://unicode-org.github.io/icu/userguide/transforms/general/#icu-transliterators} for the underlying process of making names ASCII-compliant.
+\item \code{\link[=make.names]{make.names()}} for the underlying process of making names syntactically valid and unique.
+}
+
+Other functions for initial data processing: 
+\code{\link{load_config}()},
+\code{\link{reformat_data}()}
+}
+\concept{functions for initial data processing}

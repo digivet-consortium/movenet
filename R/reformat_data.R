@@ -1,11 +1,90 @@
-#' @title Reading and reformatting of livestock movement or holding data
+#' Read in livestock movement or holding data, and reshape to movenet format
 #'
 #' @description
-#' Reformats movement or holding data from a delimited file into a common
-#' intermediate format (extracts and renames selected columns)
+#' `reformat_data()` reads in movement or holding data from a delimited `datafile`,
+#' and reshapes them to a format compatible with movenet pseudonymisation,
+#' network analysis, and modelling workflows.
+#'
+#' N.B.: To correctly interpret and process `datafile`, the function requires
+#' configurations of the relevant `type` to be loaded into the movenet environment.
+#'
+#' `reformat_data()` processes `datafile` as follows:
+#' * Columns with minimally required data, and any additional optional columns
+#' as indicated in the loaded configurations, are extracted from `datafile`.
+#' * Column headers are converted to unique ASCII-compliant and syntactically
+#' valid names.
+#' * Data formats for `date`, `weight`, `coord_x`, `coord_y`, and/or `herd_size`
+#' columns are checked.
+#' * For movement data files (`type == "movement"`): Dates in the `date` column are converted to date format.
+#' * For holding data files (`type == "holding"`): If `coord_x` and `coord_y` columns are present, these
+#' are converted to a single simple feature (sf) list-column named `"coordinates"`.
+#'
+#' @details
+#' If the movenet environment contains `movedata_cols` or `holdingdata_cols`
+#' configurations stored as column indices (rather than column headers), calling
+#' `reformat_data()` replaces these configuration values with the appropriate
+#' column headers. A warning message is generated to indicate any such
+#' configuration changes.
 #'
 #' @param datafile Path to a delimited file with movement or holding data.
-#' @param type Data type: "movement" or "holding"
+#' @param type Character string representing the type of data contained in
+#'   `datafile`: either `"movement"` or `"holding"`.
+#'
+#' @returns
+#' A tibble with (a subset of) columns from `datafile`, reordered and
+#' reformatted according to movenet format requirements.
+#'
+#' For movement data (`type == "movement"`), columns will include:
+#' * `from` (character format).
+#' * `to` (character format).
+#' * `date` (date format).
+#' * `weight` (double format).
+#' * Any optional columns as indicated by the loaded `movedata_cols`
+#' configurations (formats as determined by [readr::type_convert()]).
+#'
+#' For holding data (`type == "holding"`), columns will include:
+#' * `id` (character format).
+#' * Any optional columns as indicated by the loaded `holdingdata_cols`
+#' configurations (formats as determined by [readr::type_convert()]).
+#' * If the loaded configurations include `coord_x` and `coord_y`,
+#' the returned tibble will instead include a single column named `"coordinates"`
+#' (sf list-column, class sfc_POINT).
+#'
+#' @examples
+#' # Set-up: Save movenet environment with current configurations
+#' movenetenv <- movenet:::movenetenv
+#' old_config <- movenetenv$options
+#'
+#' # Load a movement config file
+#' load_config(system.file("configurations", "ScotEID.yml",
+#'                         package = "movenet"))
+#'
+#' # Read in and reformat a movement data file
+#' movement_data <-
+#'   reformat_data(system.file("extdata", "fake_Scottish_movement_data.csv",
+#'                             package = "movenet"),
+#'                 type = "movement")
+#' head(movement_data)
+#'
+#' # Load a holding config file
+#' load_config(system.file("configurations", "fakeScotEID_holding.yml",
+#'                         package = "movenet"))
+#'
+#' # Read in and reformat a holding data file
+#' holding_data <-
+#'   reformat_data(system.file("extdata", "fake_Scottish_holding_data.csv",
+#'                            package = "movenet"),
+#'                 type = "holding")
+#' head(holding_data)
+#'
+#' # Clean-up: Reinstate previous configurations
+#' movenetenv$options <- old_config
+#' rm("old_config", "movenetenv", "movement_data", "holding_data")
+#'
+#' @seealso
+#' * [asciify()] for the underlying ASCIIfication process.
+#' * [`vignette("movenet")`] for getting started with movenet.
+#' @family functions for initial data processing
 #'
 #' @importFrom dplyr mutate
 #' @importFrom magrittr %>%
@@ -13,10 +92,6 @@
 #' @importFrom withr with_options
 #' @import checkmate
 #' @import readr
-#'
-#' @details
-#'
-#' @return reformatted movement or holding data (selected & renamed columns)
 #'
 #' @export
 reformat_data <- function(datafile, type){ #Could also infer type from the data
@@ -164,15 +239,35 @@ reformat_data <- function(datafile, type){ #Could also infer type from the data
 
 ################################################################################
 
-############################################################
-### Helper: make column names ascii-compliant and unique ###
-############################################################
-
-#' asciify
+#' Convert character strings to unique, ASCII-compliant, and syntactically
+#' valid column names
+#'
+#' `asciify()` replaces non-ASCII punctuation, symbols, and Latin letters with
+#' approximate ASCII-range equivalents, and ensures that resulting character
+#' strings are unique and syntactically valid column names.
+#'
+#' @details This helper function is used within [`load_config()`] and
+#' [`reformat_data()`] to avoid potential issues with accents and other
+#' non-ASCII symbols in data file column headers.
+#'
+#' @param x Character vector to be coerced to unique, ASCII-compliant, and
+#' syntactically valid names. This is coerced to character if necessary.
+#'
+#' @returns Character vector of the same length as `x`, with each changed to a
+#' unique, ASCII-compliant and syntactically valid name.
+#'
+#' @examples
+#' asciify(c("Fr\u00E5nppn", "Avf\u00E4rdsdatum"))
+#' asciify(c("a and b", "a-and-b"))
+#'
+#' @seealso
+#' * [stringi::stri_trans_general()] and
+#' \url{https://unicode-org.github.io/icu/userguide/transforms/general/#icu-transliterators} for the underlying process of making names ASCII-compliant.
+#' * [make.names()] for the underlying process of making names syntactically valid and unique.
+#' @family functions for initial data processing
 #'
 #' @export
 #' @importFrom stringi stri_trans_general
-#' @param x character
 asciify <- function(x){
   make.names(stringi::stri_trans_general(x, 'Latin-ASCII'),
              unique=TRUE)
@@ -180,10 +275,22 @@ asciify <- function(x){
 
 ################################################################################
 
-################################################################################
-### Helper: convert options with column indices (int) to column names (char) ###
-################################################################################
-
+#' Replace `cols` configurations stored as column indices with the relevant
+#' column headers
+#'
+#' `colindex2name()` replaces c
+#'
+#' @details
+#'
+#' @param data A tibble with ALL columns of a movement or holding data file.
+#' @param minvars A named list with all required `cols` configurations.
+#' @param extra A named list with all optional `cols` configurations set in the movenet environment.
+#'
+#' @returns
+#'
+#' @seealso
+#'
+#' @keywords internal
 colindex2name <- function(data, minvars, extra){
 
  # Start building warning message with overview of any int options values (col
@@ -195,7 +302,6 @@ colindex2name <- function(data, minvars, extra){
   if (any(sapply(minvars, is.integer))){
 
     int_minvars <- minvars[which(sapply(minvars, is.integer))]
-
 
   # Check for required options w/ out-of-range indices, raise error if any exist
 
@@ -214,7 +320,6 @@ colindex2name <- function(data, minvars, extra){
                      collapse = ", ")),
       call. = FALSE)
     }
-
 
   # Change column indices to column headers for required options;
   # add these changes to warning message
@@ -253,7 +358,6 @@ colindex2name <- function(data, minvars, extra){
       extra[which(extra %in% outofrange_extra)] <- NULL
     }
 
-
   # Change column indices to column headers for extra options that are within-
   # range; add these changes to (first) warning message
 
@@ -274,7 +378,6 @@ colindex2name <- function(data, minvars, extra){
         colnames(data)[unlist(withinrange_extra)]
     }
   }
-
 
  # Check for duplicate option values (column names); raise error if these exist
 
@@ -300,10 +403,15 @@ colindex2name <- function(data, minvars, extra){
 
 ################################################################################
 
-######################################################
-### Helper: check for & select columns of interest ###
-######################################################
-
+#' Check for the presence of required and additional columns, and extract from `data`
+#'
+#' @param data A tibble with ALL columns of a movement or holding data file.
+#' @param minvars A named list with all required `cols` configurations.
+#' @param extra A named list with all optional `cols` configurations set in the movenet environment.
+#'
+#' @returns
+#'
+#' @keywords internal
 select_cols <- function(data, minvars, extra){
 
   #If not all mandatory columns (minvars) are present in the data, raise error
@@ -341,10 +449,14 @@ select_cols <- function(data, minvars, extra){
 
 ################################################################################
 
-##################################################################
-### Helper: check numeric columns & change col type to numeric ###
-##################################################################
-
+#' Check numeric columns & change col type to numeric
+#'
+#' @param numeric_col
+#' @param decimal
+#'
+#' @returns
+#'
+#' @keywords internal
 reformat_numeric <- function(numeric_col, decimal){
 
   #Normally, parse_double() raises a warning if it can't read something as
@@ -370,10 +482,14 @@ reformat_numeric <- function(numeric_col, decimal){
 
 ################################################################################
 
-############################################################
-### Helper: check date columns & change col type to Date ###
-############################################################
-
+#' Check date columns and change col type to date
+#'
+#' @param date_col
+#' @param date_format
+#'
+#' @returns
+#'
+#' @keywords internal
 reformat_date <- function(date_col, date_format){
 
   #Normally, parse_date() raises a warning if it can't read something as a date;
@@ -427,15 +543,19 @@ reformat_date <- function(date_col, date_format){
 
 ################################################################################
 
-################################################################
-### Helper: check coordinate columns & change to sf geometry ###
-################################################################
-
+#' Check coordinate columns & change to sf geometry
+#'
+#' @param coord_x_col
+#' @param coord_y_col
+#' @param decimal
+#' @param crs
+#'
 #' @returns a tibble with sf geometry point data and attributes including crs
 #'
 #' @importFrom sf st_as_sf
 #' @importFrom tibble as_tibble
 #'
+#' @keywords internal
 reformat_coords <- function(coord_x_col, coord_y_col, decimal, crs){
 
   #first reformat to numeric to ensure use of correct decimal marker
