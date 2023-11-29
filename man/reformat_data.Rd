@@ -2,19 +2,108 @@
 % Please edit documentation in R/reformat_data.R
 \name{reformat_data}
 \alias{reformat_data}
-\title{Reading and reformatting of livestock movement or holding data}
+\title{Read in livestock movement or holding data, and reshape to movenet format}
 \usage{
 reformat_data(datafile, type)
 }
 \arguments{
 \item{datafile}{Path to a delimited file with movement or holding data.}
 
-\item{type}{Data type: "movement" or "holding"}
+\item{type}{Character string representing the type of data contained in
+\code{datafile}: either \code{"movement"} or \code{"holding"}.}
 }
 \value{
-reformatted movement or holding data (selected & renamed columns)
+A tibble with (a subset of) columns from \code{datafile}, reordered and
+reformatted according to movenet format requirements.
+
+For movement data (\code{type == "movement"}), columns will include:
+\itemize{
+\item \code{from} (character format).
+\item \code{to} (character format).
+\item \code{date} (date format).
+\item \code{weight} (double format).
+\item Any optional columns as indicated by the loaded \code{movedata_cols}
+configurations (formats as determined by \code{\link[readr:type_convert]{readr::type_convert()}}).
+}
+
+For holding data (\code{type == "holding"}), columns will include:
+\itemize{
+\item \code{id} (character format).
+\item Any optional columns as indicated by the loaded \code{holdingdata_cols}
+configurations (formats as determined by \code{\link[readr:type_convert]{readr::type_convert()}}).
+\item If the loaded configurations include \code{coord_x} and \code{coord_y},
+the returned tibble will instead include a single column named \code{"coordinates"}
+(sf list-column, class sfc_POINT).
+}
 }
 \description{
-Reformats movement or holding data from a delimited file into a common
-intermediate format (extracts and renames selected columns)
+\code{reformat_data()} reads in movement or holding data from a delimited \code{datafile},
+and reshapes them to a format compatible with movenet pseudonymisation,
+network analysis, and modelling workflows.
+
+N.B.: To correctly interpret and process \code{datafile}, the function requires
+configurations of the relevant \code{type} to be loaded into the movenet environment.
+
+\code{reformat_data()} processes \code{datafile} as follows:
+\itemize{
+\item Columns with minimally required data, and any additional optional columns
+as indicated in the loaded configurations, are extracted from \code{datafile}.
+\item Column headers are converted to unique ASCII-compliant and syntactically
+valid names.
+\item Data formats for \code{date}, \code{weight}, \code{coord_x}, \code{coord_y}, and/or \code{herd_size}
+columns are checked.
+\item For movement data files (\code{type == "movement"}): Dates in the \code{date} column are converted to date format.
+\item For holding data files (\code{type == "holding"}): If \code{coord_x} and \code{coord_y} columns are present, these
+are converted to a single simple feature (sf) list-column named \code{"coordinates"}.
 }
+}
+\details{
+If the movenet environment contains \code{movedata_cols} or \code{holdingdata_cols}
+configurations stored as column indices (rather than column headers), calling
+\code{reformat_data()} replaces these configuration values with the appropriate
+column headers. A warning message is generated to indicate any such
+configuration changes.
+}
+\examples{
+# Set-up: Save movenet environment with current configurations
+movenetenv <- movenet:::movenetenv
+old_config <- movenetenv$options
+
+# Load a movement config file
+load_config(system.file("configurations", "ScotEID.yml",
+                        package = "movenet"))
+
+# Read in and reformat a movement data file
+movement_data <-
+  reformat_data(system.file("extdata", "fake_Scottish_movement_data.csv",
+                            package = "movenet"),
+                type = "movement")
+head(movement_data)
+
+# Load a holding config file
+load_config(system.file("configurations", "fakeScotEID_holding.yml",
+                        package = "movenet"))
+
+# Read in and reformat a holding data file
+holding_data <-
+  reformat_data(system.file("extdata", "fake_Scottish_holding_data.csv",
+                           package = "movenet"),
+                type = "holding")
+head(holding_data)
+
+# Clean-up: Reinstate previous configurations
+movenetenv$options <- old_config
+rm("old_config", "movenetenv", "movement_data", "holding_data")
+
+}
+\seealso{
+\itemize{
+\item \code{\link[=asciify]{asciify()}} for the underlying ASCIIfication process.
+\item \code{\link{vignette("movenet")}} for getting started with movenet.
+}
+
+Other functions for initial data processing: 
+\code{\link{asciify}()},
+\code{\link{load_config}()}
+}
+\concept{functions for initial data processing}

@@ -157,12 +157,25 @@ distance_matrices |>
 
 stopCluster(cl)
 
+RandomiseSize_labels<-as.list(c("True data",paste("Resampling area size:",c(5,20,50), "Voronoi cells")))
+names(RandomiseSize_labels)<-c(0L,5L,20L,50L)
+RandomiseSize_labeller <- function(variable, value){return(RandomiseSize_labels[as.character(value)])}
 
-ggplot(max_comp_sizes, aes(x=Threshold, y=Proportion, col=factor(RandomiseSize))) +
-  geom_line() +
-  geom_point() +
-  theme_light()
-ggsave("output.pdf")
+max_comp_sizes|>
+  filter(RandomiseSize %in% c(0L,5L,20L,50L)) |>
+  mutate(Threshold = Threshold/1000) |>
+  ggplot(aes(x=Threshold, y=Proportion, col=factor(RandomiseSize))) +
+  geom_line(aes(group = interaction(RandomiseSize,Iteration))) +
+  #geom_point() +
+  facet_wrap(~RandomiseSize, labeller = RandomiseSize_labeller) +
+  theme_bw(base_size = 15) +
+  ylab("Holdings included in largest component (%)") +
+  xlab("Distance threshold (km)") +
+  guides(col = "none")
+  #labs(colour = "Resampling area size") +
+  #scale_colour_discrete(labels=c("True data",paste(c(5,20,50), "Voronoi cells"))) +
+  #theme(legend.position = c(0.8, 0.2))
+ggsave("output2.pdf")
 saveRDS(max_comp_sizes, "max_comp_sizes.rds")
 
 file.copy("output.pdf", "~/Dropbox/SimRes/output.pdf", overwrite = TRUE)
@@ -191,6 +204,6 @@ ggplot(data = max_comp_sizes) +
   labs(colour = "Legend") +
   scale_colour_manual(breaks = names(colour_palette), values = colour_palette) +
   theme_bw() +
-  geom_line(aes(x = threshold, y = true, col = "True data")) +
+  geom_line(aes(x = Threshold, y = Proportion, col = colour_palette[])) +
   anon_lines
 

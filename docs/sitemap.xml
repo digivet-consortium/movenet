@@ -43,6 +43,9 @@
     <loc>https://digivet-consortium.github.io/movenet/reference/change_config.html</loc>
   </url>
   <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/colindex2name.html</loc>
+  </url>
+  <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/create_report.html</loc>
   </url>
   <url>
@@ -106,7 +109,16 @@
     <loc>https://digivet-consortium.github.io/movenet/reference/plot_measure_over_anonymisation_gradient.html</loc>
   </url>
   <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/reformat_coords.html</loc>
+  </url>
+  <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/reformat_data.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/reformat_date.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/reformat_numeric.html</loc>
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/replace_ids_w_key.html</loc>
@@ -119,6 +131,9 @@
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/save_config.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/select_cols.html</loc>
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/validate_config.html</loc>

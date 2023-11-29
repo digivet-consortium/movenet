@@ -38,6 +38,7 @@
 #' * `vignette("configurations")` for an explanation of the movenet config system.
 #' * `list.files(system.file("configurations", package = "movenet"))` for a list of pre-installed templates and validated config files.
 #' @family configurations-related functions
+#' @family functions for initial data processing
 #'
 #' @importFrom yaml yaml.load_file
 #'

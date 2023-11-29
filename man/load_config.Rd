@@ -57,5 +57,10 @@ Other configurations-related functions:
 \code{\link{new_config}()},
 \code{\link{save_config}()},
 \code{\link{validate_config}()}
+
+Other functions for initial data processing: 
+\code{\link{asciify}()},
+\code{\link{reformat_data}()}
 }
 \concept{configurations-related functions}
+\concept{functions for initial data processing}
