@@ -294,43 +294,45 @@ ggsave("siminf_plot.pdf")
 file.copy("siminf_plot.pdf", "~/Dropbox/SimRes/siminf_plot.pdf", overwrite = TRUE)
 
 RandomiseSize_labels<-as.list(c("True data",paste("Resampling area size:",c(5,20,50), "Voronoi cells")))
-names(RandomiseSize_labels)<-c("0","005","020","050")
+names(RandomiseSize_labels)<-c("0","05","20","50")
 RandomiseSize_labeller <- function(variable, value){return(RandomiseSize_labels[as.character(value)])}
 
-
+t <- 365
 seq_along(anonymised_data) |>
   lapply(function(x) tibble(Iteration=x, RandomiseSize = names(anonymised_data)[x], Time=tspan, Mean = anonymised_data[[x]]$Mean)) |>
   bind_rows() |>
   bind_rows(
     tibble(Iteration=0, RandomiseSize = "0", Time=tspan, Mean = true_data$Mean)
   ) |>
-  filter(RandomiseSize %in% c("0","005","020","050")) |>
+  filter(RandomiseSize %in% c("0","05","20","50")) |>
   ggplot(aes(x=Time, y=Mean, col=RandomiseSize, group=Iteration)) +
   geom_line() +
-  xlim(0,150) +
+ # xlim(0,t) +
   xlab("Time (days)") +
   ylab("Cumulative infected holdings (%), mean over 100 simulations") +
-  #facet_wrap(~RandomiseSize, labeller = RandomiseSize_labeller) +
+  facet_wrap(~RandomiseSize, labeller = RandomiseSize_labeller) +
   theme_bw(base_size = 15) +
-  #guides(col = "none")
-  labs(colour = "Resampling area size") +
-  scale_colour_discrete(labels=c("True data",paste(c(5,20,50), "Voronoi cells"))) +
-  theme(legend.position = c(0.8, 0.2))
-#ggsave("siminf_plot_facets.pdf")
-ggsave("siminf_plot_all.pdf")
+  guides(col = "none")
+  # labs(colour = "Resampling area size") +
+  # scale_colour_discrete(labels=c("True data",paste(c(5,20,50), "Voronoi cells"))) +
+  # theme(legend.position = c(0.8, 0.2))
+ggsave("siminf_plot_facets.pdf")
+#ggsave("siminf_plot_all.pdf")
 
+n_farms <- 3858
+t<-365
 seq_along(anonymised_data) |>
-  lapply(function(x){tibble(Iteration=x, RandomiseSize = names(anonymised_data)[x], Value = as.numeric(anonymised_data[[x]][150,1:100]))}) |>
+  lapply(function(x){tibble(Iteration=x, RandomiseSize = names(anonymised_data)[x], Value = as.numeric(anonymised_data[[x]][t,1:100]*100/n_farms))}) |>
   bind_rows() |>
   bind_rows(
-    tibble(Iteration=0, RandomiseSize = "0", Value = as.numeric(true_data[365,1:100]))
+    tibble(Iteration=0, RandomiseSize = "0", Value = as.numeric(true_data[t,1:100]*100/n_farms))
   ) |>
-  filter(RandomiseSize %in% c("0","005","020","050")) |>
+  filter(RandomiseSize %in% c("0","05","20","50")) |>
   ggplot(aes(x=factor(RandomiseSize), y=Value, fill = RandomiseSize)) +
   geom_boxplot() +
   scale_x_discrete(labels = c("True data", "5", "20", "50")) +
   xlab("Resampling area size (n Voronoi cells)") +
-  ylab("Cumulative infected holdings (%) at t = 150") +
+  ylab(paste("Cumulative infected holdings (%) at t =", t)) +
   theme_bw(base_size = 15) +
   guides(fill = "none")
 ggsave("siminf_boxplot_4cat.pdf")
