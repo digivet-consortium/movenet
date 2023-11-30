@@ -1,24 +1,37 @@
-#' Create dynamic networks from movenet-format movement data
+#' Create a dynamic network representation of movenet-format movement data
 #'
-#' @param movement_data Movenet format movement data
-#' @param holding_data Movenet format holding data (optional)
-#' @param incl_nonactive_holdings Whether to include holdings from
-#'   `holding_data` that are not present in `movement_data`. Default is `FALSE`.
-#'   If set to `TRUE`, holdings that don't trade within the period covered by
-#'   `movement_data` are added to the network but set as non-active.
-#'
-#' @return Temporal network (directed) in networkDynamic format
+#' `movedata2networkDynamic()` converts movenet-format movement and (optional)
+#' holding data tibbles into a networkDynamic temporal network representation.
+#' This assumes the network is directed with no loops, no hyperedges, and no
+#' multiplex edges.
 #'
 #' @details
-#' In the returned network, node identifiers are consecutive integers,
-#' which may not correspond to original holding identifiers as provided in
-#' `movement_data` and/or `holding_data`. The original holding identifiers (in
-#' character format) have been set as [<`persistent identifiers`>]
-#' [networkDynamic::persistent.ids] and can be accessed through
-#' `get.vertex.pid()`, or through the vertex attribute `true_id`.
+#' ## Node and holding identifiers
+#' If nodes identifiers are not consecutive integers:
+#' For compatibility with networkDynamic, active nodes (holdings) are assigned
+#' identifiers consisting of an integer between 1 and the number of active holdings in
+#' the network, in random order.
+#' If `incl_nonactive_holdings == TRUE`, non-active holdings are added to the network
+#' with identifiers ranging from the number of active holdings+1 to the total number of holdings.
+#' #' Original holding identifiers are stored as vertex attribute `true_id`
+#' and set as [<`persistent identifiers`>][networkDynamic::persistent.ids].
 #'
-#' In the returned network, holdings are set to be active only during movement
-#' spells.
+#'
+#' @param movement_data A movenet-format movement data tibble
+#' @param holding_data A movenet-format holding data tibble (optional)
+#' @param incl_nonactive_holdings A logical that indicates whether to include
+#'   holdings from `holding_data` that are not present in `movement_data`.
+#'   Default is `FALSE`. If set to `TRUE`, holdings that don't trade within the
+#'   period covered by `movement_data` are added to the network but set as
+#'   non-active.
+#'
+#' @returns
+#' A networkDynamic object consisting of a directed temporal network,
+#' with nodes representing holdings and edges representing connections between
+#' holdings. Moves are represented as edge spells (periods over which edges are
+#' considered active), with a duration of 0 each. Nodes are set to be active
+#' only during such edge spells.
+#'
 #'
 #' @importFrom dplyr filter select
 #' @import network
