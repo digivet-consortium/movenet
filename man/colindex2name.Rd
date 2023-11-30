@@ -10,11 +10,39 @@ colindex2name(data, minvars, extra)
 \arguments{
 \item{data}{A tibble with ALL columns of a movement or holding data file.}
 
-\item{minvars}{A named list with all required \code{cols} configurations.}
+\item{minvars}{A named list with all required \code{cols} configurations, as column indices.}
 
-\item{extra}{A named list with all optional \code{cols} configurations set in the movenet environment.}
+\item{extra}{A named list with all optional \code{cols} configurations set in the movenet environment, as column indices.}
+}
+\value{
+A list of lists, consisting of:
+\itemize{
+\item \code{minvars} (a named list with all required \code{cols} configurations) with values
+converted to column headers.
+\item \code{extra} (a named list with all optional \code{cols} configurations set in the
+movenet environment) with values converted to column headers. If any optional
+column indices exceed \code{data}'s column range, these are ignored - these configuration(s)
+will not feature in this list.
+}
+
+Additionally, the function has a range of side effects:
+\itemize{
+\item Changes are made in movenetenv, using \code{\link[=change_config]{change_config()}}.
+\item A warning is generated, indicating any changes from column indices to column headers.
+\item A warning is generated if a column index for an optional configuration is out-of-range.
+\item An error is raised if a column index for a required configuration is
+out-of-range, or if changes result in duplicate configuration values.
+}
 }
 \description{
-\code{colindex2name()} replaces c
+Internal helper function that replaces the values of \code{cols} configurations
+that are stored as column indices within the movenet environment, with the
+relevant column headers, using \code{data} as reference dataset. A warning
+message is generated to indicate any such changes. The function also checks
+that the provided column indices are within the column range of \code{data}, and
+that the configurations do not correspond to duplicate columns.
+}
+\seealso{
+\code{vignette("configurations")} for an explanation of the movenet config system.
 }
 \keyword{internal}

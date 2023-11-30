@@ -2,14 +2,22 @@
 % Please edit documentation in R/reformat_data.R
 \name{reformat_numeric}
 \alias{reformat_numeric}
-\title{Check numeric columns & change col type to numeric}
+\title{Convert a column's data to double}
 \usage{
 reformat_numeric(numeric_col, decimal)
 }
 \arguments{
-\item{decimal}{}
+\item{numeric_col}{A one-column tibble containing data of type \code{character},
+but assumed to be coercible to numeric.}
+
+\item{decimal}{A single character representing the decimal mark.}
+}
+\value{
+If \code{numeric_col} contains numeric data, a double vector. Otherwise,
+an error is raised.
 }
 \description{
-Check numeric columns & change col type to numeric
+Internal helper function that parses the data in \code{numeric_col} as double, and
+raises an error with an informative message if this does not work.
 }
 \keyword{internal}

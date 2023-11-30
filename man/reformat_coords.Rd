@@ -2,17 +2,30 @@
 % Please edit documentation in R/reformat_data.R
 \name{reformat_coords}
 \alias{reformat_coords}
-\title{Check coordinate columns & change to sf geometry}
+\title{Convert two columns containing coordinates in character format to an sf geometry
+object}
 \usage{
 reformat_coords(coord_x_col, coord_y_col, decimal, crs)
 }
 \arguments{
-\item{crs}{}
+\item{coord_x_col}{A one-column tibble containing data of type \code{character},
+assumed to be coercible to numeric and representing a longitudinal coordinate.}
+
+\item{coord_y_col}{A one-column tibble containing data of type \code{character},
+assumed to be coercible to numeric and representing a latitudinal coordinate.}
+
+\item{decimal}{A single character representing the decimal mark.}
+
+\item{crs}{An integer with the numeric part of the EPSG code for the
+Coordinate Reference System used in \code{coord_x_col} and \code{coord_y_col}.}
 }
 \value{
-a tibble with sf geometry point data and attributes including crs
+If \code{coord_x_col} and \code{coord_y_col} contain numeric data, a tibble
+with a single sf geometry list-column (class sfc_POINT) with combined coordinates,
+and attributes including \code{crs}. Otherwise, an error is raised.
 }
 \description{
-Check coordinate columns & change to sf geometry
+Internal helper function that parses the data in \code{coord_x_col} and
+\code{coord_y_col} as coordinates and converts them to an sf geometry list-column.
 }
 \keyword{internal}

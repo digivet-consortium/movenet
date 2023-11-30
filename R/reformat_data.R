@@ -15,9 +15,11 @@
 #' valid names.
 #' * Data formats for `date`, `weight`, `coord_x`, `coord_y`, and/or `herd_size`
 #' columns are checked.
-#' * For movement data files (`type == "movement"`): Dates in the `date` column are converted to date format.
-#' * For holding data files (`type == "holding"`): If `coord_x` and `coord_y` columns are present, these
-#' are converted to a single simple feature (sf) list-column named `"coordinates"`.
+#' * For movement data files (`type == "movement"`): Dates in the `date` column
+#' are converted to date format.
+#' * For holding data files (`type == "holding"`): If `coord_x` and `coord_y`
+#' columns are present, these are converted to a single simple feature (sf)
+#' list-column named `"coordinates"`.
 #'
 #' @details
 #' If the movenet environment contains `movedata_cols` or `holdingdata_cols`
@@ -278,17 +280,34 @@ asciify <- function(x){
 #' Replace `cols` configurations stored as column indices with the relevant
 #' column headers
 #'
-#' `colindex2name()` replaces c
-#'
-#' @details
+#' Internal helper function that replaces the values of `cols` configurations
+#' that are stored as column indices within the movenet environment, with the
+#' relevant column headers, using `data` as reference dataset. A warning
+#' message is generated to indicate any such changes. The function also checks
+#' that the provided column indices are within the column range of `data`, and
+#' that the configurations do not correspond to duplicate columns.
 #'
 #' @param data A tibble with ALL columns of a movement or holding data file.
-#' @param minvars A named list with all required `cols` configurations.
-#' @param extra A named list with all optional `cols` configurations set in the movenet environment.
+#' @param minvars A named list with all required `cols` configurations, as column indices.
+#' @param extra A named list with all optional `cols` configurations set in the movenet environment, as column indices.
 #'
 #' @returns
+#' A list of lists, consisting of:
+#' * `minvars` (a named list with all required `cols` configurations) with values
+#' converted to column headers.
+#' * `extra` (a named list with all optional `cols` configurations set in the
+#' movenet environment) with values converted to column headers. If any optional
+#' column indices exceed `data`'s column range, these are ignored - these configuration(s)
+#' will not feature in this list.
 #'
-#' @seealso
+#' Additionally, the function has a range of side effects:
+#' * Changes are made in movenetenv, using [change_config()].
+#' * A warning is generated, indicating any changes from column indices to column headers.
+#' * A warning is generated if a column index for an optional configuration is out-of-range.
+#' * An error is raised if a column index for a required configuration is
+#' out-of-range, or if changes result in duplicate configuration values.
+#'
+#' @seealso `vignette("configurations")` for an explanation of the movenet config system.
 #'
 #' @keywords internal
 colindex2name <- function(data, minvars, extra){
@@ -403,13 +422,25 @@ colindex2name <- function(data, minvars, extra){
 
 ################################################################################
 
-#' Check for the presence of required and additional columns, and extract from `data`
+#' Check the presence of required and additional columns, and extract from `data`
+#'
+#' Internal helper function that checks `data` for the presence of (required
+#' and optional) columns represented in `cols` configurations. It then
+#' extracts these columns from `data`.
 #'
 #' @param data A tibble with ALL columns of a movement or holding data file.
 #' @param minvars A named list with all required `cols` configurations.
 #' @param extra A named list with all optional `cols` configurations set in the movenet environment.
 #'
 #' @returns
+#' A tibble with (a subset of) columns from `data`, reordered with required (`minvar`)
+#' columns first, followed by optional (`extra`) columns.
+#' If all indicated `cols` configurations are present in `data`, the overall
+#' number of columns of the returned tibble is equal to `length(c(minvars, extra))`.
+#' If any optional `cols` configurations are missing from `data`, these columns
+#' are not represented in the returned tibble (which thus has fewer columns),
+#' and a warning is generated.
+#' An error is raised if any required `cols` configurations are missing from `data`.
 #'
 #' @keywords internal
 select_cols <- function(data, minvars, extra){
@@ -449,12 +480,17 @@ select_cols <- function(data, minvars, extra){
 
 ################################################################################
 
-#' Check numeric columns & change col type to numeric
+#' Convert a column's data to double
 #'
-#' @param numeric_col
-#' @param decimal
+#' Internal helper function that parses the data in `numeric_col` as double, and
+#' raises an error with an informative message if this does not work.
 #'
-#' @returns
+#' @param numeric_col A one-column tibble containing data of type `character`,
+#'   but assumed to be coercible to numeric.
+#' @param decimal A single character representing the decimal mark.
+#'
+#' @returns If `numeric_col` contains numeric data, a double vector. Otherwise,
+#'   an error is raised.
 #'
 #' @keywords internal
 reformat_numeric <- function(numeric_col, decimal){
@@ -482,12 +518,19 @@ reformat_numeric <- function(numeric_col, decimal){
 
 ################################################################################
 
-#' Check date columns and change col type to date
+#' Convert a column's data to dates
 #'
-#' @param date_col
-#' @param date_format
+#' Internal helper function that parses the data in `date_col` as dates, using
+#' the date format specification indicated by `date_format`, and raises an error
+#' with an informative message if this does not work.
 #'
-#' @returns
+#' @param date_col A one-column tibble containing data of type `character`,
+#'   assumed to be coercible to dates.
+#' @param date_format A character string with the date format specification used
+#'   in `date_col`. See [readr::parse_date()] for guidance.
+#'
+#' @returns If `date_col` contains dates that follow the `date_format`
+#'   specification, a date vector. Otherwise, an error is raised.
 #'
 #' @keywords internal
 reformat_date <- function(date_col, date_format){
@@ -543,14 +586,23 @@ reformat_date <- function(date_col, date_format){
 
 ################################################################################
 
-#' Check coordinate columns & change to sf geometry
+#' Convert two columns containing coordinates in character format to an sf geometry
+#' object
 #'
-#' @param coord_x_col
-#' @param coord_y_col
-#' @param decimal
-#' @param crs
+#' Internal helper function that parses the data in `coord_x_col` and
+#' `coord_y_col` as coordinates and converts them to an sf geometry list-column.
 #'
-#' @returns a tibble with sf geometry point data and attributes including crs
+#' @param coord_x_col A one-column tibble containing data of type `character`,
+#'   assumed to be coercible to numeric and representing a longitudinal coordinate.
+#' @param coord_y_col A one-column tibble containing data of type `character`,
+#'   assumed to be coercible to numeric and representing a latitudinal coordinate.
+#' @param decimal A single character representing the decimal mark.
+#' @param crs An integer with the numeric part of the EPSG code for the
+#'   Coordinate Reference System used in `coord_x_col` and `coord_y_col`.
+#'
+#' @returns If `coord_x_col` and `coord_y_col` contain numeric data, a tibble
+#' with a single sf geometry list-column (class sfc_POINT) with combined coordinates,
+#' and attributes including `crs`. Otherwise, an error is raised.
 #'
 #' @importFrom sf st_as_sf
 #' @importFrom tibble as_tibble
