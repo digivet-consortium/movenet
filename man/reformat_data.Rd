@@ -52,9 +52,11 @@ as indicated in the loaded configurations, are extracted from \code{datafile}.
 valid names.
 \item Data formats for \code{date}, \code{weight}, \code{coord_x}, \code{coord_y}, and/or \code{herd_size}
 columns are checked.
-\item For movement data files (\code{type == "movement"}): Dates in the \code{date} column are converted to date format.
-\item For holding data files (\code{type == "holding"}): If \code{coord_x} and \code{coord_y} columns are present, these
-are converted to a single simple feature (sf) list-column named \code{"coordinates"}.
+\item For movement data files (\code{type == "movement"}): Dates in the \code{date} column
+are converted to date format.
+\item For holding data files (\code{type == "holding"}): If \code{coord_x} and \code{coord_y}
+columns are present, these are converted to a single simple feature (sf)
+list-column named \code{"coordinates"}.
 }
 }
 \details{

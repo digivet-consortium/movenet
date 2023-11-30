@@ -2,7 +2,7 @@
 % Please edit documentation in R/reformat_data.R
 \name{select_cols}
 \alias{select_cols}
-\title{Check for the presence of required and additional columns, and extract from \code{data}}
+\title{Check the presence of required and additional columns, and extract from \code{data}}
 \usage{
 select_cols(data, minvars, extra)
 }
@@ -13,7 +13,19 @@ select_cols(data, minvars, extra)
 
 \item{extra}{A named list with all optional \code{cols} configurations set in the movenet environment.}
 }
+\value{
+A tibble with (a subset of) columns from \code{data}, reordered with required (\code{minvar})
+columns first, followed by optional (\code{extra}) columns.
+If all indicated \code{cols} configurations are present in \code{data}, the overall
+number of columns of the returned tibble is equal to \code{length(c(minvars, extra))}.
+If any optional \code{cols} configurations are missing from \code{data}, these columns
+are not represented in the returned tibble (which thus has fewer columns),
+and a warning is generated.
+An error is raised if any required \code{cols} configurations are missing from \code{data}.
+}
 \description{
-Check for the presence of required and additional columns, and extract from \code{data}
+Internal helper function that checks \code{data} for the presence of (required
+and optional) columns represented in \code{cols} configurations. It then
+extracts these columns from \code{data}.
 }
 \keyword{internal}

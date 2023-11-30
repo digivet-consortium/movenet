@@ -2,14 +2,24 @@
 % Please edit documentation in R/reformat_data.R
 \name{reformat_date}
 \alias{reformat_date}
-\title{Check date columns and change col type to date}
+\title{Convert a column's data to dates}
 \usage{
 reformat_date(date_col, date_format)
 }
 \arguments{
-\item{date_format}{}
+\item{date_col}{A one-column tibble containing data of type \code{character},
+assumed to be coercible to dates.}
+
+\item{date_format}{A character string with the date format specification used
+in \code{date_col}. See \code{\link[readr:parse_datetime]{readr::parse_date()}} for guidance.}
+}
+\value{
+If \code{date_col} contains dates that follow the \code{date_format}
+specification, a date vector. Otherwise, an error is raised.
 }
 \description{
-Check date columns and change col type to date
+Internal helper function that parses the data in \code{date_col} as dates, using
+the date format specification indicated by \code{date_format}, and raises an error
+with an informative message if this does not work.
 }
 \keyword{internal}
