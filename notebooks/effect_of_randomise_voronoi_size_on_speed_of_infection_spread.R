@@ -56,6 +56,8 @@ if(.Platform$OS.type=="unix"){
 }
 
 randomise_size_range = c(5L,10L,15L,20L,50L,100L)
+## For quick analysis for Jess:
+# randomise_size_range = c(5L,10L,20L)
 from_type = "point"
 to_type = "centroid"
 mask_landscape = FALSE
@@ -67,6 +69,24 @@ load(system.file("data/local_spread_probabilities_ASF_Halasa_et_al_2016.Rdata",
 local_spread_transmission_probabilities = local_spread_probabilities_ASF_Halasa_et_al_2016
 # look-up table with distance-based transmission probability tiers for ASF, from
 # the DTU-DADS-ASF model
+
+## Artificially increase spread probabilities to end with an epidemic of 10-15% of holdings affected (danish data)
+bind_rows(
+  local_spread_probabilities_ASF_Halasa_et_al_2016 |> slice(1:3),
+  tibble(lower_boundary=c(1000,2000,5000), upper_boundary=c(2000,5000,Inf), probability=c(0.001,0.0005,0))
+) |>
+  mutate(probability=probability*5) ->
+  local_spread_transmission_probabilities
+
+## Look at pairwise distances and how this relates to the local spread probs:
+if(FALSE){
+  dd <- st_distance(holding_data)
+  dd <- dd[upper.tri(dd, diag=FALSE)]
+  ed <- ecdf(dd)
+  plot(ed, xlim=c(0,2000))
+  local_spread_transmission_probabilities |>
+      mutate(distance_ecdf = ed(lower_boundary))
+}
 
 incl_nonactive_holdings = TRUE
 # whether to include non-active holdings in the model (transmission via local
@@ -184,7 +204,6 @@ true_data <- data2modeloutput(movement_data, holding_data, incl_nonactive_holdin
                               weight_unit_transmission_probability, whole_months,
                               infected_holdings, tspan, n_simulations)
 
-
 ############################################################
 ### Anonymise coordinates & run model on anonymised data ###
 ############################################################
@@ -219,9 +238,11 @@ names(anonymised_data) <- rep(randomise_size_range, each=10L) |> format() |> str
 
 if(!is.null(cl)) stopCluster(cl)
 
-save(anonymised_data, randomise_size_range, true_data, file="siminf_res.rda")
-file.copy("siminf_res.rda", "~/Dropbox/SimRes/siminf_res.rda", overwrite = TRUE)
+filename <- str_c("siminf_res_", format(Sys.time(), "%Y%m%d%H%M"))
+save(anonymised_data, randomise_size_range, true_data, local_spread_transmission_probabilities, file=str_c(filename, ".rda"))
+file.copy(str_c(filename, ".rda"), str_c("~/Dropbox/SimRes/", filename, ".rda"), overwrite = TRUE)
 
+stop("DONE")
 
 ## TODO: below here might need tweaking now that we have multiple iterations of the same randomise size range
 
@@ -262,9 +283,9 @@ p <-
   #geom_ribbon(aes(x = as.numeric(row.names(true_data)), ymin = Min, ymax = Max,
   #                fill = "True data"),
   #            alpha = 0.2) +
-  geom_line(aes(x=as.numeric(row.names(true_data)), y = Mean, colour = "True data")) +
+  geom_line(aes(x=as.numeric(row.names(true_data)), y = Mean, colour = "True data")) #+
   #anon_ribbons +
-  anon_lines
+  #anon_lines
 
 plot(p)
 ggsave("siminf_plot.pdf")
