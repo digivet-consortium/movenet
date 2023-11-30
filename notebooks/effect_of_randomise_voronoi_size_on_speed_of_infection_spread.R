@@ -57,7 +57,8 @@ if(.Platform$OS.type=="unix"){
 
 randomise_size_range = c(5L,10L,15L,20L,50L,100L)
 ## For quick analysis for Jess:
-# randomise_size_range = c(5L,10L,20L)
+# randomise_size_range = c(5L,20L,50L)
+# randomise_size_range = c(50L)
 from_type = "point"
 to_type = "centroid"
 mask_landscape = FALSE
