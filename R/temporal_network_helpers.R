@@ -52,8 +52,6 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
   assert_date(movement_data[[3]], any.missing = FALSE)
   assert_numeric(movement_data[[4]], any.missing = TRUE)
 
-  node_ids <- unique(c(movement_data[[1]],movement_data[[2]]))
-
   assert_data_frame(holding_data, min.cols = 1, null.ok = TRUE)
   if(!is.null(holding_data)){
     #check that holding_ids are unique - should this be done in "reformat_data"?!
@@ -69,35 +67,32 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
   ### Ensure consistency between movement and holding data ###
   ############################################################
 
+  active_holding_ids <- unique(c(movement_data[[1]],movement_data[[2]]))
+  all_holding_ids <- active_holding_ids
+
   if(!is.null(holding_data)){
 
     #If there are any holding ids present in movement_data, but missing from
     #holding_data, add these ids to holding_data with NAs for other columns
-    missing_holding_ids <- !(node_ids %in% holding_ids)
+    missing_holding_ids <- !(active_holding_ids %in% holding_ids)
     if(any(missing_holding_ids)){
       holding_data <-
         holding_data %>%
         add_row("{names(holding_data)[1]}" :=
-                  node_ids[which(missing_holding_ids)])
+                  active_holding_ids[which(missing_holding_ids)])
       holding_ids <- holding_data[[1]]
     }
 
     #If there are any holding ids present in holding_data but missing from
-    #movement_data, either delete these ids (if incl_nonactive_holdings == FALSE),
-    #or split these to form a new additional_holding_data dataframe, to be
-    #added as (non-active) vertices after network creation (if
-    #incl_nonactive_holdings == TRUE)
-    additional_holding_ids <- !(holding_ids %in% node_ids)
-    if(any(additional_holding_ids)){
-      if(isTRUE(incl_nonactive_holdings)){
-        additional_holding_data <-
+    #movement_data, and if incl_nonactive_holdings == FALSE, delete these ids.
+    additional_holding_ids <- !(holding_ids %in% active_holding_ids)
+    if(any(additional_holding_ids) && isFALSE(incl_nonactive_holdings)){
+        holding_data <-
           holding_data %>%
-          dplyr::filter(!(.data[[names(holding_data)[1]]] %in% node_ids))
-      }
-      holding_data <-
-        holding_data %>%
-        dplyr::filter(.data[[names(holding_data)[1]]] %in% node_ids)
+          dplyr::filter(.data[[names(holding_data)[1]]] %in% active_holding_ids)
     }
+
+    all_holding_ids <- holding_data[[1]]
   }
 
   #############################################
@@ -107,16 +102,16 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
   #networkDynamic needs vertex.ids to be consecutive integers from 1 to n_nodes.
   #Check if holding ids are consecutive "integers" (in character format is ok),
   #and if this is not the case, renumber and save the key.
-  #(The key is later used to generate a "true_id" vertex attribute, and to set
-  #vertex.pids (persistent identifiers))
+  #The key is later used to generate a "true_id" vertex attribute, and to set
+  #vertex.pids (persistent identifiers).
 
-  if(isFALSE(are_ids_consec_intchars_from_1(node_ids))){
+  if(isFALSE(are_ids_consec_intchars_from_1(all_holding_ids))){
 
     output <- holdingids2consecints(movement_data, holding_data,
-                                    incl_nonactive_holdings = FALSE)
+                                    incl_nonactive_holdings = TRUE)
     movement_data <- output$movement_data
     holding_data <- output$holding_data
-    key <- output$key
+    holding_id_key <- output$key
 
   }
 
@@ -135,8 +130,12 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
   #Create activity spells for nodes, to avoid very slow reconcile.vertex.activity
   vertex_spells <- create_vertex_spells(movement_data)
 
+  #Correct n of nodes to create network with
+  n_nodes <- ifelse(!is.null(holding_data), nrow(holding_data), nrow(vertex_spells))
+
   #Create the network
-  net <- networkDynamic(edge.spells = movement_data,
+  net <- networkDynamic(base.net = network.initialize(n_nodes),
+                        edge.spells = movement_data,
                         vertex.spells = vertex_spells,
                         verbose = FALSE, create.TEAs = TRUE,
                         edge.TEA.names = names(movement_data)[-c(1:4)])
@@ -144,6 +143,22 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
   #This may cause trouble with certain measures. Edge spells over time will
   #cover most cases, but what if multiple moves betw same farms on 1 day?
   #Allow loops? (Default = FALSE)
+
+  ###########################
+  ### Set node attributes ###
+  ###########################
+
+  if(!is.null(holding_data)){
+
+    #Set non-active holdings to "inactive"
+    inactive_vertices <-
+      as.integer(holding_data[[1]][which(!(holding_data[[1]] %in% vertex_spells[[3]]))])
+    deactivate.vertices(net, v = inactive_vertices)
+
+    #Set holding_data columns as attributes
+    holding_data <- holding_data[order(as.integer(holding_data[[1]])),]
+    set.vertex.attribute(net, names(holding_data)[-1], holding_data[-1])
+  }
 
   #######################################
   ### Set node persistent identifiers ###
@@ -155,12 +170,12 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
   #remain the same throughout extractions and can be non-int/non-consecutive).
 
   #if have key, add names (original holding ids) as vertex attrib "true_id"
-  if(exists("key", where = environment(), inherits = FALSE)){
-    set.vertex.attribute(net, 'true_id', names(key))
+  if(exists("holding_id_key", where = environment(), inherits = FALSE)){
+    set.vertex.attribute(net, 'true_id', names(holding_id_key))
     warning(str_wrap("Node identifiers (vertex.id) have been changed to
     consecutive integers. Original identifiers have been set as persistent
     identifiers (vertex.pid) and can be identified for each node by running
-    `get.vertex.pid(network_name, vertex.id(s))`."))
+    `get.vertex.pid(network_name, vertex.id)`."))
   } else {
   #else, convert vertex.names (original holding ids if consecutive ints) to
   #character and set these as vertex attrib "true_id" [for consistency]
@@ -169,37 +184,6 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
   }
   #set true_id attribute as vertex.pid
   set.network.attribute(net,'vertex.pid','true_id')
-
-  ###########################
-  ### Set node attributes ###
-  ###########################
-
-  if(!is.null(holding_data)){
-    holding_data <- holding_data[order(as.integer(holding_data[[1]])),]
-    set.vertex.attribute(net, names(holding_data)[-1], holding_data[-1])
-  }
-
-  ###########################################
-  ### Add any non-active nodes to network ###
-  ###########################################
-
-  #If incl_nonactive_holdings == TRUE, add any non-active holdings to network,
-  #creating (automatic) new numeric identifiers, setting their original
-  #identifiers as true_id vertex.attribute and as vertex.pids, and adding
-  #other vertex.attributes from additional_holding_data
-
-  if(exists("additional_holding_data", where = environment(),
-            inherits = FALSE)){
-    names(additional_holding_data)[1] <- "true_id"
-    additional_holding_data$vertex.names <-
-      nrow(holding_data)+(1:nrow(additional_holding_data))
-    add.vertices(net, nv = sum(additional_holding_ids),
-                 vattr = lapply(split(additional_holding_data,
-                                      1:nrow(additional_holding_data)),
-                                as.list),
-                 vertex.pid = additional_holding_data[[1]])
-    deactivate.vertices(net, v = c((nrow(holding_data)+1):network.size(net)))
-  }
 
   ######################
   ### Return network ###
@@ -234,15 +218,15 @@ create_vertex_spells <- function(movement_data){
 #' required by networkDynamic and SimInf, which need node identifiers to be
 #' consecutive integers starting from 1.
 #'
-#' @param node_ids vector of node IDs (character format)
+#' @param active_holding_ids vector of node IDs (character format)
 #'
 #' @returns a boolean - TRUE if the IDs need to be replaced, false otherwise
 #'
 #' @keywords internal
-are_ids_consec_intchars_from_1 <- function(node_ids){
+are_ids_consec_intchars_from_1 <- function(active_holding_ids){
   return(
-    all(grepl("^\\d+$", node_ids)) && #char strings consisting of only digits...
-      identical(sort(as.integer(node_ids)), 1:length(node_ids))
+    all(grepl("^\\d+$", active_holding_ids)) && #char strings consisting of only digits...
+      identical(sort(as.integer(active_holding_ids)), 1:length(active_holding_ids))
       #...which are consecutive integers from 1 to the total number of ids
   )
 }
@@ -271,18 +255,18 @@ are_ids_consec_intchars_from_1 <- function(node_ids){
 holdingids2consecints <- function(movement_data, holding_data = NULL,
                                   incl_nonactive_holdings = FALSE){
 
-  #Define node_ids dependent on whether to only include active holdings (present
+  #Define holding_ids dependent on whether to only include active holdings (present
   #in movement_data) or to also include non-active holdings (present in
   #holding_data but not movement_data)
   if(isFALSE(incl_nonactive_holdings)){
-    node_ids <- unique(c(movement_data[[1]], movement_data[[2]]))
+    holding_ids <- unique(c(movement_data[[1]], movement_data[[2]]))
   } else if(isTRUE(incl_nonactive_holdings)){
-    node_ids <-
+    holding_ids <-
       unique(c(movement_data[[1]], movement_data[[2]], holding_data[[1]]))
     }
 
 
-  key <- generate_anonymisation_key(node_ids, prefix = "", n_start = 1)
+  key <- generate_anonymisation_key(holding_ids, prefix = "", n_start = 1)
   #using this instead of 'anonymise' avoids the loaded config file requirement
 
   movement_data <- replace_ids_w_key(movement_data, c(1,2), key)
@@ -295,8 +279,8 @@ holdingids2consecints <- function(movement_data, holding_data = NULL,
   if(!is.null(holding_data)){
     holding_data <-
       holding_data %>%
-      filter_holding_data(node_ids) %>%
-      add_rows_to_holding_data(node_ids) %>%
+      filter_holding_data(holding_ids) %>%
+      add_rows_to_holding_data(holding_ids) %>%
       replace_ids_w_key(1, key)
     # replace_ids_w_key() does not have "as.character" as in the original below.
     # Needs testing.
@@ -308,15 +292,15 @@ holdingids2consecints <- function(movement_data, holding_data = NULL,
               holding_data = holding_data))
 }
 
-#If there are any holding ids present in holding_data but missing from node_ids,
+#If there are any holding ids present in holding_data but missing from active_holding_ids,
 #delete these ids
 #' @keywords internal
-filter_holding_data <- function(holding_data, node_ids){
-  if(any(!(holding_data[[1]] %in% node_ids))){
-    holding_ids_to_remove <- holding_data[[1]][which(!(holding_data[[1]] %in% node_ids))]
+filter_holding_data <- function(holding_data, active_holding_ids){
+  if(any(!(holding_data[[1]] %in% active_holding_ids))){
+    holding_ids_to_remove <- holding_data[[1]][which(!(holding_data[[1]] %in% active_holding_ids))]
     holding_data <-
       holding_data %>%
-      dplyr::filter(.data[[names(holding_data)[1]]] %in% node_ids)
+      dplyr::filter(.data[[names(holding_data)[1]]] %in% active_holding_ids)
     warning(paste0("The following non-active holdings have been removed from holding_data: ",
                    paste0(holding_ids_to_remove, collapse = ", "),
                    "."),
@@ -325,18 +309,18 @@ filter_holding_data <- function(holding_data, node_ids){
   return(holding_data)
 }
 
-#If there are any holding ids present in node_ids, but missing from
+#If there are any holding ids present in active_holding_ids, but missing from
 #holding_data, add these ids to holding_data with NAs for other columns
 #' @keywords internal
-add_rows_to_holding_data <- function(holding_data, node_ids){
-  missing_holding_ids <- !(node_ids %in% holding_data[[1]])
+add_rows_to_holding_data <- function(holding_data, active_holding_ids){
+  missing_holding_ids <- !(active_holding_ids %in% holding_data[[1]])
   if(any(missing_holding_ids)){
     holding_data <-
       holding_data %>%
       add_row("{names(holding_data)[1]}" :=
-                node_ids[which(missing_holding_ids)])
+                active_holding_ids[which(missing_holding_ids)])
     warning(paste0("The following holding identifiers have been added to holding_data: ",
-                   paste0(node_ids[which(missing_holding_ids)], collapse = ", "),
+                   paste0(active_holding_ids[which(missing_holding_ids)], collapse = ", "),
                    ". Any additional data fields have been set to NA for these holdings."),
       call. = FALSE)
   }
