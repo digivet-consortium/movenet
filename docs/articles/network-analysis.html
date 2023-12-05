@@ -77,7 +77,7 @@
     
     
 <p>Movenet uses the <a href="https://statnet.org/packages/" class="external-link">Statnet
-suite of packages</a> (e.g. NetworkDynamic and tsna) for (temporal)
+suite of packages</a> (e.g. networkDynamic and tsna) for (temporal)
 social network analysis. We are currently working on the functions in
 this section - e.g. creation of a pdf report with network measures of
 particular relevance to disease transmission.</p>
@@ -85,8 +85,8 @@ particular relevance to disease transmission.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://digivet-consortium.github.io/movenet/">movenet</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Load example movenet-format movement and holding tibbles into the global environment:</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">fake_Scottish_movement_data</span>, package <span class="op">=</span> <span class="st">"movenet"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">fake_Scottish_holding_data</span>, package <span class="op">=</span> <span class="st">"movenet"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">movement_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">fake_Scottish_movement_data</span>, <span class="fl">100</span><span class="op">)</span></span>
+<span><span class="va">holding_data</span> <span class="op">&lt;-</span> <span class="va">fake_Scottish_holding_data</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="generating-a-temporal-network-representation">Generating a temporal network representation<a class="anchor" aria-label="anchor" href="#generating-a-temporal-network-representation"></a>
 </h2>
@@ -95,13 +95,12 @@ particular relevance to disease transmission.</p>
 data, as follows:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create a networkDynamic from our data</span></span>
-<span><span class="va">network</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/movedata2networkDynamic.html">movedata2networkDynamic</a></span><span class="op">(</span><span class="va">fake_Scottish_movement_data</span>,</span>
-<span>                                   holding_data <span class="op">=</span> <span class="va">fake_Scottish_holding_data</span>,</span>
+<span><span class="va">network</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/movedata2networkDynamic.html">movedata2networkDynamic</a></span><span class="op">(</span><span class="va">movement_data</span>, <span class="va">holding_data</span>,</span>
 <span>                                   incl_nonactive_holdings <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">network</span></span>
 <span><span class="co">#&gt; NetworkDynamic properties:</span></span>
-<span><span class="co">#&gt;   distinct change times: 336 </span></span>
-<span><span class="co">#&gt;   maximal time range: 17897 until  18258 </span></span>
+<span><span class="co">#&gt;   distinct change times: 85 </span></span>
+<span><span class="co">#&gt;   maximal time range: 17897 until  18254 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Dynamic (TEA) attributes:</span></span>
 <span><span class="co">#&gt;   Edge TEAs:    movement_reference.active </span></span>
@@ -110,13 +109,13 @@ data, as follows:</p>
 <span><span class="co">#&gt; Includes optional net.obs.period attribute:</span></span>
 <span><span class="co">#&gt;  Network observation period info:</span></span>
 <span><span class="co">#&gt;   Number of observation spells: 1 </span></span>
-<span><span class="co">#&gt;   Maximal time range observed: 17897 until 18258 </span></span>
+<span><span class="co">#&gt;   Maximal time range observed: 17897 until 18254 </span></span>
 <span><span class="co">#&gt;   Temporal mode: continuous </span></span>
 <span><span class="co">#&gt;   Time unit: unknown </span></span>
 <span><span class="co">#&gt;   Suggested time increment: NA </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Network attributes:</span></span>
-<span><span class="co">#&gt;   vertices = 500 </span></span>
+<span><span class="co">#&gt;   vertices = 170 </span></span>
 <span><span class="co">#&gt;   directed = TRUE </span></span>
 <span><span class="co">#&gt;   hyper = FALSE </span></span>
 <span><span class="co">#&gt;   loops = FALSE </span></span>
@@ -124,22 +123,23 @@ data, as follows:</p>
 <span><span class="co">#&gt;   bipartite = FALSE </span></span>
 <span><span class="co">#&gt;   net.obs.period: (not shown)</span></span>
 <span><span class="co">#&gt;   vertex.pid = true_id </span></span>
-<span><span class="co">#&gt;   total edges= 4953 </span></span>
+<span><span class="co">#&gt;   total edges= 100 </span></span>
 <span><span class="co">#&gt;     missing edges= 0 </span></span>
-<span><span class="co">#&gt;     non-missing edges= 4953 </span></span>
+<span><span class="co">#&gt;     non-missing edges= 100 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;  Vertex attribute names: </span></span>
 <span><span class="co">#&gt;     active coordinates herd_size holding_type true_id vertex.names </span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;  Edge attribute names not shown</span></span></code></pre></div>
+<span><span class="co">#&gt;  Edge attribute names: </span></span>
+<span><span class="co">#&gt;     active movement_reference.active qty_pigs.active</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="basic-social-network-analysis">(Basic) social network analysis<a class="anchor" aria-label="anchor" href="#basic-social-network-analysis"></a>
 </h2>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Perform some analysis - find the maximum reachability</span></span>
-<span><span class="fu"><a href="../reference/parallel_max_reachabilities.html">parallel_max_reachabilities</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">network</span><span class="op">)</span>, n_threads <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 499</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/parallel_max_reachabilities.html">parallel_max_reachabilities</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">network</span><span class="op">)</span>, n_threads <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 5</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

@@ -109,14 +109,14 @@ data at a later stage, or for application to an overlapping dataset.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 x 5</span></span></span>
 <span><span class="co">#&gt;   departure_cph dest_cph departure_date qty_pigs movement_reference</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> FARM187       FARM79   2019-02-08           97             <span style="text-decoration: underline;">304</span>781</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> FARM324       FARM352  2019-08-15          167             <span style="text-decoration: underline;">229</span>759</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> FARM139       FARM423  2019-09-15          115              <span style="text-decoration: underline;">36</span>413</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> FARM250       FARM419  2019-10-26          125             <span style="text-decoration: underline;">488</span>616</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> FARM368       FARM357  2019-10-17          109             <span style="text-decoration: underline;">581</span>785</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> FARM351       FARM16   2019-10-06           72             <span style="text-decoration: underline;">564</span>911</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> FARM171       FARM202  2019-02-08           97             <span style="text-decoration: underline;">304</span>781</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> FARM191       FARM158  2019-08-15          167             <span style="text-decoration: underline;">229</span>759</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> FARM383       FARM57   2019-09-15          115              <span style="text-decoration: underline;">36</span>413</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> FARM164       FARM181  2019-10-26          125             <span style="text-decoration: underline;">488</span>616</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> FARM459       FARM320  2019-10-17          109             <span style="text-decoration: underline;">581</span>785</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> FARM477       FARM467  2019-10-06           72             <span style="text-decoration: underline;">564</span>911</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">pseudonymisation_key</span><span class="op">)</span> <span class="co"># Inspect pseudonymisation key</span></span>
-<span><span class="co">#&gt; 65/570/5310 88/694/2628 86/828/1484 78/230/1361 47/708/4971 89/546/3297 </span></span>
+<span><span class="co">#&gt; 81/183/6253 53/544/5452 43/421/8516 78/214/8249 94/163/2896 28/732/9624 </span></span>
 <span><span class="co">#&gt;     "FARM1"     "FARM2"     "FARM3"     "FARM4"     "FARM5"     "FARM6"</span></span></code></pre></div>
 <p><code><a href="../reference/anonymise.html">anonymise()</a></code> also takes an optional <code>key</code>
 argument, with which you can apply an existing pseudonymisation key to
@@ -132,12 +132,12 @@ the data tibble:</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 x 4</span></span></span>
 <span><span class="co">#&gt;   cph     holding_type herd_size     coordinates</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;POINT [m]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> FARM433 GXFSR             <span style="text-decoration: underline;">2</span>111 (786302 325758)</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> FARM163 SCHZQ             <span style="text-decoration: underline;">2</span>134 (196439 224516)</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> FARM80  HEJDE             <span style="text-decoration: underline;">2</span>140 (929087 258940)</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> FARM423 IQALL             <span style="text-decoration: underline;">2</span>141 (341259 852472)</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> FARM426 YUFUC             <span style="text-decoration: underline;">2</span>148  (937584 95297)</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> FARM459 IATKP             <span style="text-decoration: underline;">2</span>151 (496345 996254)</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> FARM152 GXFSR             <span style="text-decoration: underline;">2</span>111 (786302 325758)</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> FARM360 SCHZQ             <span style="text-decoration: underline;">2</span>134 (196439 224516)</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> FARM134 HEJDE             <span style="text-decoration: underline;">2</span>140 (929087 258940)</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> FARM57  IQALL             <span style="text-decoration: underline;">2</span>141 (341259 852472)</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> FARM338 YUFUC             <span style="text-decoration: underline;">2</span>148  (937584 95297)</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> FARM488 IATKP             <span style="text-decoration: underline;">2</span>151 (496345 996254)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="modifying-dates-weights-and-optional-numeric-data-columns">Modifying dates, weights, and optional numeric data columns<a class="anchor" aria-label="anchor" href="#modifying-dates-weights-and-optional-numeric-data-columns"></a>
@@ -180,12 +180,12 @@ multiples of <code>unit</code>.</p></li>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 x 5</span></span></span>
 <span><span class="co">#&gt;   departure_cph dest_cph    departure_date qty_pigs movement_reference</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 95/216/1100   19/818/9098 2019-02-13           97             <span style="text-decoration: underline;">304</span>781</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 69/196/5890   71/939/3228 2019-08-11          167             <span style="text-decoration: underline;">229</span>759</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 52/577/5349   82/501/8178 2019-09-19          115              <span style="text-decoration: underline;">36</span>413</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 39/103/5541   13/282/1763 2019-10-27          125             <span style="text-decoration: underline;">488</span>616</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 41/788/6464   57/418/6011 2019-10-21          109             <span style="text-decoration: underline;">581</span>785</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 69/393/9398   39/947/2201 2019-10-08           72             <span style="text-decoration: underline;">564</span>911</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 95/216/1100   19/818/9098 2019-02-09           97             <span style="text-decoration: underline;">304</span>781</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 69/196/5890   71/939/3228 2019-08-20          167             <span style="text-decoration: underline;">229</span>759</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 52/577/5349   82/501/8178 2019-09-17          115              <span style="text-decoration: underline;">36</span>413</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 39/103/5541   13/282/1763 2019-10-25          125             <span style="text-decoration: underline;">488</span>616</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 41/788/6464   57/418/6011 2019-10-12          109             <span style="text-decoration: underline;">581</span>785</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 69/393/9398   39/947/2201 2019-10-10           72             <span style="text-decoration: underline;">564</span>911</span></span>
 <span></span>
 <span><span class="co"># Add jitter of up to ±10 to movement weights:</span>:</span>
 <span><span class="va">movedata_weightsj10</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jitter_weights.html">jitter_weights</a></span><span class="op">(</span><span class="va">fake_Scottish_movement_data</span>, range <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
@@ -193,12 +193,12 @@ multiples of <code>unit</code>.</p></li>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 x 5</span></span></span>
 <span><span class="co">#&gt;   departure_cph dest_cph    departure_date qty_pigs movement_reference</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 95/216/1100   19/818/9098 2019-02-08         87.3             <span style="text-decoration: underline;">304</span>781</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 69/196/5890   71/939/3228 2019-08-15        169.              <span style="text-decoration: underline;">229</span>759</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 52/577/5349   82/501/8178 2019-09-15        115.               <span style="text-decoration: underline;">36</span>413</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 39/103/5541   13/282/1763 2019-10-26        134.              <span style="text-decoration: underline;">488</span>616</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 41/788/6464   57/418/6011 2019-10-17        103.              <span style="text-decoration: underline;">581</span>785</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 69/393/9398   39/947/2201 2019-10-06         74.0             <span style="text-decoration: underline;">564</span>911</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 95/216/1100   19/818/9098 2019-02-08         89.4             <span style="text-decoration: underline;">304</span>781</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 69/196/5890   71/939/3228 2019-08-15        165.              <span style="text-decoration: underline;">229</span>759</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 52/577/5349   82/501/8178 2019-09-15        124.               <span style="text-decoration: underline;">36</span>413</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 39/103/5541   13/282/1763 2019-10-26        118.              <span style="text-decoration: underline;">488</span>616</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 41/788/6464   57/418/6011 2019-10-17        114.              <span style="text-decoration: underline;">581</span>785</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 69/393/9398   39/947/2201 2019-10-06         78.8             <span style="text-decoration: underline;">564</span>911</span></span>
 <span></span>
 <span><span class="co"># Round movement dates down to the first day of the month, but do not aggregate:</span></span>
 <span><span class="va">movedata_months</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/round_dates.html">round_dates</a></span><span class="op">(</span><span class="va">fake_Scottish_movement_data</span>, unit <span class="op">=</span> <span class="st">"month"</span>, sum_weight <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> </span>

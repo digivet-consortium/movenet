@@ -13,14 +13,14 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
-Movenet uses the [Statnet suite of packages](https://statnet.org/packages/) (e.g. NetworkDynamic and tsna) for (temporal) social network analysis. We are currently working on  the functions in this section - e.g. creation of a pdf report with network measures of particular relevance to disease transmission.
+Movenet uses the [Statnet suite of packages](https://statnet.org/packages/) (e.g. networkDynamic and tsna) for (temporal) social network analysis. We are currently working on  the functions in this section - e.g. creation of a pdf report with network measures of particular relevance to disease transmission.
 
 ```{r setup}
 library(movenet)
 
 # Load example movenet-format movement and holding tibbles into the global environment:
-data(fake_Scottish_movement_data, package = "movenet")
-data(fake_Scottish_holding_data, package = "movenet")
+movement_data <- head(fake_Scottish_movement_data, 100)
+holding_data <- fake_Scottish_holding_data
 ```
 
 ## Generating a temporal network representation
@@ -30,8 +30,7 @@ of movement data and optional holding data, as follows:
 
 ```{R warning = FALSE}
 # Create a networkDynamic from our data
-network <- movedata2networkDynamic(fake_Scottish_movement_data,
-                                   holding_data = fake_Scottish_holding_data,
+network <- movedata2networkDynamic(movement_data, holding_data,
                                    incl_nonactive_holdings = FALSE)
 network
 ```
@@ -40,5 +39,5 @@ network
 
 ```{R}
 # Perform some analysis - find the maximum reachability
-parallel_max_reachabilities(list(network), n_threads = 8)
+parallel_max_reachabilities(list(network), n_threads = 4)
 ```
