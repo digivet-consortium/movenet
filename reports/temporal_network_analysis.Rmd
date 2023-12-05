@@ -1,0 +1,63 @@
+---
+title: "Temporal network analysis"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+```
+
+# Livestock movement network analysis report
+
+This page follows analyses and recreates some plots from [Schulz J et
+al. (2017) PLOS ONE 12(6):
+e0179915](https://doi.org/10.1371/journal.pone.0179915).
+
+## Basic network summary
+
+### Network size
+
+**Overall network size:** `r network_size` holdings active over the
+observed time period.
+
+### Movements and edges
+
+**Overall number of movements:** `r n_moves` movements over the observed
+time period. **Overall number of edges:** `r edge_count` different links
+between holdings over the observed time period. **Overall edge
+density:** `r edge_density` of all possible links between holdings are
+observed over the observed time period.
+
+### Movement weights (batch sizes)
+
+## Static network analysis (monthly snapshots)
+
+### Component analysis
+
+The largest giant strongly connected component (GSCC) is the largest
+number of nodes (holdings) that can all reach each other by some
+directed path of movements. This means that any node in that set could
+indirectly infect any other, or that a single source outbreak within the
+component could theoretically infect anything else within that
+component. **Section under development:** Similar plots for giant in
+component (GIC) and giant out component (GOC) will be added shortly.
+
+### Loyalty
+
+This is a measure of consistency in the network between different points
+in time. Darker colours indicate a larger proportion of trades that are
+in common between two months. The black diagonal indicates that each
+month's movements are identical to themselves.
+
+## Temporal network analysis
+
+### Reachability (in- & out-going contact chains)
+
+The forward reachable set (or out-going contact chain) of a single node
+is the set of nodes that can be reached from that origin node, or
+alternatively the set of nodes that could theoretically be infected in
+an outbreak starting at that node. That is, the set of nodes that are
+reachable from some origin node are the reachable set of that origin
+node. The backward reachable set (or in-going contact chain) is the set
+of nodes that reach a node.
