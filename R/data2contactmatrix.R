@@ -9,25 +9,25 @@
 #' @param holding_data a movenet-format holding data tibble (optional)
 #' @param incl_nonactive_holdings whether to include non-active holdings
 #'   (default `FALSE`)
-#' @param weight_unit_transmission_probability transmission probability per
-#'   unit weight moved (default 1)
-#' @param whole_months whether the movement data covers full months (default
-#'   `TRUE`). This affects calculation of daily average weights, and thus of
-#'   movement-based transmission probabilities. See @details
+#' @param weight_unit_transmission_probability transmission probability per unit
+#'   weight moved (default 1)
+#' @param whole_months A logical indicating whether `movement_data` covers
+#'   full months (default `TRUE`). This affects calculation of daily average
+#'   weights, and thus of movement-based transmission probabilities. See
+#'   @details.
 #' @param local_spread_probabilities dataframe/tibble of tiered local spread
 #'   probabilities. 3 columns: lower_boundary (in metres), upper_boundary (in
 #'   metres), probability
 #' @param additional_transmission_prob_matrices named list with any additional
 #'   transmission probability matrices to include
 #'
-#' @return
-#' A named list with two elements:
+#' @return A named list with two elements:
 #' * `transmission_matrix` containing a matrix with overall daily transmission
 #' probabilities from each holding (each row) to each holding (each column),
 #' based on movements, (optionally) local spread, and (optionally) any other
 #' user-provided transmission probabilities between holdings. Holdings have been
-#' given new identifiers in the form of digits (format required by SimInf);
-#' the original identifiers can be looked up in the provided `key`. The matrix
+#' given new identifiers in the form of digits (format required by SimInf); the
+#' original identifiers can be looked up in the provided `key`. The matrix
 #' diagonal is set to 0, corresponding to no self-infection.
 #' * `key` containing a named character vector that links original holding
 #' identifiers (element names) and numeric node identifiers (as element values).

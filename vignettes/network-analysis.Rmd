@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
-Movenet uses the [Statnet suite of packages](https://statnet.org/packages/) (e.g. networkDynamic and tsna) for (temporal) social network analysis. We are currently working on  the functions in this section - e.g. creation of a pdf report with network measures of particular relevance to disease transmission.
+movenet uses the [Statnet suite of packages](https://statnet.org/packages/) (e.g. networkDynamic and tsna) for (temporal) social network analysis. We are currently working on  the functions in this section - e.g. creation of a pdf report with network measures of particular relevance to disease transmission.
 
 ```{r setup}
 library(movenet)

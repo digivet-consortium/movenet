@@ -24,12 +24,13 @@ data2contactmatrix(
 \item{incl_nonactive_holdings}{whether to include non-active holdings
 (default \code{FALSE})}
 
-\item{weight_unit_transmission_probability}{transmission probability per
-unit weight moved (default 1)}
+\item{weight_unit_transmission_probability}{transmission probability per unit
+weight moved (default 1)}
 
-\item{whole_months}{whether the movement data covers full months (default
-\code{TRUE}). This affects calculation of daily average weights, and thus of
-movement-based transmission probabilities. See @details}
+\item{whole_months}{A logical indicating whether \code{movement_data} covers
+full months (default \code{TRUE}). This affects calculation of daily average
+weights, and thus of movement-based transmission probabilities. See
+@details.}
 
 \item{additional_transmission_prob_matrices}{named list with any additional
 transmission probability matrices to include}
@@ -45,8 +46,8 @@ A named list with two elements:
 probabilities from each holding (each row) to each holding (each column),
 based on movements, (optionally) local spread, and (optionally) any other
 user-provided transmission probabilities between holdings. Holdings have been
-given new identifiers in the form of digits (format required by SimInf);
-the original identifiers can be looked up in the provided \code{key}. The matrix
+given new identifiers in the form of digits (format required by SimInf); the
+original identifiers can be looked up in the provided \code{key}. The matrix
 diagonal is set to 0, corresponding to no self-infection.
 \item \code{key} containing a named character vector that links original holding
 identifiers (element names) and numeric node identifiers (as element values).
