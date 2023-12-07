@@ -5,45 +5,110 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-
 ```
-
-# Livestock movement network analysis report
 
 This page follows analyses and recreates some plots from [Schulz J et
 al. (2017) PLOS ONE 12(6):
 e0179915](https://doi.org/10.1371/journal.pone.0179915).
 
-## Basic network summary
+# Basic network summary
 
-### Network size
+## Network size {.tabset}
 
-**Overall network size:** `r network_size` holdings active over the
-observed time period.
+**Overall network size:** `r n_nodes` holdings active over
+the observed time period
 
-### Movements and edges
+<div class = "row">
+<div class = "col-md-5">
+```{r, echo= FALSE}
+qflextable(size_summary_table)
+```
+</div>
+<div class = "col-md-7">
+### Holdings active (n)
+```{r, echo= FALSE}
+plot(size_plot_number)
+```
+
+### Holdings active (prop)
+```{r, echo= FALSE}
+plot(size_plot_prop)
+```
+</div>
+</div>
+
+## Movements and edges {.tabset}
 
 **Overall number of movements:** `r n_moves` movements over the observed
-time period. **Overall number of edges:** `r edge_count` different links
-between holdings over the observed time period. **Overall edge
-density:** `r edge_density` of all possible links between holdings are
-observed over the observed time period.
+time period  
+**Overall number of edges:** `r edge_count` different links
+between holdings over the observed time period  
+**Overall edge density:** `r round(edge_density, 3)` of all possible links between holdings are
+observed over the observed time period
 
-### Movement weights (batch sizes)
+<div class = "row">
+<div class = "col-md-5">
+```{r, echo= FALSE}
+qflextable(moves_summary_table)
+```
+</div>
+<div class = "col-md-7">
+### Movements
+```{r, echo= FALSE}
+plot(moves_plot_number)
+```
 
-## Static network analysis (monthly snapshots)
+### Movements (prop.)
+```{r, echo= FALSE}
+plot(moves_plot_prop)
+```
 
-### Component analysis
+### Edges
+```{r, echo= FALSE}
+plot(edges_plot_number)
+```
+
+### Edges (prop.)
+```{r, echo= FALSE}
+plot(edges_plot_prop)
+```
+
+### Density
+```{r, echo= FALSE}
+plot(edges_plot_density)
+```
+</div>
+</div>
+
+## Movement weights (batch sizes)
+
+<div class = "row">
+<div class = "col-md-5">
+```{r, echo= FALSE}
+qflextable(weights_summary)
+```
+</div>
+<div class = "col-md-7">
+```{r, echo= FALSE}
+plot(weights_plot)
+```
+</div>
+</div>
+
+# Static network analysis (`r time_unit`ly snapshots)
+
+## Component analysis
 
 The largest giant strongly connected component (GSCC) is the largest
 number of nodes (holdings) that can all reach each other by some
 directed path of movements. This means that any node in that set could
 indirectly infect any other, or that a single source outbreak within the
 component could theoretically infect anything else within that
-component. **Section under development:** Similar plots for giant in
+component.  
+**Section under development:** Similar plots for giant in
 component (GIC) and giant out component (GOC) will be added shortly.
 
-### Loyalty
+## Loyalty
 
 This is a measure of consistency in the network between different points
 in time. Darker colours indicate a larger proportion of trades that are
