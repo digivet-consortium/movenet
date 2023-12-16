@@ -19,7 +19,8 @@
 #' are converted to date format.
 #' * For holding data files (`type == "holding"`): If `coord_x` and `coord_y`
 #' columns are present, these are converted to a single simple feature (sf)
-#' list-column named `"coordinates"`.
+#' list-column named `"coordinates"`. Coordinates are converted from the `crs`
+#' specified in the config file to ETRS89 (EPSG:4258).
 #'
 #' @details
 #' If the movenet environment contains `movedata_cols` or `holdingdata_cols`
@@ -587,10 +588,11 @@ reformat_date <- function(date_col, date_format){
 ################################################################################
 
 #' Convert two columns containing coordinates in character format to an sf geometry
-#' object
+#' object with CRS ETRS89
 #'
 #' Internal helper function that parses the data in `coord_x_col` and
 #' `coord_y_col` as coordinates and converts them to an sf geometry list-column.
+#' It then transforms the coordinates from the original crs to ETRS89.
 #'
 #' @param coord_x_col A one-column tibble containing data of type `character`,
 #'   assumed to be coercible to numeric and representing a longitudinal coordinate.
@@ -602,7 +604,7 @@ reformat_date <- function(date_col, date_format){
 #'
 #' @returns If `coord_x_col` and `coord_y_col` contain numeric data, a tibble
 #' with a single sf geometry list-column (class sfc_POINT) with combined coordinates,
-#' and attributes including `crs`. Otherwise, an error is raised.
+#' and attributes including the crs ETRS89. Otherwise, an error is raised.
 #'
 #' @importFrom sf st_as_sf
 #' @importFrom tibble as_tibble
@@ -617,7 +619,8 @@ reformat_coords <- function(coord_x_col, coord_y_col, decimal, crs){
   st_as_sf(as_tibble(c(coord_x_col, coord_y_col)),
            coords = c(1,2),
            na.fail = FALSE,
-           crs = crs)
+           crs = crs) %>%
+    st_transform(crs = 	4258)
 
 }
 

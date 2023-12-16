@@ -133,8 +133,8 @@ performs the following data checks and standardisations on holding data:
 
 -   If the loaded configurations include headers/indices for columns with geographical 
     coordinates (`coord_x` and `coord_y`), these columns are checked to contain 
-    numeric data, and are then reformatted to a single simple feature (sf) geometry 
-    list-column.
+    numeric data, and are then converted to a single simple feature (sf) geometry 
+    list-column using the ETRS89 coordinate reference system.
     
 -   If the loaded configurations include a header/index for a column `herd_size`, this 
     column is checked to contain numeric data.

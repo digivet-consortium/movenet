@@ -56,7 +56,8 @@ columns are checked.
 are converted to date format.
 \item For holding data files (\code{type == "holding"}): If \code{coord_x} and \code{coord_y}
 columns are present, these are converted to a single simple feature (sf)
-list-column named \code{"coordinates"}.
+list-column named \code{"coordinates"}. Coordinates are converted from the \code{crs}
+specified in the config file to ETRS89 (EPSG:4258).
 }
 }
 \details{

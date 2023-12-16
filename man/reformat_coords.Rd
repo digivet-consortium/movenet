@@ -3,7 +3,7 @@
 \name{reformat_coords}
 \alias{reformat_coords}
 \title{Convert two columns containing coordinates in character format to an sf geometry
-object}
+object with CRS ETRS89}
 \usage{
 reformat_coords(coord_x_col, coord_y_col, decimal, crs)
 }
@@ -22,10 +22,11 @@ Coordinate Reference System used in \code{coord_x_col} and \code{coord_y_col}.}
 \value{
 If \code{coord_x_col} and \code{coord_y_col} contain numeric data, a tibble
 with a single sf geometry list-column (class sfc_POINT) with combined coordinates,
-and attributes including \code{crs}. Otherwise, an error is raised.
+and attributes including the crs ETRS89. Otherwise, an error is raised.
 }
 \description{
 Internal helper function that parses the data in \code{coord_x_col} and
 \code{coord_y_col} as coordinates and converts them to an sf geometry list-column.
+It then transforms the coordinates from the original crs to ETRS89.
 }
 \keyword{internal}
