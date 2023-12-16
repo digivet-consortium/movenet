@@ -169,6 +169,10 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
   #cover most cases, but what if multiple moves betw same farms on 1 day?
   #Allow loops? (Default = FALSE)
 
+  #Set the weight column header as a network attribute for easy reference in
+  #analysis workflow (so that config file isn't required)
+  set.network.attribute(net, "weight", names(movement_data)[4])
+
   ###########################
   ### Set node attributes ###
   ###########################
