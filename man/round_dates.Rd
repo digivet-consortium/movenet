@@ -32,7 +32,7 @@ provided by the current locale.}
 \code{unit}, for all rows with the same origin and destination. The name of
 the weight column will remain the same.}
 
-\item{...}{Additional or
+\item{...}{\code{\link[dplyr:dplyr_data_masking]{data-masking}} Additional or
 alternative summary function(s), of the form name = value, to pass on to
 \code{\link[dplyr:summarise]{dplyr::summarise()}}. Any summary functions will be applied to \code{data},
 grouped by origin, destination, and rounded-down date. The specified name

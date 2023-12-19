@@ -14,3 +14,4 @@ violinplot_monthly_measures(monthly_data, measure_name)
 \description{
 Draw violin plot of distributions of monthly values of a selected network measure, for various jittered & rounded networks
 }
+\keyword{internal}

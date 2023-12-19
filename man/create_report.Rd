@@ -7,7 +7,7 @@
 create_report(data, output, output_format = "html_document")
 }
 \arguments{
-\item{data}{}
+\item{data}{movement data}
 
 \item{output}{output file name (and path)}
 
@@ -16,3 +16,4 @@ create_report(data, output, output_format = "html_document")
 \description{
 Create a network analysis report from data
 }
+\keyword{internal}

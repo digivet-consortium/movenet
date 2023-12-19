@@ -117,8 +117,6 @@ validate_config <- function(file){
 #' * If the provided config file is not valid, a character vector (returned invisibly)
 #' with one or more elements that each indicate a reason why validation has failed.
 #'
-#' @examples
-#'
 #' @seealso
 #' * `vignette("configurations")` for an explanation of the movenet config system.
 #' * `list.files(system.file("configurations", package = "movenet"))` for a list of pre-installed, validated config files.

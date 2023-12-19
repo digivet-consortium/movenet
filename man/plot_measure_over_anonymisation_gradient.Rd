@@ -16,3 +16,4 @@ plot_measure_over_anonymisation_gradient(data, measure_name, anonymisation)
 \description{
 Plot values of a measure for a varying range of jitter or rounding
 }
+\keyword{internal}

@@ -22,6 +22,14 @@ Authors:
 \itemize{
   \item Matt Denwood \email{md@sund.ku.dk}
   \item Stefan Widgren \email{stefan.widgren@sva.se} (\href{https://orcid.org/0000-0001-5745-2284}{ORCID})
+  \item Jessica Enright \email{Jessica.Enright@glasgow.ac.uk} (\href{https://orcid.org/0000-0002-0266-3292}{ORCID})
+}
+
+Other contributors:
+\itemize{
+  \item Ruby Graham [contributor]
+  \item Petter Hopp [contributor]
+  \item Thomas Rosendal [contributor]
 }
 
 }

@@ -7,9 +7,12 @@
 extract_periodic_subnetworks(networks, n_threads, periods_in_data)
 }
 \arguments{
-\item{networks}{a named list of movement networks}
+\item{networks}{A named list of movement networks.}
 
-\item{periods_in_data}{a list of start and end dates (in int format) for all periods in the data}
+\item{n_threads}{A numeric indicating number of threads over which to
+parallelise.}
+
+\item{periods_in_data}{A list of start and end dates (in int format) for all periods in the data.}
 }
 \description{
 Extract periodic subnetworks from movement networks
@@ -22,3 +25,4 @@ ids will be translated, but may not correspond to their original values.
 If it is necessary to maintain the identities of vertices, see
 persistent.ids. (Make this an argument? Add ... to pass on arguments?)
 }
+\keyword{internal}

@@ -105,7 +105,7 @@ jitter_dates <- function(data, range){
 #' @param sum_weight If this is `TRUE` (the default), weights are summed over
 #'   `unit`, for all rows with the same origin and destination. The name of
 #'   the weight column will remain the same.
-#' @param ... [<`data-masking`>][dplyr::dplyr_data_masking] Additional or
+#' @param ... [`data-masking`][dplyr::dplyr_data_masking] Additional or
 #'   alternative summary function(s), of the form name = value, to pass on to
 #'   [dplyr::summarise()]. Any summary functions will be applied to `data`,
 #'   grouped by origin, destination, and rounded-down date. The specified name

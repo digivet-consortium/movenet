@@ -2,15 +2,11 @@
 #'
 #' @param output output file name (and path)
 #' @param output_format output format ("html_document", "pdf_document")
-#' @param data
+#' @param data movement data
 #'
 #' @importFrom rmarkdown render
 #'
-#' @return
-#'
-#' @examples
-#'
-#' @export
+#' @keywords internal
 create_report <- function(data, output, output_format = "html_document"){
 
   report_source <- "reports/static_network_analysis.rmd"

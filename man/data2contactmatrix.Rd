@@ -2,7 +2,7 @@
 % Please edit documentation in R/data2contactmatrix.R
 \name{data2contactmatrix}
 \alias{data2contactmatrix}
-\title{Title}
+\title{Create transmission probability matrix for SEIRcm model from movement and holding data}
 \usage{
 data2contactmatrix(
   movement_data,
@@ -17,27 +17,27 @@ data2contactmatrix(
 )
 }
 \arguments{
-\item{movement_data}{a movenet-format movement data tibble}
+\item{movement_data}{A movenet-format movement data tibble.}
 
-\item{holding_data}{a movenet-format holding data tibble (optional)}
+\item{holding_data}{A movenet-format holding data tibble (optional).}
 
-\item{incl_nonactive_holdings}{whether to include non-active holdings
-(default \code{FALSE})}
+\item{incl_nonactive_holdings}{A logical indicating whether to include
+non-active holdings (default \code{FALSE}).}
 
-\item{weight_unit_transmission_probability}{transmission probability per unit
-weight moved (default 1)}
+\item{weight_unit_transmission_probability}{A single numeric indicating
+transmission probability per unit weight moved (default 0.5)}
 
 \item{whole_months}{A logical indicating whether \code{movement_data} covers
 full months (default \code{TRUE}). This affects calculation of daily average
 weights, and thus of movement-based transmission probabilities. See
 @details.}
 
-\item{additional_transmission_prob_matrices}{named list with any additional
-transmission probability matrices to include}
+\item{additional_transmission_prob_matrices}{A named list with any additional
+transmission probability matrices to include.}
 
-\item{local_spread_probabilities}{dataframe/tibble of tiered local spread
-probabilities. 3 columns: lower_boundary (in metres), upper_boundary (in
-metres), probability}
+\item{local_spread_probabilities}{A data frame or tibble of tiered local
+spread probabilities. This must consist of 3 columns:
+\code{lower_boundary} (in metres), \code{upper_boundary} (in metres), \code{probability}.}
 }
 \value{
 A named list with two elements:
@@ -54,5 +54,16 @@ identifiers (element names) and numeric node identifiers (as element values).
 }
 }
 \description{
-Title
+\code{data2contactmatrix()} creates a holding-to-holding transmission probability
+matrix for the \code{\link[siminf4movenet:SEIRcm]{siminf4movenet::SEIRcm()}} model.
+This matrix incorporates one or more of the following components:
+\itemize{
+\item Daily average movement-based transmission probabilities, calculated using
+the daily average weight moved between each pair of holdings (obtained
+from \code{movement_data}) and the provided \code{weight_unit_transmission_probability}.
+\item Daily average local spread trasmission probabilities (optional), calculated
+using the distances between holdings (obtained from the coordinates in
+\code{holding_data}) and the provided \code{local_spread_probabilities}.
+\item Any other user-provided transmission probability matrix (optional).
+}
 }

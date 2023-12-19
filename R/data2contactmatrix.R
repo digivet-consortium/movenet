@@ -3,23 +3,35 @@
 # Separate out matrix processing for additional tm prob matrices into function?
 # Make saved local_spread tibble default for local_spread_probabilities?
 
-#' Title
+#' Create transmission probability matrix for SEIRcm model from movement and holding data
 #'
-#' @param movement_data a movenet-format movement data tibble
-#' @param holding_data a movenet-format holding data tibble (optional)
-#' @param incl_nonactive_holdings whether to include non-active holdings
-#'   (default `FALSE`)
-#' @param weight_unit_transmission_probability transmission probability per unit
-#'   weight moved (default 1)
+#' @description
+#' `data2contactmatrix()` creates a holding-to-holding transmission probability
+#' matrix for the [`siminf4movenet::SEIRcm()`] model.
+#' This matrix incorporates one or more of the following components:
+#' * Daily average movement-based transmission probabilities, calculated using
+#' the daily average weight moved between each pair of holdings (obtained
+#' from `movement_data`) and the provided `weight_unit_transmission_probability`.
+#' * Daily average local spread trasmission probabilities (optional), calculated
+#' using the distances between holdings (obtained from the coordinates in
+#' `holding_data`) and the provided `local_spread_probabilities`.
+#' * Any other user-provided transmission probability matrix (optional).
+#'
+#' @param movement_data A movenet-format movement data tibble.
+#' @param holding_data A movenet-format holding data tibble (optional).
+#' @param incl_nonactive_holdings A logical indicating whether to include
+#'   non-active holdings (default `FALSE`).
+#' @param weight_unit_transmission_probability A single numeric indicating
+#'   transmission probability per unit weight moved (default 0.5)
 #' @param whole_months A logical indicating whether `movement_data` covers
 #'   full months (default `TRUE`). This affects calculation of daily average
 #'   weights, and thus of movement-based transmission probabilities. See
 #'   @details.
-#' @param local_spread_probabilities dataframe/tibble of tiered local spread
-#'   probabilities. 3 columns: lower_boundary (in metres), upper_boundary (in
-#'   metres), probability
-#' @param additional_transmission_prob_matrices named list with any additional
-#'   transmission probability matrices to include
+#' @param local_spread_probabilities A data frame or tibble of tiered local
+#'   spread probabilities. This must consist of 3 columns:
+#'   `lower_boundary` (in metres), `upper_boundary` (in metres), `probability`.
+#' @param additional_transmission_prob_matrices A named list with any additional
+#'   transmission probability matrices to include.
 #'
 #' @return A named list with two elements:
 #' * `transmission_matrix` containing a matrix with overall daily transmission
@@ -31,8 +43,6 @@
 #' diagonal is set to 0, corresponding to no self-infection.
 #' * `key` containing a named character vector that links original holding
 #' identifiers (element names) and numeric node identifiers (as element values).
-#'
-#' @details
 #'
 #' @importFrom sf st_is_empty
 #' @export

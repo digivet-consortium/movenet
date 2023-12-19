@@ -9,8 +9,13 @@ Authors@R:
              email = "md@sund.ku.dk", role = "aut"),
       person(given = "Stefan", family = "Widgren",
              email = "stefan.widgren@sva.se", role = "aut",
-             comment = c(ORCID = "0000-0001-5745-2284"))
-    )
+             comment = c(ORCID = "0000-0001-5745-2284")),
+      person(given = "Jessica", family = "Enright",
+             email = "Jessica.Enright@glasgow.ac.uk", role = "aut",
+             comment = c(ORCID = "0000-0002-0266-3292")),
+      person(given = "Ruby", family = "Graham", role = "ctb"),
+      person(given = "Petter", family = "Hopp", role = "ctb"),
+      person(given = "Thomas", family = "Rosendal", role = "ctb"))
 Description: A set of workflows facilitating the dataflow from livestock movement data to social network analysis and disease transmission models. 'movenet' also addresses common data issues such as the diversity of data formats and privacy preservation.
 License: GPL (>= 3)
 Encoding: UTF-8

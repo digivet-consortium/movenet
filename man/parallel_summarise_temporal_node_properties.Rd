@@ -13,28 +13,35 @@ parallel_summarise_temporal_node_properties(
 )
 }
 \arguments{
-\item{networks}{list of movement networks}
+\item{networks}{A list containing movement networks (networkDynamic objects)}
 
-\item{n_threads}{number of threads over which to parallelise}
+\item{n_threads}{Numeric indicating number of threads over which to
+parallelise.}
 
-\item{node_property}{node property: one of c("forward reachability",
-"temporal degree", "temporal indegree", "temporal outdegree")}
+\item{node_property}{Character indicating the network metric for which to
+calculate summary statistics. One of \code{"forward reachability"},
+\code{"temporal degree"}, \code{"temporal indegree"}, or \code{"temporal outdegree"}.}
 
-\item{statistics}{list with summary function(s) to calculate, e.g.
-list(median, max = max).}
+\item{statistics}{A list with summary function(s) to calculate for the
+selected \code{node_property}. For example, \code{list(median, max = max)}.}
 
-\item{identify_nodes}{whether you want to identify the nodes with maximal
-values for \code{node_property} in each network. Default is \code{FALSE}. Requires
-that max is included as a named function within \code{statistics}.}
+\item{identify_nodes}{A logical indicating whether you want to identify the
+nodes with maximal values for \code{node_property} in each network. Default is
+\code{FALSE}. Requires that \code{max} is included as a named function within
+\code{statistics}.}
 }
 \value{
-named list of lists: for each network, a list consisting of:
-(1) a named list \code{summary_statistics}, with the selected node property
-summary statistic(s),
-(2 - only if \code{identify_nodes} is set as \code{TRUE}) a named character vector
-\code{node_pid_with_max_value}, with the persistent identifier(s) of the node(s)
-with maximal value(s) for the selected node property.
+A named list of lists. For each network, a list consisting of: (1) a
+named list \code{summary_statistics}, with the selected node property summary
+statistic(s), (2 - only if \code{identify_nodes} is set as \code{TRUE}) a named
+character vector \code{node_pid_with_max_value}, with the persistent
+identifier(s) of the node(s) with maximal value(s) for the selected node
+property.
 }
 \description{
-Extract summary stats for temporal network node properties, in parallel
+\code{parallel_summarise_temporal_node_properties()} calculates summary statistics
+for a selected node property, over a list of networks. Optionally, identifiers
+of the nodes with maximum values of the selected node property can also be
+returned. This function uses a socket cluster with \code{n_threads} threads to
+run calculations in parallel.
 }
