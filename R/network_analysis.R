@@ -1,88 +1,30 @@
-
-
-#' Extract max reachabilities in parallel
-#'
-#' @param networks list of movement networks
-#' @param n_threads
-#'
-#' @return
-#'
-#' @importFrom parallel makeCluster clusterEvalQ stopCluster
-#' @importFrom pbapply pbsapply
-#' @importFrom tsna tReach
-#'
-#' @export
-parallel_max_reachabilities <- function(networks, n_threads){
-  cl <- makeCluster(n_threads)
-  on.exit(stopCluster(cl))
-
-  clusterEvalQ(cl, {
-    library("tsna")
-  })
-
-  max_reachabilities <-
-    pbsapply(networks,
-             function(x){max(tReach(x, graph.step.time = 1))}, cl=cl)
-  return(max_reachabilities)
-}
-# N.B. This step is super-slow without parallel processing.
-# See https://bookdown.org/rdpeng/rprogdatascience/parallel-computation.html#building-a-socket-cluster
-# Using a socket cluster, as mclapply doesn't work on Windows
-
-#' Extract max reachabilities and associated node persistent identifiers, in parallel
-#'
-#' @param networks list of movement networks
-#' @param n_threads
-#'
-#' @return list of lists: for each network, a list with (1) max reachability,
-#' (2) the persistent identifiers of the node(s) with max reachability.
-#'
-#' @importFrom networkDynamic get.vertex.pid
-#' @importFrom parallel makeCluster clusterEvalQ stopCluster
-#' @importFrom pbapply pblapply
-#' @importFrom tsna tReach
-#'
-#' @export
-parallel_max_reachabilities_with_id <- function(networks, n_threads){
-  cl <- makeCluster(n_threads)
-  on.exit(stopCluster(cl))
-
-  clusterEvalQ(cl, {
-    library("tsna")
-    library("networkDynamic")
-  })
-
-  max_reachabilities_w_ids <-
-    pblapply(networks,
-             function(x){
-               reachability <- tReach(x, graph.step.time = 1)
-               max_reachability <- max(reachability)
-               id_max_reachability <-
-                 get.vertex.pid(x, which(reachability == max_reachability))
-               list(max_reachability, id_max_reachability)
-             },
-             cl=cl)
-  return(max_reachabilities_w_ids)
-}
-
 #' Extract summary stats for temporal network node properties, in parallel
 #'
-#' @param networks list of movement networks
-#' @param n_threads number of threads over which to parallelise
-#' @param node_property node property: one of c("forward reachability",
-#'  "temporal degree", "temporal indegree", "temporal outdegree")
-#' @param statistics list with summary function(s) to calculate, e.g.
-#'  list(median, max = max).
-#' @param identify_nodes whether you want to identify the nodes with maximal
-#'  values for `node_property` in each network. Default is `FALSE`. Requires
-#'  that max is included as a named function within `statistics`.
+#' `parallel_summarise_temporal_node_properties()` calculates summary statistics
+#' for a selected node property, over a list of networks. Optionally, identifiers
+#' of the nodes with maximum values of the selected node property can also be
+#' returned. This function uses a socket cluster with `n_threads` threads to
+#' run calculations in parallel.
 #'
-#' @return named list of lists: for each network, a list consisting of:
-#'  (1) a named list `summary_statistics`, with the selected node property
-#'  summary statistic(s),
-#'  (2 - only if `identify_nodes` is set as `TRUE`) a named character vector
-#'  `node_pid_with_max_value`, with the persistent identifier(s) of the node(s)
-#'  with maximal value(s) for the selected node property.
+#' @param networks A list containing movement networks (networkDynamic objects)
+#' @param n_threads Numeric indicating number of threads over which to
+#'   parallelise.
+#' @param node_property Character indicating the network metric for which to
+#'   calculate summary statistics. One of `"forward reachability"`,
+#'   `"temporal degree"`, `"temporal indegree"`, or `"temporal outdegree"`.
+#' @param statistics A list with summary function(s) to calculate for the
+#'   selected `node_property`. For example, `list(median, max = max)`.
+#' @param identify_nodes A logical indicating whether you want to identify the
+#'   nodes with maximal values for `node_property` in each network. Default is
+#'   `FALSE`. Requires that `max` is included as a named function within
+#'   `statistics`.
+#'
+#' @returns A named list of lists. For each network, a list consisting of: (1) a
+#'   named list `summary_statistics`, with the selected node property summary
+#'   statistic(s), (2 - only if `identify_nodes` is set as `TRUE`) a named
+#'   character vector `node_pid_with_max_value`, with the persistent
+#'   identifier(s) of the node(s) with maximal value(s) for the selected node
+#'   property.
 #'
 #' @importFrom networkDynamic get.vertex.pid
 #' @importFrom parallel makeCluster clusterEvalQ stopCluster
@@ -149,7 +91,8 @@ parallel_summarise_temporal_node_properties <-
 #'    as starting date; for periods of months or years, the first day of the
 #'    month, n months, year or n years is used as starting date. (OR make
 #'    starting date an argument?)
-#' @export
+#'
+#' @keywords internal
 extract_periods <- function(data, period){
   if (isTRUE(grepl("(\\d+\\sdays)|((\\d+\\s)?week(\\s)?)",period))){
     start_dates <- seq(min(data), max(data), by = period)
@@ -165,11 +108,10 @@ extract_periods <- function(data, period){
 
 #' Extract periodic subnetworks from movement networks
 #'
-#' @param networks a named list of movement networks
-#' @param n_threads
-#' @param periods_in_data a list of start and end dates (in int format) for all periods in the data
-#'
-#' @return
+#' @param networks A named list of movement networks.
+#' @param n_threads A numeric indicating number of threads over which to
+#'   parallelise.
+#' @param periods_in_data A list of start and end dates (in int format) for all periods in the data.
 #'
 #' @importFrom networkDynamic network.extract
 #' @importFrom parallel makeCluster clusterExport stopCluster
@@ -182,7 +124,7 @@ extract_periods <- function(data, period){
 #'    If it is necessary to maintain the identities of vertices, see
 #'    persistent.ids. (Make this an argument? Add ... to pass on arguments?)
 #'
-#' @export
+#' @keywords internal
 extract_periodic_subnetworks <- function(networks, n_threads, periods_in_data){
 
   cl <- makeCluster(n_threads)
@@ -207,14 +149,12 @@ extract_periodic_subnetworks <- function(networks, n_threads, periods_in_data){
 #' @param monthly_data tibble with measure values, for monthly networks
 #' @param measure_name measure name (to refer to in y axis)
 #'
-#' @return
-#'
 #' @importFrom stringr str_wrap
 #' @importFrom tidyr pivot_longer
 #' @importFrom tidyselect everything
 #' @import ggplot2
 #'
-#' @export
+#' @keywords internal
 violinplot_monthly_measures <- function(monthly_data, measure_name){
 
   #Reformat to long tibble for plotting
@@ -250,11 +190,9 @@ violinplot_monthly_measures <- function(monthly_data, measure_name){
 #' @param measure_name measure name (to refer to in y axis)
 #' @param anonymisation "jitter" or "round(ing)"
 #'
-#' @return
-#'
 #' @import ggplot2
 #'
-#' @export
+#' @keywords internal
 plot_measure_over_anonymisation_gradient <-
   function(data, measure_name, anonymisation){
     datacols <- colnames(data)
