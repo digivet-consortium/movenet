@@ -606,7 +606,7 @@ reformat_date <- function(date_col, date_format){
 #' with a single sf geometry list-column (class sfc_POINT) with combined coordinates,
 #' and attributes including the crs ETRS89. Otherwise, an error is raised.
 #'
-#' @importFrom sf st_as_sf
+#' @importFrom sf st_as_sf st_transform
 #' @importFrom tibble as_tibble
 #'
 #' @keywords internal
