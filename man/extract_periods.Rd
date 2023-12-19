@@ -25,3 +25,4 @@ as starting date; for periods of months or years, the first day of the
 month, n months, year or n years is used as starting date. (OR make
 starting date an argument?)
 }
+\keyword{internal}

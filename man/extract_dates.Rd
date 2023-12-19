@@ -7,6 +7,8 @@
 extract_dates(network, whole_months = TRUE)
 }
 \arguments{
+\item{network}{A movement network}
+
 \item{whole_months}{A logical indicating whether \code{movement_data} covers
 full months (default \code{TRUE}). This affects calculation of average network
 measures.}
@@ -14,3 +16,4 @@ measures.}
 \description{
 Extract dates for study periods & subperiods (7d, 14d, 28d, 84d, month, quarter, year)
 }
+\keyword{internal}

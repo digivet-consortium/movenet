@@ -2,13 +2,19 @@
 % Please edit documentation in R/temporal_network_analysis_report.R
 \name{basic_network_summary}
 \alias{basic_network_summary}
-\title{Title}
+\title{Create basic network summary plots for temporal network report and app}
 \usage{
 basic_network_summary(network, dates, net_env)
 }
 \arguments{
+\item{network}{networkDynamic object containing a movement network.}
+
 \item{dates}{A named list with dates for study subperiods}
+
+\item{net_env}{The internal environment within which plots are stored for the
+report}
 }
 \description{
-Title
+Create basic network summary plots for temporal network report and app
 }
+\keyword{internal}

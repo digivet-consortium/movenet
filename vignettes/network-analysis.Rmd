@@ -35,9 +35,28 @@ network <- movedata2networkDynamic(movement_data, holding_data,
 network
 ```
 
-## (Basic) social network analysis
+## Calculate summary statistics for selected temporal network measures
 
 ```{R}
-# Perform some analysis - find the maximum reachability
-parallel_max_reachabilities(list(network), n_threads = 4)
+# Find the maximum reachability in the network, and which nodes have this property.
+parallel_summarise_temporal_node_properties(list(network), n_threads = 4,
+                                            node_property = "forward reachability",
+                                            statistics = list(max = max),
+                                            identify_nodes = TRUE)
 ```
+
+
+## Create a temporal social network analysis report
+
+```{R, eval = FALSE}
+# Create a network analysis report, with analyses of monthly network snapshots
+create_temporal_network_analysis_report(
+  network,
+  output_file = paste0(tempdir(),"\\network_report.yml"),
+  incl_reachability_analysis = FALSE,
+  n_threads = 1,
+  whole_months = TRUE,
+  time_unit = "month")
+  
+```
+

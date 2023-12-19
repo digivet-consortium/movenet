@@ -2,21 +2,38 @@
 % Please edit documentation in R/temporal_network_analysis_report.R
 \name{create_temporal_network_analysis_report}
 \alias{create_temporal_network_analysis_report}
-\title{Create a temporal network analysis report from data}
+\title{Create a temporal network analysis report from a movement network}
 \usage{
 create_temporal_network_analysis_report(
   network,
-  whole_months = TRUE,
-  time_unit = "month",
   output_file,
-  output_format = "html_document"
+  incl_reachability_analysis,
+  n_threads,
+  whole_months = TRUE,
+  time_unit = "month"
 )
 }
 \arguments{
-\item{output_file}{output file name (and path)}
+\item{network}{networkDynamic object containing a movement network.}
 
-\item{output_format}{output format ("html_document", "pdf_document")}
+\item{output_file}{Output file name and path.}
+
+\item{incl_reachability_analysis}{A logical indicating whether to include
+reachability analysis (slow).}
+
+\item{n_threads}{An integer indicating the number of parallel threads to use
+for reachability analysis.}
+
+\item{whole_months}{A logical indicating whether \code{movement_data} covers full
+months (default \code{TRUE}). This affects calculation of average network
+measures.}
+
+\item{time_unit}{Character string indicating the time unit of analyses. One
+of \code{"month"}, \code{"quarter"}, or \code{"year"}.}
+}
+\value{
+An html report is created with network analyses.
 }
 \description{
-Create a temporal network analysis report from data
+Create a temporal network analysis report from a movement network
 }

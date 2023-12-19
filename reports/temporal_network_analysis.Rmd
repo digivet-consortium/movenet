@@ -20,18 +20,18 @@ the observed time period
 
 <div class = "row">
 <div class = "col-md-5">
-```{r, echo= FALSE}
+```{r, network-size-table, echo= FALSE}
 qflextable(size_summary_table)
 ```
 </div>
 <div class = "col-md-7">
 ### Holdings active (n)
-```{r, echo= FALSE}
+```{r, network-size-plot-n, echo= FALSE}
 plot(size_plot_number)
 ```
 
 ### Holdings active (prop)
-```{r, echo= FALSE}
+```{r, network-size-plot-prop, echo= FALSE}
 plot(size_plot_prop)
 ```
 </div>
@@ -48,33 +48,33 @@ observed over the observed time period
 
 <div class = "row">
 <div class = "col-md-5">
-```{r, echo= FALSE}
+```{r, moves-summary-table, echo= FALSE}
 qflextable(moves_summary_table)
 ```
 </div>
 <div class = "col-md-7">
 ### Movements
-```{r, echo= FALSE}
+```{r, moves-plot-n, echo= FALSE}
 plot(moves_plot_number)
 ```
 
 ### Movements (prop.)
-```{r, echo= FALSE}
+```{r, moves-plot-prop, echo= FALSE}
 plot(moves_plot_prop)
 ```
 
 ### Edges
-```{r, echo= FALSE}
+```{r, edges-plot-n, echo= FALSE}
 plot(edges_plot_number)
 ```
 
 ### Edges (prop.)
-```{r, echo= FALSE}
+```{r, edges-plot-prop, echo= FALSE}
 plot(edges_plot_prop)
 ```
 
 ### Density
-```{r, echo= FALSE}
+```{r, edge-density-plot, echo= FALSE}
 plot(edges_plot_density)
 ```
 </div>
@@ -84,12 +84,12 @@ plot(edges_plot_density)
 
 <div class = "row">
 <div class = "col-md-5">
-```{r, echo= FALSE}
+```{r, batch-sizes-table, echo= FALSE}
 qflextable(weights_summary)
 ```
 </div>
 <div class = "col-md-7">
-```{r, echo= FALSE}
+```{r, batch-sizes-plot, echo= FALSE}
 plot(weights_plot)
 ```
 </div>
@@ -99,30 +99,90 @@ plot(weights_plot)
 
 ## Component analysis
 
+<div class = "row">
+<div class = "col-md-7">
+```{r, GSCC-component-plot, echo= FALSE}
+plot(GSCC_size_plot)
+```
+</div>
+<div class = "col-md-5">
+<br>
+<br>
 The largest giant strongly connected component (GSCC) is the largest
 number of nodes (holdings) that can all reach each other by some
 directed path of movements. This means that any node in that set could
 indirectly infect any other, or that a single source outbreak within the
 component could theoretically infect anything else within that
 component.  
-**Section under development:** Similar plots for giant in
-component (GIC) and giant out component (GOC) will be added shortly.
+</div>
+</div>
+
+<div class = "row">
+<div class = "col-md-7">
+```{r, GIC-component-plot, echo= FALSE}
+plot(GIC_size_plot)
+```
+</div>
+<div class = "col-md-5">
+<br>
+<br>
+The giant in-component (GIC) consists of all nodes (holdings) that can reach the 
+GSCC, but are not part of it, because there is no directed path from the GSCC to 
+these nodes. This means that any holding in this set could infect holdings in 
+the GSCC, but not be infected by them. 
+</div>
+</div>
+
+<div class = "row">
+<div class = "col-md-7">
+```{r, GOC-component-plot, echo= FALSE}
+plot(GIC_size_plot)
+```
+</div>
+<div class = "col-md-5">
+<br>
+<br>
+Conversely, the giant out-component (GOC) consists of all nodes (holdings) that 
+can be reached from the GSCC, but are not part of it, because there is no 
+directed path from these nodes to the GSCC. This means that any holding in this 
+set could be infected by holdings in the GSCC, but not infect them.
+</div>
+</div>
+
 
 ## Loyalty
 
+<div class = "row">
+<div class = "col-md-7">
+```{r, loyalty-plot, echo= FALSE}
+plot(common_links_heatmap)
+```
+</div>
+<div class = "col-md-5">
+<br>
+<br>
 This is a measure of consistency in the network between different points
 in time. Darker colours indicate a larger proportion of trades that are
 in common between two months. The black diagonal indicates that each
 month's movements are identical to themselves.
+</div>
+</div>
 
-## Temporal network analysis
 
-### Reachability (in- & out-going contact chains)
+```{r, reachability-analysis, echo= FALSE, fig.show="hold", out.width="50%", eval = incl_reachability_analysis, results='asis'}
 
-The forward reachable set (or out-going contact chain) of a single node
+cat("# Temporal network analysis\n\n")
+cat("## Reachability (in- & out-going contact chains)\n\n")
+
+plot(fwd_reachability_plot)
+plot(bkwd_reachability_plot)
+
+```
+
+`r if(incl_reachability_analysis){"The forward reachable set (or out-going contact chain) of a single node
 is the set of nodes that can be reached from that origin node, or
 alternatively the set of nodes that could theoretically be infected in
 an outbreak starting at that node. That is, the set of nodes that are
 reachable from some origin node are the reachable set of that origin
 node. The backward reachable set (or in-going contact chain) is the set
-of nodes that reach a node.
+of nodes that reach a node."}`

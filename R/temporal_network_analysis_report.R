@@ -1,21 +1,28 @@
-#' Create a temporal network analysis report from data
+#' Create a temporal network analysis report from a movement network
 #'
-#' @param network
-#' @param output_file output file name (and path)
-#' @param output_format output format ("html_document", "pdf_document")
+#' @param network networkDynamic object containing a movement network.
+#' @param output_file Output file name and path.
+#' @param incl_reachability_analysis A logical indicating whether to include
+#'   reachability analysis (slow).
+#' @param n_threads An integer indicating the number of parallel threads to use
+#'   for reachability analysis.
+#' @param whole_months A logical indicating whether `movement_data` covers full
+#'   months (default `TRUE`). This affects calculation of average network
+#'   measures.
+#' @param time_unit Character string indicating the time unit of analyses. One
+#'   of `"month"`, `"quarter"`, or `"year"`.
 #'
 #' @importFrom rmarkdown render
-#' @importFrom flextable qflextable
+#' @importFrom flextable qflextable set_flextable_defaults
 #'
-#' @return
-#'
-#' @examples
+#' @return An html report is created with network analyses.
 #'
 #' @export
-create_temporal_network_analysis_report <- function(network, whole_months = TRUE,
-                                                    time_unit = "month",
-                                                    output_file,
-                                                    output_format = "html_document"){
+create_temporal_network_analysis_report <- function(network, output_file,
+                                                    incl_reachability_analysis,
+                                                    n_threads,
+                                                    whole_months = TRUE,
+                                                    time_unit = "month"){
 
   net_env <- new.env()
 
@@ -23,21 +30,13 @@ create_temporal_network_analysis_report <- function(network, whole_months = TRUE
 
   dates <- extract_dates(network, whole_months)
 
-  #############################
-  ### Basic network summary ###
-  #############################
-
   basic_network_summary(network, dates, net_env)
   basic_network_summary_per_time_unit(network, dates, time_unit, net_env)
 
-
-  ###############################
-  ### Static network analysis ###
-  ###############################
-
-  #################################
-  ### Temporal network analysis ###
-  #################################
+  static_network_snapshots_analysis(network, dates, time_unit, net_env)
+  if(isTRUE(incl_reachability_analysis)){
+    reachability_analysis(network, dates, time_unit, net_env, n_threads)
+  }
 
   #####################
   ### Create report ###
@@ -47,27 +46,30 @@ create_temporal_network_analysis_report <- function(network, whole_months = TRUE
                                package = "movenet")
   #Have this vary according to an arg report_type?
 
+  old_defaults <- set_flextable_defaults(font.size = 10)
+
   #Knit report
   render(input = report_source,
-         output_format = output_format,
+         output_format = "html_document",
          output_file = output_file,
-         envir = net_env)
+         envir = net_env,
+         params = list(incl_reachability_analysis = incl_reachability_analysis))
+
+  do.call(set_flextable_defaults, old_defaults)
 
 }
 
 #' Extract dates for study periods & subperiods (7d, 14d, 28d, 84d, month, quarter, year)
 #'
-#' @param network
+#' @param network A movement network
 #' @param whole_months A logical indicating whether `movement_data` covers
 #'   full months (default `TRUE`). This affects calculation of average network
 #'   measures.
 #'
-#' @returns
-#'
-#' @examples
-#'
 #' @importFrom lubridate as_date ceiling_date floor_date
 #' @importFrom networkDynamic get.edge.activity
+#'
+#' @keywords internal
 extract_dates <- function(network, whole_months = TRUE){
 
   dates_data <- list()
@@ -101,18 +103,18 @@ extract_dates <- function(network, whole_months = TRUE){
   return(dates_data)
 }
 
-#' Title
+#' Create basic network summary plots for temporal network report and app
 #'
-#' @param network
+#' @inheritParams create_temporal_network_analysis_report
 #' @param dates A named list with dates for study subperiods
-#'
-#' @returns
-#'
-#' @examples
+#' @param net_env The internal environment within which plots are stored for the
+#'  report
 #'
 #' @importFrom dplyr between
 #' @import network
 #' @import networkDynamic
+#'
+#' @keywords internal
 basic_network_summary <- function(network, dates, net_env){
 
   edge_spell_list <- get.edge.activity(network, as.spellList = TRUE)
@@ -252,22 +254,18 @@ basic_network_summary <- function(network, dates, net_env){
         "Proportion of all possible edges")
 }
 
-#' Title
+#' Create basic network summary tables and batch size plot for temporal network report and app
 #'
-#' @param network
-#' @param dates
-#' @param time_unit ("month", "quarter", or "year")
-#'
-#' @return
-#' @export
-#'
-#' @examples
+#' @inheritParams create_temporal_network_analysis_report
+#' @inheritParams basic_network_summary
 #'
 #' @importFrom dplyr between
 #' @importFrom tibble tibble num
 #' @importFrom lubridate as_date quarter year
 #' @import network
 #' @import networkDynamic
+#'
+#' @keywords internal
 basic_network_summary_per_time_unit <- function(network, dates, time_unit,
                                                 net_env){
 
@@ -327,10 +325,11 @@ basic_network_summary_per_time_unit <- function(network, dates, time_unit,
            "edge density (prop.)" = num(edges_data_density, digits = 3))
 
   #Extract summary stats for movement weights for each study subperiod
+  weight_attribute_name <- get.network.attribute(network, "weight")
   weights_summary_stats <-
     lapply(dates_int, FUN = function(t) {
       sapply(get.edge.attribute.active(network,
-                                       movenetenv$options$movedata_cols$weight,
+                                       weight_attribute_name,
                                        onset = t, #list of edges during period
                                        terminus = as.integer(as_date(t)+months(n_months)),
                                        return.tea = TRUE, require.active = TRUE),
@@ -351,8 +350,177 @@ basic_network_summary_per_time_unit <- function(network, dates, time_unit,
 
 }
 
+#' Create component and loyalty analyses content for temporal network report and app
+#'
+#' @inheritParams create_temporal_network_analysis_report
+#' @inheritParams basic_network_summary
+#'
+#' @importFrom network network.size
+#' @importFrom networkDynamic network.collapse
+#' @importFrom sna component.dist reachability
+#'
+#' @keywords internal
+static_network_snapshots_analysis <- function(network, dates, time_unit,
+                                              net_env){
+
+  dates_int <- dates[[paste0(time_unit,"ly_int")]]
+  dates <- dates[[paste0(time_unit,"ly")]]
+  n_months <- switch(time_unit, "month" = 1, "quarter" = 3, "year" = 12)
+
+  snapshots <- lapply(dates_int, function(t){
+    suppressWarnings(
+      network.collapse(network, onset = t,
+                       terminus = as.integer(as_date(t)+months(n_months)),
+                       rule = "any", active.default = FALSE,
+                       retain.all.vertices = FALSE))})
+  #this raises warnings: edges with multiple edges spells with different
+  #attribute values, e.g. repeated moves with different batch sizes, are
+  #assigned the earliest value in the static snapshot.
+  #Upshot: DON'T USE SNAPSHOTS FOR WEIGHTED ANALYSES.
+  lists_of_moves <- lapply(snapshots, function(s){as.data.frame(s)[,c(1,2)]})
+  size_data <- sapply(snapshots, function(s) network.size(s))
+  edge_count <- sapply(snapshots, function(s) network.edgecount(s))
+
+  # Component analysis
+
+  strongly_connected_component_data <- component.dist(snapshots,
+                                                      connected = "strong")
+  components <- list()
+  component_size_data <- list()
+
+  #Identifying GSCC, GIC & GOC
+  components$GSCC <-
+    sapply(strongly_connected_component_data, function(x){
+      which(x$membership == which(x$csize == max(x$csize))[[1]]) #N.B. this selects the members of only the first out of many equally large components
+      #which(x$membership == which(x$csize == max(x$csize))) #N.B this selects all largest components, and bungs all members together
+    })
+
+  reachabilities <- reachability(snapshots, return.as.edgelist = TRUE)
+  components$GIC <-
+    lapply(seq_along(reachabilities), function(n){
+      unique(reachabilities[[n]][which((reachabilities[[n]][,2] %in% components$GSCC[[n]])
+                                       & !(reachabilities[[n]][,1] %in% components$GSCC[[n]]))])
+    })
+  components$GOC <-
+    lapply(seq_along(reachabilities), function(n){
+      unique(reachabilities[[n]][which((reachabilities[[n]][,1] %in% components$GSCC[[n]])
+                                       & !(reachabilities[[n]][,2] %in% components$GSCC[[n]]))])
+    })
+
+  #Calculating component sizes (proportion of active farms included in GSCC)
+  component_size_data$GSCC_prop <-
+    sapply(strongly_connected_component_data, function(x) max(x$csize))/size_data
+  component_size_data$GIC_prop <-
+    sapply(components$GIC, function(x) length(x))/size_data
+  component_size_data$GOC_prop <-
+    sapply(components$GOC, function(x) length(x))/size_data
+
+
+  #Plotting component sizes
+  net_env[["GSCC_size_plot"]] <-
+    snapshot_barchart(data.frame(dates, component_size_data$GSCC_prop),
+                      "Size of giant strongly connected component (GSCC)",
+                      "Component size (proportion of active holdings)")
+  net_env[["GIC_size_plot"]] <-
+    snapshot_barchart(data.frame(dates, component_size_data$GIC_prop),
+                      "Size of giant in-component (GIC)",
+                      "Component size (proportion of active holdings)")
+  net_env[["GOC_size_plot"]] <-
+    snapshot_barchart(data.frame(dates, component_size_data$GOC_prop),
+                      "Size of giant out-component (GOC)",
+                      "Component size (proportion of active holdings)")
+
+  # Loyalty
+
+  #Creating df with fractions of common directed links between all monthly networks
+  combinations <-
+    expand.grid(m1 = 1:length(dates), m2 = 1:length(dates))
+  combinations$loyalty <-
+    sapply(1:nrow(combinations), function(x){
+      sum(do.call(paste, lists_of_moves[[combinations[x,1]]]) %in%
+            do.call(paste, lists_of_moves[[combinations[x,2]]])) /
+        edge_count[[combinations[x,1]]]
+    })
+  combinations <- mutate(combinations,
+                         m1 = dates[m1],
+                         m2 = dates[m2])
+
+  #Plotting heatmap with fractions of common directed links
+  net_env[["common_links_heatmap"]] <-
+    monthxmonth_heatmap(combinations,
+                        "Fraction of common directed links")
+
+}
+
+
+#' Create reachability analysis content for temporal network report
+#'
+#' @inheritParams create_temporal_network_analysis_report
+#' @inheritParams basic_network_summary
+#'
+#' @importFrom tidyr unnest
+#' @import tibble tibble
+#'
+#' @keywords internal
+reachability_analysis <- function(network, dates, time_unit, net_env, n_threads){
+
+  cl <- makeCluster(n_threads)
+  on.exit(stopCluster(cl))
+
+  clusterEvalQ(cl, {
+    library("tsna")
+    library("networkDynamic")
+  })
+
+  dates_int <- dates[[paste0(time_unit,"ly_int")]]
+  dates <- dates[[paste0(time_unit,"ly")]]
+  n_months <- switch(time_unit, "month" = 1, "quarter" = 3, "year" = 12)
+
+  message("Calculating reachabilities (slow)")
+
+  #For each month in the dataset,
+  reachabilities <-
+    Map(c, dates_int, as.integer(dates+months(n_months))) %>%
+    pblapply(function(period) {
+      # ...extract the monthly subnetwork
+      periodic_nw <-
+        networkDynamic::network.extract(network, onset = period[[1]],
+                                        terminus = period[[2]], rule = "any",
+                                        retain.all.vertices = FALSE,
+                                        trim.spells = TRUE)
+        # ...calculate forward and backward reachabilities
+      fwd_reachability <- tsna::tReach(periodic_nw, "fwd", graph.step.time = 1)
+      bkwd_reachability <- tsna::tReach(periodic_nw, "bkwd", graph.step.time = 1)
+      list(fwd_reachability = fwd_reachability,
+           bkwd_reachability = bkwd_reachability)
+    }, cl = cl )
+
+  #transpose: from monthly lists of fwd & bkwd reach, to list of monthly fwd
+  #reach & list of monthly bkwd reach
+  values <- purrr::transpose(reachabilities)
+  fwd_reachabilities <- values$fwd_reachability
+  bkwd_reachabilities <- values$bkwd_reachability
+
+  #plot reachability box plots
+  net_env[["fwd_reachability_plot"]] <-
+    snapshot_boxplot(
+      unnest(tibble(dates, fwd_reachabilities), fwd_reachabilities),
+      "Forward reachable set (out-going contact chain) sizes",
+      "Size")
+  net_env[["bkwd_reachability_plot"]] <-
+    snapshot_boxplot(
+      unnest(tibble(dates, bkwd_reachabilities), bkwd_reachabilities),
+      "Backward reachable set (in-going contact chain) sizes",
+      "Size")
+}
+
+
+
+#' Create snapshot dotplots for temporal network report and app
+#'
+#' @keywords internal
 snapshots_diffperiods_dotplot1 <- function(data_daily, data_7days, data_14days,
-                                           data_28days,data_84days, title, ylab){
+                                           data_28days, data_84days, title, ylab){
 
   colours <- c("84 days" = "grey", "3 months" = "grey",
                "28 days" = "lightblue", "1 month" = "lightblue",
@@ -388,7 +556,11 @@ snapshots_diffperiods_dotplot1 <- function(data_daily, data_7days, data_14days,
                        limits = c("84 days", "28 days", "14 days", "7 days", "1 day"))
 }
 
+#' Create time-period based summary tables for temporal network analysis and app
+#'
 #' @importFrom dplyr bind_rows
+#'
+#' @keywords internal
 periodic_data2summary_stats_df <-
   function(periodic_data, period_dates, period = c("month", "quarter", "year")){
     df <-
@@ -400,6 +572,9 @@ periodic_data2summary_stats_df <-
     return(df)
   }
 
+#' Create snapshot summary linechart (e.g. batchsize plot) for temporal network analysis and app
+#'
+#' @keywords internal
 snapshot_summary_stats_linechart <- function(periodic_data, title, ylab){
 
   names(periodic_data) <- c("x", "min", "Q1", "median", "mean", "Q3", "max")
@@ -423,3 +598,67 @@ snapshot_summary_stats_linechart <- function(periodic_data, title, ylab){
     geom_line(aes(y = mean), linetype = 2)
 }
 
+#' Create snapshot summary barchart (e.g. component analyses) for temporal network analysis and app
+#'
+#' @keywords internal
+snapshot_barchart <- function(periodic_data, title, ylab){
+
+  names(periodic_data) <- c("x","y")
+
+  ggplot(data = periodic_data,
+         aes(x, y)) +
+    labs(title = title) +
+    xlab("Time") +
+    ylab(ylab) +
+    theme_bw() +
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          plot.title = element_text(size = 16, face = "bold"),
+          axis.text = element_text(size = 12),
+          axis.title = element_text(size = 14)) +
+    geom_bar(stat="identity")
+}
+
+#' Create snapshot heatmap (e.g. loyalty analysis) for temporal network analysis and app
+#'
+#' @keywords internal
+monthxmonth_heatmap <- function(month_combinations, title){
+
+  names(month_combinations)[3] <- "z"
+
+  ggplot(data = month_combinations,
+         aes(m1, m2, fill = z)) +
+    labs(title = title) +
+    xlab(NULL) +
+    ylab(NULL) +
+    scale_fill_gradient2(lim=c(0,1), low = "yellow", mid = "red", high = "black",
+                         midpoint = 0.5) +
+    theme_bw() +
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          legend.title = element_blank(),
+          legend.position = "right",
+          legend.text = element_text(size = 12),
+          plot.title = element_text(size = 16, face = "bold"),
+          axis.text = element_text(size = 12),
+          axis.title = element_text(size = 14)) +
+    geom_tile()
+}
+
+#' Create snapshot boxplots (e.g. reachability analyses) for temporal network analysis and app
+#'
+#' @keywords internal
+snapshot_boxplot <- function(periodic_data, title, ylab) {
+
+  names(periodic_data) <- c("x","y")
+
+  ggplot(data = periodic_data,
+         aes(x, y, group = x)) +
+    labs(title = title) +
+    xlab("Time") +
+    ylab(ylab) +
+    theme_bw() +
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          plot.title = element_text(size = 16, face = "bold"),
+          axis.text = element_text(size = 12),
+          axis.title = element_text(size = 14)) +
+    geom_boxplot()
+}

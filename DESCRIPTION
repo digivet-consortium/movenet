@@ -22,6 +22,7 @@ Language: en-GB
 Imports:
     checkmate,
     dplyr,
+    flextable,
     ggplot2,
     lubridate (>= 1.9.0),
     magrittr,
@@ -34,6 +35,7 @@ Imports:
     readr,
     rmarkdown,
     sf,
+    sna,
     stringr,
     tibble,
     tidyr,
