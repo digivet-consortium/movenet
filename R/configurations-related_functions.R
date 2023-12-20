@@ -119,6 +119,8 @@ movenetenv <- new.env()
 #' @family configurations-related functions
 #'
 #' @importFrom yaml write_yaml
+#' @importFrom xfun file_string
+#'
 #' @export
 save_config <- function(outfile, config_type = c("movement", "holding")){
   if(missing(outfile)) stop("Argument `outfile` is missing. Please provide a path to which to save the config file to.", call. = FALSE)

@@ -262,6 +262,7 @@ basic_network_summary <- function(network, dates, net_env){
 #' @importFrom dplyr between
 #' @importFrom tibble tibble num
 #' @importFrom lubridate as_date quarter year
+#' @importFrom stats na.omit
 #' @import network
 #' @import networkDynamic
 #'

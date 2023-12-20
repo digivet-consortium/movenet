@@ -9,8 +9,11 @@ if(!requireNamespace("siminf4movenet")){
   #update when have released version
   #stop("The siminf4movenet package is not installed - run:\ninstall.packages('siminf4movenet', repos=....)")
   stop("The siminf4movenet package is not installed - run:\ninstall_github('digivet-consortium/siminf4movenet')")
-  #also requires SimInf for trajectory(), how does this work?
 }
+if(!requireNamespace("SimInf")){
+  stop("The SimInf package is not installed - run:\ninstall_packages('SimInf')")
+}
+
 
 
 load_all()
@@ -24,7 +27,6 @@ weight_unit_transmission_probability = 1
 # probability of transmission via movement, per unit moved weight (e.g. per
 # pig) from an infected holding. 1 assumes all movements from infected holdings
 # are 100% infectious, regardless of weight.
-load("inst/extdata/local_spread_probabilities_ASF_Halasa_et_al_2016.Rdata")
 local_spread_transmission_probabilities = local_spread_probabilities_ASF_Halasa_et_al_2016
 # look-up table with distance-based transmission probability tiers for ASF, from
 # the DTU-DADS-ASF model
@@ -102,7 +104,7 @@ create_infected_vector <- function(n_nodes, n_initially_infected){
   return(infected_node_vector)
 }
 
-if(requireNamespace("siminf4movenet")){ #also requires SimInf for trajectory(), how does this work?
+if(requireNamespace("siminf4movenet") && requireNamespace("SimInf")){ #also requires SimInf for trajectory(), how does this work?
 
   model <- siminf4movenet::SEIRcm(infected = create_infected_vector(n_nodes, n_initially_infected), #n_nodes needs to correspond to ncol(contact_matrix)
                                   tspan = tspan,
