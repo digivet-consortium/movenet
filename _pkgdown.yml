@@ -19,17 +19,17 @@ reference:
     network analyses
   contents:
   - movedata2networkDynamic
-  - create_report
-  - extract_periodic_subnetworks
-  - extract_periods
-  - parallel_max_reachabilities
-  - parallel_max_reachabilities_with_id
+  - create_temporal_network_analysis_report
   - parallel_summarise_temporal_node_properties
-  - plot_measure_over_anonymisation_gradient
-  - violinplot_monthly_measures
 - title: Integration of movement data into disease models
   desc: Functions for integrating movement and holding data into disease models
-  contents: data2contactmatrix
+  contents:
+  - data2contactmatrix
+  - siminf4movenet::SEIRcm()
+  - SEIRcm_ASF
+  - create_random_infected_vector
+  - create_specified_infected_vector
+  - get_cumulative_infected
 - title: Configurations
   desc: Functions for setting and changing movenet configurations
   contents:

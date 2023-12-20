@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">movenet</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0-1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0-1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -128,44 +128,14 @@ combinations</dd>
         <dd>Create a dynamic network representation of movenet-format movement data</dd>
       </dl><dl><dt>
           
-          <code><a href="create_report.html">create_report()</a></code> 
+          <code><a href="create_temporal_network_analysis_report.html">create_temporal_network_analysis_report()</a></code> 
         </dt>
-        <dd>Create a network analysis report from data</dd>
-      </dl><dl><dt>
-          
-          <code><a href="extract_periodic_subnetworks.html">extract_periodic_subnetworks()</a></code> 
-        </dt>
-        <dd>Extract periodic subnetworks from movement networks</dd>
-      </dl><dl><dt>
-          
-          <code><a href="extract_periods.html">extract_periods()</a></code> 
-        </dt>
-        <dd>Extract time periods covered in movement dataset</dd>
-      </dl><dl><dt>
-          
-          <code><a href="parallel_max_reachabilities.html">parallel_max_reachabilities()</a></code> 
-        </dt>
-        <dd>Extract max reachabilities in parallel</dd>
-      </dl><dl><dt>
-          
-          <code><a href="parallel_max_reachabilities_with_id.html">parallel_max_reachabilities_with_id()</a></code> 
-        </dt>
-        <dd>Extract max reachabilities and associated node persistent identifiers, in parallel</dd>
+        <dd>Create a temporal network analysis report from a movement network</dd>
       </dl><dl><dt>
           
           <code><a href="parallel_summarise_temporal_node_properties.html">parallel_summarise_temporal_node_properties()</a></code> 
         </dt>
         <dd>Extract summary stats for temporal network node properties, in parallel</dd>
-      </dl><dl><dt>
-          
-          <code><a href="plot_measure_over_anonymisation_gradient.html">plot_measure_over_anonymisation_gradient()</a></code> 
-        </dt>
-        <dd>Plot values of a measure for a varying range of jitter or rounding</dd>
-      </dl><dl><dt>
-          
-          <code><a href="violinplot_monthly_measures.html">violinplot_monthly_measures()</a></code> 
-        </dt>
-        <dd>Draw violin plot of distributions of monthly values of a selected network measure, for various jittered &amp; rounded networks</dd>
       </dl></div><div class="section level2">
       <h2 id="integration-of-movement-data-into-disease-models">Integration of movement data into disease models<a class="anchor" aria-label="anchor" href="#integration-of-movement-data-into-disease-models"></a></h2>
       
@@ -181,7 +151,34 @@ combinations</dd>
           
           <code><a href="data2contactmatrix.html">data2contactmatrix()</a></code> 
         </dt>
-        <dd>Title</dd>
+        <dd>Create transmission probability matrix for SEIRcm model from movement and holding data</dd>
+      </dl><dl><dt>
+          
+          <code><a href="https://rdrr.io/pkg/siminf4movenet/man/SEIRcm.html" class="external-link">SEIRcm()</a></code> 
+        </dt>
+        <dd>Create an SEIR model with contact matrix (from siminf4movenet)</dd>
+      </dl><dl><dt>
+          
+          <code><a href="SEIRcm_ASF.html">SEIRcm_ASF()</a></code> 
+        </dt>
+        <dd>Create an SEIR model with contact matrix and ASF-inspired parameters</dd>
+      </dl><dl><dt>
+          
+          <code><a href="create_random_infected_vector.html">create_random_infected_vector()</a></code> 
+        </dt>
+        <dd>Create a vector of holdings infected at t=0 to plug into SimInf models, by
+randomly selecting a specified number of holdings</dd>
+      </dl><dl><dt>
+          
+          <code><a href="create_specified_infected_vector.html">create_specified_infected_vector()</a></code> 
+        </dt>
+        <dd>Create a vector of holdings infected at t=0 to plug into SimInf models, using
+holding identifiers</dd>
+      </dl><dl><dt>
+          
+          <code><a href="get_cumulative_infected.html">get_cumulative_infected()</a></code> 
+        </dt>
+        <dd>Get the cumulative infected (I+R components) from SimInf model trajectories</dd>
       </dl></div><div class="section level2">
       <h2 id="configurations">Configurations<a class="anchor" aria-label="anchor" href="#configurations"></a></h2>
       
@@ -229,7 +226,7 @@ combinations</dd>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p><p>Developed by Carlijn Bogaardt, Matt Denwood, Stefan Widgren.</p>
+  <p></p><p>Developed by Carlijn Bogaardt, Matt Denwood, Stefan Widgren, Jessica Enright.</p>
 </div>
 
 <div class="pkgdown-footer-right">

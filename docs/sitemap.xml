@@ -25,6 +25,9 @@
     <loc>https://digivet-consortium.github.io/movenet/authors.html</loc>
   </url>
   <url>
+    <loc>https://digivet-consortium.github.io/movenet/fast-perch_reprex.html</loc>
+  </url>
+  <url>
     <loc>https://digivet-consortium.github.io/movenet/index.html</loc>
   </url>
   <url>
@@ -43,6 +46,12 @@
     <loc>https://digivet-consortium.github.io/movenet/reference/asciify.html</loc>
   </url>
   <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/basic_network_summary.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/basic_network_summary_per_time_unit.html</loc>
+  </url>
+  <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/change_config.html</loc>
   </url>
   <url>
@@ -52,13 +61,25 @@
     <loc>https://digivet-consortium.github.io/movenet/reference/create_edge_spells.html</loc>
   </url>
   <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/create_random_infected_vector.html</loc>
+  </url>
+  <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/create_report.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/create_specified_infected_vector.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/create_temporal_network_analysis_report.html</loc>
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/create_vertex_spells.html</loc>
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/data2contactmatrix.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/extract_dates.html</loc>
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/extract_periodic_subnetworks.html</loc>
@@ -74,6 +95,9 @@
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/get_config.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/get_cumulative_infected.html</loc>
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/holdingids2consecints.html</loc>
@@ -97,6 +121,9 @@
     <loc>https://digivet-consortium.github.io/movenet/reference/load_config.html</loc>
   </url>
   <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/monthxmonth_heatmap.html</loc>
+  </url>
+  <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/movedata2networkDynamic.html</loc>
   </url>
   <url>
@@ -106,16 +133,16 @@
     <loc>https://digivet-consortium.github.io/movenet/reference/new_config.html</loc>
   </url>
   <url>
-    <loc>https://digivet-consortium.github.io/movenet/reference/parallel_max_reachabilities.html</loc>
-  </url>
-  <url>
-    <loc>https://digivet-consortium.github.io/movenet/reference/parallel_max_reachabilities_with_id.html</loc>
-  </url>
-  <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/parallel_summarise_temporal_node_properties.html</loc>
   </url>
   <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/periodic_data2summary_stats_df.html</loc>
+  </url>
+  <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/plot_measure_over_anonymisation_gradient.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/reachability_analysis.html</loc>
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/reformat_coords.html</loc>
@@ -142,7 +169,25 @@
     <loc>https://digivet-consortium.github.io/movenet/reference/save_config.html</loc>
   </url>
   <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/SEIRcm_ASF.html</loc>
+  </url>
+  <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/select_cols.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/snapshots_diffperiods_dotplot1.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/snapshot_barchart.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/snapshot_boxplot.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/snapshot_summary_stats_linechart.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/static_network_snapshots_analysis.html</loc>
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/validate_config.html</loc>
