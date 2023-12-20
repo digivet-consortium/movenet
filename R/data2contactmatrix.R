@@ -27,13 +27,24 @@
 #'   full months (default `TRUE`). This affects calculation of daily average
 #'   weights, and thus of movement-based transmission probabilities. See
 #'   @details.
-#' @param local_spread_probabilities A data frame or tibble of tiered local
+#' @param local_spread_transmission_probabilities A data frame or tibble of tiered local
 #'   spread probabilities. This must consist of 3 columns:
 #'   `lower_boundary` (in metres), `upper_boundary` (in metres), `probability`.
 #' @param additional_transmission_prob_matrices A named list with any additional
 #'   transmission probability matrices to include.
+#' @param accept_missing_coordinates A logical indicating whether to accept
+#'   `holding_data` with missing coordinates (default `FALSE`). Any missing
+#'   coordinates will result in an error if `FALSE`, or a warning and "local
+#'   spread" (distance-based transmission) set to 0 in transmission matrix
+#'   entries involving the holdings with missing coordinates if `TRUE`.
+#' @param accept_missing_additional_tm_probabilities A logical indicating
+#'   whether to accept `additional_transmission_prob_matrices` with missing
+#'   values (default `FALSE`). Any missing values will result in an error if
+#'   `FALSE`, or a warning and the relevant transmission probability components
+#'   set to 0 in transmission matrix entries involving the holdings with missing
+#'   values if `TRUE`.
 #'
-#' @return A named list with two elements:
+#' @returns A named list with two elements:
 #' * `transmission_matrix` containing a matrix with overall daily transmission
 #' probabilities from each holding (each row) to each holding (each column),
 #' based on movements, (optionally) local spread, and (optionally) any other
@@ -44,7 +55,13 @@
 #' * `key` containing a named character vector that links original holding
 #' identifiers (element names) and numeric node identifiers (as element values).
 #'
+#' @seealso
+#' * [siminf4movenet::SEIRcm()] for the SEIRcm model developed for movenet.
+#' * [`SimInf::SimInf`] for the underlying modelling package.
+#' @family transmission modelling-related functions
+#'
 #' @importFrom sf st_is_empty
+#' @importFrom stats na.omit
 #' @export
 data2contactmatrix <- function(movement_data, holding_data = NULL,
                                #general options
@@ -222,7 +239,7 @@ data2contactmatrix <- function(movement_data, holding_data = NULL,
     local_spread_matrix <- NULL
   }
 
-  #ASF probability tiers saved under "inst/extdata/local_spread_probabilities_ASF_Halasa_et_al_2016.Rdata"
+  #ASF probability tiers saved under "inst/extdata/local_spread_probabilities_ASF_Halasa_et_al_2016.rda"
   # - how to use this by default if holding_data is optional?!
 
   overall_transmission_matrix <-

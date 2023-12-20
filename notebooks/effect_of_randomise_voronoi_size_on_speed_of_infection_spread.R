@@ -65,8 +65,6 @@ mask_landscape = FALSE
 
 #model options
 ##############
-load(system.file("data/local_spread_probabilities_ASF_Halasa_et_al_2016.Rdata",
-                 package = "movenet"))
 local_spread_transmission_probabilities = local_spread_probabilities_ASF_Halasa_et_al_2016
 # look-up table with distance-based transmission probability tiers for ASF, from
 # the DTU-DADS-ASF model
