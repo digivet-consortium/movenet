@@ -24,6 +24,19 @@ data2contactmatrix(
 \item{incl_nonactive_holdings}{A logical indicating whether to include
 non-active holdings (default \code{FALSE}).}
 
+\item{accept_missing_coordinates}{A logical indicating whether to accept
+\code{holding_data} with missing coordinates (default \code{FALSE}). Any missing
+coordinates will result in an error if \code{FALSE}, or a warning and "local
+spread" (distance-based transmission) set to 0 in transmission matrix
+entries involving the holdings with missing coordinates if \code{TRUE}.}
+
+\item{accept_missing_additional_tm_probabilities}{A logical indicating
+whether to accept \code{additional_transmission_prob_matrices} with missing
+values (default \code{FALSE}). Any missing values will result in an error if
+\code{FALSE}, or a warning and the relevant transmission probability components
+set to 0 in transmission matrix entries involving the holdings with missing
+values if \code{TRUE}.}
+
 \item{weight_unit_transmission_probability}{A single numeric indicating
 transmission probability per unit weight moved (default 0.5)}
 
@@ -32,12 +45,12 @@ full months (default \code{TRUE}). This affects calculation of daily average
 weights, and thus of movement-based transmission probabilities. See
 @details.}
 
-\item{additional_transmission_prob_matrices}{A named list with any additional
-transmission probability matrices to include.}
-
-\item{local_spread_probabilities}{A data frame or tibble of tiered local
+\item{local_spread_transmission_probabilities}{A data frame or tibble of tiered local
 spread probabilities. This must consist of 3 columns:
 \code{lower_boundary} (in metres), \code{upper_boundary} (in metres), \code{probability}.}
+
+\item{additional_transmission_prob_matrices}{A named list with any additional
+transmission probability matrices to include.}
 }
 \value{
 A named list with two elements:
@@ -67,3 +80,16 @@ using the distances between holdings (obtained from the coordinates in
 \item Any other user-provided transmission probability matrix (optional).
 }
 }
+\seealso{
+\itemize{
+\item \code{\link[siminf4movenet:SEIRcm]{siminf4movenet::SEIRcm()}} for the SEIRcm model developed for movenet.
+\item \code{\link[SimInf:SimInf]{SimInf::SimInf}} for the underlying modelling package.
+}
+
+Other transmission modelling-related functions: 
+\code{\link{SEIRcm_ASF}()},
+\code{\link{create_random_infected_vector}()},
+\code{\link{create_specified_infected_vector}()},
+\code{\link{get_cumulative_infected}()}
+}
+\concept{transmission modelling-related functions}
