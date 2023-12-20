@@ -39,7 +39,7 @@ network
 
 ```{R}
 # Find the maximum reachability in the network, and which nodes have this property.
-parallel_summarise_temporal_node_properties(list(network), n_threads = 4,
+parallel_summarise_temporal_node_properties(list(network), n_threads = 1,
                                             node_property = "forward reachability",
                                             statistics = list(max = max),
                                             identify_nodes = TRUE)
