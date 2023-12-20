@@ -1,6 +1,6 @@
 Package: movenet
 Title: A Toolkit Facilitating the Use of Livestock Movement Data in Veterinary Public Health
-Version: 0.1.0-1
+Version: 0.2.0-1
 Authors@R:
     c(person(given = "Carlijn", family = "Bogaardt",
              email = "Carlijn.Bogaardt@glasgow.ac.uk", role = c("aut","cre"),
@@ -46,6 +46,7 @@ Imports:
     tidyr,
     tsna,
     units,
+    xfun,
     yaml,
     withr,
     methods,
@@ -54,10 +55,11 @@ Imports:
     tidyselect
 Suggests:
     siminf4movenet,
+    SimInf,
     knitr,
     spelling,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
 Depends: 
-    R (>= 2.10)
+    R (>= 3.5.0)
 LazyData: true
 URL: https://digivet-consortium.github.io/movenet/
