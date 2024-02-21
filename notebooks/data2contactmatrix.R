@@ -58,9 +58,9 @@ movement_spread_matrix <- create_movement_spread_matrix(movement_data_intchar,
 local_spread_tiers <- tibble(lower_boundary = c(0,100,500,1000,2000),
                              upper_boundary = c(100,500,1000,2000,Inf),
                              probability = c(0.1, 0.006, 0.002, 0.000015, 0))
-local_spread_probabilities_ASF_Halasa_et_al_2016 <-local_spread_tiers
-save(local_spread_probabilities_ASF_Halasa_et_al_2016,
-     file="inst/extdata/local_spread_probabilities_ASF_Halasa_et_al_2016.rda")
+local_spread_probabilities_ASF <-local_spread_tiers
+save(local_spread_probabilities_ASF,
+     file="inst/extdata/local_spread_probabilities_ASF.rda")
 
 local_spread_matrix <- create_local_spread_matrix(holding_data_intchar, local_spread_tiers)
 

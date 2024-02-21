@@ -47,8 +47,8 @@ if(.Platform$OS.type=="unix"){
   #data and config files  <- PLEASE CHANGE TO SUITABLE DK FILES
   movement_configfile <- "ScotEID"
   holding_configfile <- "fakeScotEID_holding"
-  movement_datafile <- "inst/extdata/fake_Scottish_movement_data.csv"
-  holding_datafile <- "inst/extdata/fake_Scottish_holding_data.csv"
+  movement_datafile <- "inst/extdata/example_movement_data.csv"
+  holding_datafile <- "inst/extdata/example_holding_data.csv"
 
   #randomise_voronoi options
   map = NUTS_farmland_map #  <- PLEASE INSERT MAP
@@ -65,13 +65,13 @@ mask_landscape = FALSE
 
 #model options
 ##############
-local_spread_transmission_probabilities = local_spread_probabilities_ASF_Halasa_et_al_2016
+local_spread_transmission_probabilities = local_spread_probabilities_ASF
 # look-up table with distance-based transmission probability tiers for ASF, from
 # the DTU-DADS-ASF model
 
 ## Artificially increase spread probabilities to end with an epidemic of 10-15% of holdings affected (danish data)
 bind_rows(
-  local_spread_probabilities_ASF_Halasa_et_al_2016 |> slice(1:3),
+  local_spread_probabilities_ASF |> slice(1:3),
   tibble(lower_boundary=c(1000,2000,5000), upper_boundary=c(2000,5000,Inf), probability=c(0.001,0.0005,0))
 ) |>
   mutate(probability=probability*5) ->

@@ -20,15 +20,15 @@
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
-    
+
 
     <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
-    
+
     <a class="navbar-brand me-2" href="../index.html">movenet</a>
 
     <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0-1</small>
 
-    
+
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -58,7 +58,7 @@
       <ul class="navbar-nav"></ul>
 </div>
 
-    
+
   </div>
 </nav><div class="container template-article">
 
@@ -68,14 +68,14 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Pseudonymising livestock movement and holding data</h1>
-            
-      
-      
+
+
+
       <div class="d-none name"><code>pseudonymise.Rmd</code></div>
     </div>
 
-    
-    
+
+
 <p>To address concerns around commercial sensitivity, movenet includes a
 range of functions to make livestock movement data and/or holding data
 non-identifiable. This vignette shows you how to use these.</p>
@@ -87,8 +87,8 @@ non-identifiable. This vignette shows you how to use these.</p>
 <span><span class="co">#&gt; Successfully loaded config file: C:/Users/cboga/AppData/Local/Temp/RtmpO4w9Xd/temp_libpath4b1861ad6208/movenet/configurations/fakeScotEID_combined_config.yml</span></span>
 <span></span>
 <span><span class="co"># Load example movenet-format movement and holding tibbles into the global environment:</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">fake_Scottish_movement_data</span>, package <span class="op">=</span> <span class="st">"movenet"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">fake_Scottish_holding_data</span>, package <span class="op">=</span> <span class="st">"movenet"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">example_movement_data</span>, package <span class="op">=</span> <span class="st">"movenet"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">example_holding_data</span>, package <span class="op">=</span> <span class="st">"movenet"</span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="pseudonymising-holding-identifiers">Pseudonymising holding identifiers<a class="anchor" aria-label="anchor" href="#pseudonymising-holding-identifiers"></a>
 </h2>
@@ -101,7 +101,7 @@ pseudonymisation key. This key can be saved for “de-pseudonymisation” of
 data at a later stage, or for application to an overlapping dataset.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Pseudonymise movement_data by changing identifiers to FARM1-N:</span></span>
-<span><span class="va">pseudonymised</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/anonymise.html">anonymise</a></span><span class="op">(</span><span class="va">fake_Scottish_movement_data</span>, prefix <span class="op">=</span> <span class="st">"FARM"</span><span class="op">)</span></span>
+<span><span class="va">pseudonymised</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/anonymise.html">anonymise</a></span><span class="op">(</span><span class="va">example_movement_data</span>, prefix <span class="op">=</span> <span class="st">"FARM"</span><span class="op">)</span></span>
 <span><span class="va">pseudonymised_movement_data</span> <span class="op">&lt;-</span> <span class="va">pseudonymised</span><span class="op">$</span><span class="va">data</span></span>
 <span><span class="va">pseudonymisation_key</span> <span class="op">&lt;-</span> <span class="va">pseudonymised</span><span class="op">$</span><span class="va">key</span></span>
 <span></span>
@@ -123,7 +123,7 @@ argument, with which you can apply an existing pseudonymisation key to
 the data tibble:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Use the same key from above to substitute holding identifiers in holding_data:</span></span>
-<span><span class="va">pseudonymised_holding</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/anonymise.html">anonymise</a></span><span class="op">(</span><span class="va">fake_Scottish_holding_data</span>, key <span class="op">=</span> <span class="va">pseudonymisation_key</span><span class="op">)</span> </span>
+<span><span class="va">pseudonymised_holding</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/anonymise.html">anonymise</a></span><span class="op">(</span><span class="va">example_holding_data</span>, key <span class="op">=</span> <span class="va">pseudonymisation_key</span><span class="op">)</span> </span>
 <span><span class="va">pseudonymised_holding_data</span> <span class="op">&lt;-</span> <span class="va">pseudonymised_holding</span><span class="op">$</span><span class="va">data</span></span>
 <span><span class="co"># Update saved key, in case additional identifiers were added from the holding datafile:</span></span>
 <span><span class="va">pseudonymisation_key</span> <span class="op">&lt;-</span> <span class="va">pseudonymised_holding</span><span class="op">$</span><span class="va">key</span> </span>
@@ -165,8 +165,8 @@ multiples of <code>unit</code>.</p></li>
 </ul>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Add jitter of up to ±5 days to movement dates:</span>:</span>
-<span><span class="va">movedata_datesj5</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jitter_dates.html">jitter_dates</a></span><span class="op">(</span><span class="va">fake_Scottish_movement_data</span>, range <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> </span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">fake_Scottish_movement_data</span><span class="op">)</span> <span class="co"># Inspect original</span></span>
+<span><span class="va">movedata_datesj5</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jitter_dates.html">jitter_dates</a></span><span class="op">(</span><span class="va">example_movement_data</span>, range <span class="op">=</span> <span class="fl">5</span><span class="op">)</span> </span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">example_movement_data</span><span class="op">)</span> <span class="co"># Inspect original</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 x 5</span></span></span>
 <span><span class="co">#&gt;   departure_cph dest_cph    departure_date qty_pigs movement_reference</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
@@ -188,7 +188,7 @@ multiples of <code>unit</code>.</p></li>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 69/393/9398   39/947/2201 2019-10-09           72             <span style="text-decoration: underline;">564</span>911</span></span>
 <span></span>
 <span><span class="co"># Add jitter of up to ±10 to movement weights:</span>:</span>
-<span><span class="va">movedata_weightsj10</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jitter_weights.html">jitter_weights</a></span><span class="op">(</span><span class="va">fake_Scottish_movement_data</span>, range <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="va">movedata_weightsj10</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/jitter_weights.html">jitter_weights</a></span><span class="op">(</span><span class="va">example_movement_data</span>, range <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">movedata_weightsj10</span><span class="op">)</span> <span class="co"># Inspect jittered weights</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 x 5</span></span></span>
 <span><span class="co">#&gt;   departure_cph dest_cph    departure_date qty_pigs movement_reference</span></span>
@@ -201,7 +201,7 @@ multiples of <code>unit</code>.</p></li>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 69/393/9398   39/947/2201 2019-10-06         77.4             <span style="text-decoration: underline;">564</span>911</span></span>
 <span></span>
 <span><span class="co"># Round movement dates down to the first day of the month, but do not aggregate:</span></span>
-<span><span class="va">movedata_months</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/round_dates.html">round_dates</a></span><span class="op">(</span><span class="va">fake_Scottish_movement_data</span>, unit <span class="op">=</span> <span class="st">"month"</span>, sum_weight <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> </span>
+<span><span class="va">movedata_months</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/round_dates.html">round_dates</a></span><span class="op">(</span><span class="va">example_movement_data</span>, unit <span class="op">=</span> <span class="st">"month"</span>, sum_weight <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> </span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">movedata_months</span><span class="op">)</span> <span class="co"># Inspect rounded dates</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 x 5</span></span></span>
 <span><span class="co">#&gt;   departure_cph dest_cph    departure_date qty_pigs movement_reference</span></span>
@@ -214,7 +214,7 @@ multiples of <code>unit</code>.</p></li>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 69/393/9398   39/947/2201 2019-10-01           72             <span style="text-decoration: underline;">564</span>911</span></span>
 <span></span>
 <span><span class="co"># Round movement dates down to the first day of the month, aggregate weights, and list reference numbers:</span></span>
-<span><span class="va">movedata_months_aggr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/round_dates.html">round_dates</a></span><span class="op">(</span><span class="va">fake_Scottish_movement_data</span>, unit <span class="op">=</span> <span class="st">"month"</span>, sum_weight <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span><span class="va">movedata_months_aggr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/round_dates.html">round_dates</a></span><span class="op">(</span><span class="va">example_movement_data</span>, unit <span class="op">=</span> <span class="st">"month"</span>, sum_weight <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>                                    movement_reference <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">movement_reference</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co"># Inspect aggregated record for holdings which have 2 movements in the same month:</span></span>
 <span><span class="va">movedata_months_aggr</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">sapply</a></span><span class="op">(</span><span class="va">movedata_months_aggr</span><span class="op">$</span><span class="va">movement_reference</span>, <span class="va">length</span><span class="op">)</span> <span class="op">==</span> <span class="fl">2</span><span class="op">)</span>,<span class="op">]</span> </span>
@@ -224,7 +224,7 @@ multiples of <code>unit</code>.</p></li>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 57/427/5455   21/771/7140 2019-09-01          156 <span style="color: #949494;">&lt;dbl [2]&gt;</span></span></span>
 <span></span>
 <span><span class="co"># Round movement reference numbers to the nearest multiple of 10:</span></span>
-<span><span class="va">movedata_ref10</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/round_weights.html">round_weights</a></span><span class="op">(</span><span class="va">fake_Scottish_movement_data</span>, unit <span class="op">=</span> <span class="fl">10</span>, column <span class="op">=</span> <span class="st">"movement_reference"</span><span class="op">)</span></span>
+<span><span class="va">movedata_ref10</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/round_weights.html">round_weights</a></span><span class="op">(</span><span class="va">example_movement_data</span>, unit <span class="op">=</span> <span class="fl">10</span>, column <span class="op">=</span> <span class="st">"movement_reference"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">movedata_ref10</span><span class="op">)</span> <span class="co"># Inspect rounded movement reference numbers</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 x 5</span></span></span>
 <span><span class="co">#&gt;   departure_cph dest_cph    departure_date qty_pigs movement_reference</span></span>
@@ -261,9 +261,9 @@ manner is under development and will be added shortly.</p>
     </footer>
 </div>
 
-  
 
-  
+
+
 
   </body>
 </html>

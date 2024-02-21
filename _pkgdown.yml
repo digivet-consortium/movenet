@@ -39,6 +39,15 @@ reference:
   - change_config
   - save_config
   - new_config
+- title: Example data
+  desc: Example data files and structures included in movenet
+  contents:
+  - example_movement_data.csv
+  - example_movement_data
+  - example_holding_data.csv
+  - example_holding_data
+  - local_spread_probabilities_ASF
+
 articles:
 - title: ~
   navbar: ~

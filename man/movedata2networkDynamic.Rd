@@ -53,8 +53,8 @@ the node or edge. Each activity spell is considered instantaneous: the
 activity occurs on the movement date, but has duration 0.
 }
 \examples{
-movement_data <- head(fake_Scottish_movement_data, 20)
-holding_data <- head(fake_Scottish_holding_data, 20)
+movement_data <- head(example_movement_data, 20)
+holding_data <- head(example_holding_data, 20)
 
 # Create a network using only movement_data
 movedata2networkDynamic(movement_data)

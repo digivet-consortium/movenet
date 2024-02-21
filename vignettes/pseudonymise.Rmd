@@ -25,8 +25,8 @@ library(movenet)
 load_config(system.file("configurations", "fakeScotEID_combined_config.yml", package="movenet"))
 
 # Load example movenet-format movement and holding tibbles into the global environment:
-data(fake_Scottish_movement_data, package = "movenet")
-data(fake_Scottish_holding_data, package = "movenet")
+data(example_movement_data, package = "movenet")
+data(example_holding_data, package = "movenet")
 ```
 
 ## Pseudonymising holding identifiers
@@ -40,7 +40,7 @@ key can be saved for "de-pseudonymisation" of data at a later stage, or for
 application to an overlapping dataset.
 ```{R}
 # Pseudonymise movement_data by changing identifiers to FARM1-N:
-pseudonymised <- anonymise(fake_Scottish_movement_data, prefix = "FARM")
+pseudonymised <- anonymise(example_movement_data, prefix = "FARM")
 pseudonymised_movement_data <- pseudonymised$data
 pseudonymisation_key <- pseudonymised$key
 
@@ -52,7 +52,7 @@ head(pseudonymisation_key) # Inspect pseudonymisation key
 pseudonymisation key to the data tibble:
 ```{R}
 # Use the same key from above to substitute holding identifiers in holding_data:
-pseudonymised_holding <- anonymise(fake_Scottish_holding_data, key = pseudonymisation_key) 
+pseudonymised_holding <- anonymise(example_holding_data, key = pseudonymisation_key) 
 pseudonymised_holding_data <- pseudonymised_holding$data
 # Update saved key, in case additional identifiers were added from the holding datafile:
 pseudonymisation_key <- pseudonymised_holding$key 
@@ -82,26 +82,26 @@ the "weight" column, to multiples of `unit`.
 
 ```{R}
 # Add jitter of up to ±5 days to movement dates:
-movedata_datesj5 <- jitter_dates(fake_Scottish_movement_data, range = 5) 
-head(fake_Scottish_movement_data) # Inspect original
+movedata_datesj5 <- jitter_dates(example_movement_data, range = 5) 
+head(example_movement_data) # Inspect original
 head(movedata_datesj5) # Inspect jittered dates
 
 # Add jitter of up to ±10 to movement weights:
-movedata_weightsj10 <- jitter_weights(fake_Scottish_movement_data, range = 10)
+movedata_weightsj10 <- jitter_weights(example_movement_data, range = 10)
 head(movedata_weightsj10) # Inspect jittered weights
 
 # Round movement dates down to the first day of the month, but do not aggregate:
-movedata_months <- round_dates(fake_Scottish_movement_data, unit = "month", sum_weight = FALSE) 
+movedata_months <- round_dates(example_movement_data, unit = "month", sum_weight = FALSE) 
 head(movedata_months) # Inspect rounded dates
 
 # Round movement dates down to the first day of the month, aggregate weights, and list reference numbers:
-movedata_months_aggr <- round_dates(fake_Scottish_movement_data, unit = "month", sum_weight = TRUE,
+movedata_months_aggr <- round_dates(example_movement_data, unit = "month", sum_weight = TRUE,
                                     movement_reference = list(movement_reference))
 # Inspect aggregated record for holdings which have 2 movements in the same month:
 movedata_months_aggr[which(sapply(movedata_months_aggr$movement_reference, length) == 2),] 
 
 # Round movement reference numbers to the nearest multiple of 10:
-movedata_ref10 <- round_weights(fake_Scottish_movement_data, unit = 10, column = "movement_reference")
+movedata_ref10 <- round_weights(example_movement_data, unit = 10, column = "movement_reference")
 head(movedata_ref10) # Inspect rounded movement reference numbers
 
 ```

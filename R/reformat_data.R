@@ -64,7 +64,7 @@
 #'
 #' # Read in and reformat a movement data file
 #' movement_data <-
-#'   reformat_data(system.file("extdata", "fake_Scottish_movement_data.csv",
+#'   reformat_data(system.file("extdata", "example_movement_data.csv",
 #'                             package = "movenet"),
 #'                 type = "movement")
 #' head(movement_data)
@@ -75,7 +75,7 @@
 #'
 #' # Read in and reformat a holding data file
 #' holding_data <-
-#'   reformat_data(system.file("extdata", "fake_Scottish_holding_data.csv",
+#'   reformat_data(system.file("extdata", "example_holding_data.csv",
 #'                            package = "movenet"),
 #'                 type = "holding")
 #' head(holding_data)

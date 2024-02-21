@@ -19,8 +19,8 @@ movenet uses the [Statnet suite of packages](https://statnet.org/packages/) (e.g
 library(movenet)
 
 # Load example movenet-format movement and holding tibbles into the global environment:
-movement_data <- head(fake_Scottish_movement_data, 100)
-holding_data <- fake_Scottish_holding_data
+movement_data <- head(example_movement_data, 100)
+holding_data <- example_holding_data
 ```
 
 ## Generating a temporal network representation

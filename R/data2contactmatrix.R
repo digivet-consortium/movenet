@@ -239,7 +239,7 @@ data2contactmatrix <- function(movement_data, holding_data = NULL,
     local_spread_matrix <- NULL
   }
 
-  #ASF probability tiers saved under "inst/extdata/local_spread_probabilities_ASF_Halasa_et_al_2016.rda"
+  #ASF probability tiers saved under "inst/extdata/local_spread_probabilities_ASF.rda"
   # - how to use this by default if holding_data is optional?!
 
   overall_transmission_matrix <-

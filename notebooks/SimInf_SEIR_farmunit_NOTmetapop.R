@@ -27,7 +27,7 @@ weight_unit_transmission_probability = 1
 # probability of transmission via movement, per unit moved weight (e.g. per
 # pig) from an infected holding. 1 assumes all movements from infected holdings
 # are 100% infectious, regardless of weight.
-local_spread_transmission_probabilities = local_spread_probabilities_ASF_Halasa_et_al_2016
+local_spread_transmission_probabilities = local_spread_probabilities_ASF
 # look-up table with distance-based transmission probability tiers for ASF, from
 # the DTU-DADS-ASF model
 additional_transmission_prob_matrices = NULL

@@ -28,7 +28,7 @@ if(.Platform$OS.type=="unix"){
 }else{
   #data and config files  <- PLEASE CHANGE TO SUITABLE DK FILES
   holding_configfile <- "fakeScotEID_holding"
-  holding_datafile <- "inst/extdata/fake_Scottish_holding_data.csv"
+  holding_datafile <- "inst/extdata/example_holding_data.csv"
   load_config(holding_configfile)
   holding_data <- reformat_data(holding_datafile, "holding")
 

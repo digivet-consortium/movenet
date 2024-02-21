@@ -83,7 +83,7 @@ load_config(system.file("configurations", "ScotEID.yml", package = "movenet"))
 #> Successfully loaded config file: C:/Users/cboga/OneDrive - University of Glasgow/Documents/R/win-library/4.1/movenet/configurations/ScotEID.yml
 # Read in and reformat an example movement data file:
 movement_data <- 
-  reformat_data(system.file("extdata", "fake_Scottish_movement_data.csv", package = "movenet"),
+  reformat_data(system.file("extdata", "example_movement_data.csv", package = "movenet"),
                 type = "movement")
 
 # Load an example holding config file:
@@ -91,7 +91,7 @@ load_config(system.file("configurations", "fakeScotEID_holding.yml", package = "
 #> Successfully loaded config file: C:/Users/cboga/OneDrive - University of Glasgow/Documents/R/win-library/4.1/movenet/configurations/fakeScotEID_holding.yml
 # Read in and reformat an example holding data file:
 holding_data <- 
-  reformat_data(system.file("extdata", "fake_Scottish_holding_data.csv", package = "movenet"),
+  reformat_data(system.file("extdata", "example_holding_data.csv", package = "movenet"),
                 type = "holding")
 ```
 
