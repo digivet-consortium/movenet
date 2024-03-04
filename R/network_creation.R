@@ -155,11 +155,8 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
   edge_spells <- create_edge_spells(movement_data)
   vertex_spells <- create_vertex_spells(movement_data)
 
-  #Identify correct n of nodes to create network with
-  n_nodes <- ifelse(!is.null(holding_data), nrow(holding_data), nrow(vertex_spells))
-
   #Create the network
-  net <- networkDynamic(base.net = network.initialize(n_nodes),
+  net <- networkDynamic(base.net = network.initialize(length(all_holding_ids)),
                         edge.spells = edge_spells,
                         vertex.spells = vertex_spells,
                         verbose = FALSE, create.TEAs = TRUE,
