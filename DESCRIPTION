@@ -61,5 +61,7 @@ Suggests:
     testthat (>= 3.0.0),
 Depends: 
     R (>= 3.5.0)
+Remotes:
+    digivet-consortium/siminf4movenet
 LazyData: true
 URL: https://digivet-consortium.github.io/movenet/
