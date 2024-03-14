@@ -5,7 +5,7 @@
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/digivet-consortium/movenet/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/digivet-consortium/movenet/actions/workflows/R-CMD-check.yaml)
+<!-- [![R-CMD-check](https://github.com/digivet-consortium/movenet/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/digivet-consortium/movenet/actions/workflows/R-CMD-check.yaml) -->
 <!-- badges: end -->
 
 The goal of movenet is to simplify the effective use of livestock
