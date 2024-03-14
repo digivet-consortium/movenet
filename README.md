@@ -3,6 +3,11 @@
 
 # movenet
 
+<!-- badges: start -->
+
+[![R-CMD-check](https://github.com/digivet-consortium/movenet/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/digivet-consortium/movenet/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
 The goal of movenet is to simplify the effective use of livestock
 movement data in veterinary public health. It facilitates the dataflow
 from livestock movement data to social network analysis and disease
