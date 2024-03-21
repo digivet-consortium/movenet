@@ -1,16 +1,16 @@
 #' Read in livestock movement or holding data, and reshape to movenet format
 #'
 #' @description
-#' `reformat_data()` reads in movement or holding data from a delimited `datafile`,
-#' and reshapes them to a format compatible with movenet pseudonymisation,
-#' network analysis, and modelling workflows.
+#' `reformat_data()` reads in movement or holding data from `data` (either a
+#' data frame or a delimited data file) and reshapes them to a format compatible
+#' with movenet pseudonymisation, network analysis, and modelling workflows.
 #'
-#' N.B.: To correctly interpret and process `datafile`, the function requires
+#' N.B.: To correctly interpret and process `data`, the function requires
 #' configurations of the relevant `type` to be loaded into the movenet environment.
 #'
-#' `reformat_data()` processes `datafile` as follows:
+#' `reformat_data()` processes `data` as follows:
 #' * Columns with minimally required data, and any additional optional columns
-#' as indicated in the loaded configurations, are extracted from `datafile`.
+#' as indicated in the loaded configurations, are extracted from `data`.
 #' * Column headers are converted to unique ASCII-compliant and syntactically
 #' valid names.
 #' * Data formats for `date`, `weight`, `coord_x`, `coord_y`, and/or `herd_size`
@@ -29,12 +29,13 @@
 #' column headers. A warning message is generated to indicate any such
 #' configuration changes.
 #'
-#' @param datafile Path to a delimited file with movement or holding data.
+#' @param data Either a path to a delimited file with movement or holding
+#'    data, or a data frame holding such data.
 #' @param type Character string representing the type of data contained in
-#'   `datafile`: either `"movement"` or `"holding"`.
+#'   `data`: either `"movement"` or `"holding"`.
 #'
 #' @returns
-#' A tibble with (a subset of) columns from `datafile`, reordered and
+#' A tibble with (a subset of) columns from `data`, reordered and
 #' reformatted according to movenet format requirements.
 #'
 #' For movement data (`type == "movement"`), columns will include:
@@ -97,15 +98,15 @@
 #' @import readr
 #'
 #' @export
-reformat_data <- function(datafile, type){ #Could also infer type from the data
+reformat_data <- function(data, type){ #Could also infer type from the data
 
   #######################
   ### Argument checks ###
   #######################
-
-  assert_file_exists(datafile, access = "r")
-  #could add extension = c(".csv",".tsv") or something similar, but I'd expect
-  #not all suitable (delimited) files to necessarily have those extensions
+  assert(
+    data_is_file <- test_file_exists(data, access = "r"),
+    data_is_df <- test_data_frame(data),
+    combine = "or")
 
   assert_choice(type, choices = c("movement","holding"))
   #Could also infer type from the data
@@ -149,18 +150,26 @@ reformat_data <- function(datafile, type){ #Could also infer type from the data
 
 
   ###########################
-  ### Reading in datafile ###
+  ### Reading in data ###
   ###########################
 
-  #read in datafile (all columns), with col type set as character for all cols
-  all_data <- read_delim(datafile,
-                         delim = separator,
-                         locale = locale(date_format = date_format,
-                                         decimal_mark = decimal,
-                                         encoding = encoding),
-                         col_types = cols(.default = col_character()),
-                         lazy = TRUE,
-                         name_repair = asciify)
+  #read in data (all columns), with col type set as character for all cols
+  if(data_is_file){
+    all_data <- read_delim(data,
+                           delim = separator,
+                           locale = locale(date_format = date_format,
+                                           decimal_mark = decimal,
+                                           encoding = encoding),
+                           col_types = cols(.default = col_character()),
+                           lazy = TRUE,
+                           name_repair = asciify)
+  } else {
+    all_data <-
+      data %>%
+      mutate(across(everything(), as.character)) %>%
+      rename_with(asciify)
+  }
+
 
   #rationale for reading all data (more expensive) instead of directly selecting
   #cols of interest:
@@ -333,9 +342,9 @@ colindex2name <- function(data, minvars, extra){
       outofrange_minvars <- minvars[which(minvars_outofrange)]
 
       stop(
-      sprintf("Can't find the following mandatory columns in the datafile:
+      sprintf("Can't find the following mandatory columns in the data:
               %s.\nThese column indices exceed the number of columns in the
-              datafile.",
+              data.",
               paste0("#",outofrange_minvars," (",names(outofrange_minvars),")",
                      collapse = ", ")),
       call. = FALSE)
@@ -368,8 +377,8 @@ colindex2name <- function(data, minvars, extra){
 
       warning(
         sprintf("Can't find the following requested optional columns in the
-                datafile: %s.\nThese column indices exceed the number of
-                columns in the datafile.\nProceeding without missing optional
+                data: %s.\nThese column indices exceed the number of
+                columns in the data.\nProceeding without missing optional
                 columns.",
                 paste0("#",outofrange_extra," (",names(outofrange_extra),")",
                        collapse = ", ")),
@@ -450,7 +459,7 @@ select_cols <- function(data, minvars, extra){
   if (!(all(minvars %in% colnames(data)))){
     missing_minvars <- unname(minvars)[which(!(minvars %in% colnames(data)))]
     stop(
-      sprintf("Can't find the following mandatory columns in the datafile: %s.",
+      sprintf("Can't find the following mandatory columns in the data: %s.",
               paste0(missing_minvars, collapse=", ")),
       call. = FALSE)
   }
@@ -461,7 +470,7 @@ select_cols <- function(data, minvars, extra){
     missing_extra <- unname(extra)[which(!(extra %in% colnames(data)))]
     warning(
       sprintf("Can't find the following requested optional columns in the
-              datafile: %s.\nProceeding without missing optional columns.",
+              data: %s.\nProceeding without missing optional columns.",
               paste0(missing_extra, collapse=", ")),
       call. = FALSE)
 
