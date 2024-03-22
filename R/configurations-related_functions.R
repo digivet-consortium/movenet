@@ -66,7 +66,11 @@ load_config <- function(configfile){
     lapply(seq_along(list_of_lists),
            function(x) {
              list_x <- lapply(seq_along(list_of_lists[[x]]),
-                              function(y) movenet::asciify(list_of_lists[[x]][y]))
+                              function(y) {
+                                if(is.numeric(list_of_lists[[x]][[y]])){
+                                  list_of_lists[[x]][[y]]
+                                  } else { movenet::asciify(list_of_lists[[x]][y])
+                                    }})
              names(list_x) <- names(list_of_lists[[x]])
              movenetenv$options[names(list_of_lists)[x]] <- list(list_x)
            })

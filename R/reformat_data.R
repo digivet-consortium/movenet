@@ -90,7 +90,7 @@
 #' * [`vignette("movenet")`] for getting started with movenet.
 #' @family functions for initial data processing
 #'
-#' @importFrom dplyr mutate
+#' @importFrom dplyr mutate rename_with
 #' @importFrom magrittr %>%
 #' @importFrom purrr has_element
 #' @importFrom withr with_options
@@ -106,7 +106,9 @@ reformat_data <- function(data, type){ #Could also infer type from the data
   assert(
     data_is_file <- test_file_exists(data, access = "r"),
     data_is_df <- test_data_frame(data),
-    combine = "or")
+    combine = "or",
+    .var.name = c("Argument `data` is an existing delimited data file with read access",
+                  "Argument `data` is a data frame"))
 
   assert_choice(type, choices = c("movement","holding"))
   #Could also infer type from the data
@@ -119,7 +121,7 @@ reformat_data <- function(data, type){ #Could also infer type from the data
   if ((type == "movement" & !(has_element(names(movenetenv$options), "movedata_cols"))) |
       (type == "holding" & !(has_element(names(movenetenv$options), "holdingdata_cols")))){
     stop(paste0(
-      "The loaded config file does not match the indicated type of data (",
+      "The loaded configurations do not match the indicated type of data (",
       type, " data). Please ensure an appropriate config file is loaded."))
   }
 
@@ -325,8 +327,8 @@ colindex2name <- function(data, minvars, extra){
  # Start building warning message with overview of any int options values (col
  # indices) that have been recoded as characters (col names)
 
-  msg <- "The following options have been changed from column indices to column
-  headers within the loaded configurations:\n - "
+  msg <- paste0("The following options have been changed from column indices to ",
+                "column headers within the loaded configurations:\n - ")
 
   if (any(sapply(minvars, is.integer))){
 
@@ -342,9 +344,8 @@ colindex2name <- function(data, minvars, extra){
       outofrange_minvars <- minvars[which(minvars_outofrange)]
 
       stop(
-      sprintf("Can't find the following mandatory columns in the data:
-              %s.\nThese column indices exceed the number of columns in the
-              data.",
+      sprintf(paste0("Can't find the following mandatory columns in the data: ",
+              "%s.\nThese column indices exceed the number of columns in the data."),
               paste0("#",outofrange_minvars," (",names(outofrange_minvars),")",
                      collapse = ", ")),
       call. = FALSE)
@@ -376,10 +377,9 @@ colindex2name <- function(data, minvars, extra){
       outofrange_extra <- extra[which(extra_outofrange)]
 
       warning(
-        sprintf("Can't find the following requested optional columns in the
-                data: %s.\nThese column indices exceed the number of
-                columns in the data.\nProceeding without missing optional
-                columns.",
+        sprintf(paste("Can't find the following requested optional columns in the",
+                "data: %s.\nThese column indices exceed the number of",
+                "columns in the data.\nProceeding without missing optional columns."),
                 paste0("#",outofrange_extra," (",names(outofrange_extra),")",
                        collapse = ", ")),
         call. = FALSE)
@@ -416,9 +416,8 @@ colindex2name <- function(data, minvars, extra){
       names(c(minvars,extra))[which(
         c(minvars,extra) %in% c(minvars,extra)[duplicated(c(minvars,extra))])]
 
-    stop(paste("Values for movedata_cols/holdingdata_cols options must be unique
-               . Translation of column indices to column headers identified the
-               following options with duplicate values:",
+    stop(paste("Values for movedata_cols/holdingdata_cols options must be unique.",
+               "Translation of column indices to column headers identified the following options with duplicate values:",
                paste(dupl_names, collapse=", ")),
          call. = FALSE)
   }
@@ -469,8 +468,7 @@ select_cols <- function(data, minvars, extra){
   if (!(all(extra %in% colnames(data)))){
     missing_extra <- unname(extra)[which(!(extra %in% colnames(data)))]
     warning(
-      sprintf("Can't find the following requested optional columns in the
-              data: %s.\nProceeding without missing optional columns.",
+      sprintf("Can't find the following requested optional columns in the data: %s.\nProceeding without missing optional columns.",
               paste0(missing_extra, collapse=", ")),
       call. = FALSE)
 
@@ -561,9 +559,8 @@ reformat_date <- function(date_col, date_format){
       if(!any(grepl("[0-9]",date_col[[colnames(date_col)]]))){
          msglist <-
            c(msglist, paste0(
-             "Column `", colnames(date_col), "` does not contain any numbers.\n
-             Have you identified the correct column name under the option `date`
-             ?"))
+             "Column `", colnames(date_col), "` does not contain any numbers.\n",
+             "Have you identified the correct column name under the option `date`?"))
       }
 
       #Otherwise (difficult to assess what specific situation applies):
@@ -575,12 +572,12 @@ reformat_date <- function(date_col, date_format){
       if(length(msglist)==0){
         msglist <-
           c(msglist,paste0(
-            "The date format specification given through the option `date_format
-            ` (value `", date_format, "`) and the actual format of column `",
-            colnames(date_col), "` don't appear to match.\nAlternatively, column
-            `", colnames(date_col), "` contains one or more invalid dates.\nSee
-            `readr::?parse_date` for guidance on readr date format
-            specifications.\nOriginal readr warning message:\n", old_message))
+            "The date format specification given through the option `date_format` (value `",
+            date_format, "`) and the actual format of column `",
+            colnames(date_col), "` don't appear to match.\nAlternatively, column `",
+            colnames(date_col),
+            "` contains one or more invalid dates.\nSee `readr::?parse_date` for guidance on readr date format specifications.\nOriginal readr warning message:\n",
+            old_message))
       }
       cnd$message <- paste0(msg, paste0(msglist,collapse="\nIn addition:\n"))
       cnd$call <- NULL

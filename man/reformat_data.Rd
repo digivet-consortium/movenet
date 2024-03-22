@@ -4,16 +4,17 @@
 \alias{reformat_data}
 \title{Read in livestock movement or holding data, and reshape to movenet format}
 \usage{
-reformat_data(datafile, type)
+reformat_data(data, type)
 }
 \arguments{
-\item{datafile}{Path to a delimited file with movement or holding data.}
+\item{data}{Either a path to a delimited file with movement or holding
+data, or a data frame holding such data.}
 
 \item{type}{Character string representing the type of data contained in
-\code{datafile}: either \code{"movement"} or \code{"holding"}.}
+\code{data}: either \code{"movement"} or \code{"holding"}.}
 }
 \value{
-A tibble with (a subset of) columns from \code{datafile}, reordered and
+A tibble with (a subset of) columns from \code{data}, reordered and
 reformatted according to movenet format requirements.
 
 For movement data (\code{type == "movement"}), columns will include:
@@ -37,17 +38,17 @@ the returned tibble will instead include a single column named \code{"coordinate
 }
 }
 \description{
-\code{reformat_data()} reads in movement or holding data from a delimited \code{datafile},
-and reshapes them to a format compatible with movenet pseudonymisation,
-network analysis, and modelling workflows.
+\code{reformat_data()} reads in movement or holding data from \code{data} (either a
+data frame or a delimited data file) and reshapes them to a format compatible
+with movenet pseudonymisation, network analysis, and modelling workflows.
 
-N.B.: To correctly interpret and process \code{datafile}, the function requires
+N.B.: To correctly interpret and process \code{data}, the function requires
 configurations of the relevant \code{type} to be loaded into the movenet environment.
 
-\code{reformat_data()} processes \code{datafile} as follows:
+\code{reformat_data()} processes \code{data} as follows:
 \itemize{
 \item Columns with minimally required data, and any additional optional columns
-as indicated in the loaded configurations, are extracted from \code{datafile}.
+as indicated in the loaded configurations, are extracted from \code{data}.
 \item Column headers are converted to unique ASCII-compliant and syntactically
 valid names.
 \item Data formats for \code{date}, \code{weight}, \code{coord_x}, \code{coord_y}, and/or \code{herd_size}
