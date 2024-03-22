@@ -2,10 +2,10 @@ movedata_fileopts:
   separator: ","   #Separator (delimiter) character used in movement datafile
   encoding: "UTF-8"    #Encoding used in movement datafile
   decimal: "."  #Decimal mark used in movement datafile
-  date_format: "%Y%m%d" #Date format specification used in movement datafile (empty string "" for "%AD" flexible YMD parser, or see ?readr::parse_date for guidance)
+  date_format: "%Y-%m-%d" #Date format specification used in movement datafile (empty string "" for "%AD" flexible YMD parser, or see ?readr::parse_date for guidance)
 
 movedata_cols:
   from: "departure_cph" #Column name or number for Identifier of origin holding
-  to: "dest_cph" #Column name or number for Identifier of destination holding
-  date: "departure_date" #Column name or number for Date of transport
+  to: "destination_cph" #Column name or number for Identifier of destination holding
+  date: "arrival_date" #Column name or number for Date of transport
   weight: "qty_pigs" #Column name or number for Movement weight (e.g. nr of pigs moved)
