@@ -403,6 +403,72 @@ round_weights <- function(data, unit,
 }
 
 ################################################################################
+#' Round numeric movement data to a specified number of significant digits
+#'
+#' `round_weights_signif()` rounds a selected numeric column in a movenet-format
+#' movement tibble to the specified number of significant digits. By default,
+#' the weight column is selected.
+#'
+#' @param data A movenet-format movement tibble.
+#' @param column Name of a single numeric column to round. By default this is
+#'   the weight column (as specified in the loaded movement configurations).
+#' @param digits An integer indicating the number of significant digits to be
+#'   used for rounding. Accepted values are between 1 and 22. `digits` also
+#'   determines the minimum possible value for the column (set at `10^digits`).
+#'
+#' @details
+#' Requires that the appropriate movement config file is loaded, to correctly
+#' identify the `weight` column in `data`.
+#'
+#' The data in the selected column are modified by rounding to the number of
+#' significant digits specified by `digits`.
+#' Additionally, any data points with value `< 10^digits` are set to `10^digits`,
+#' so that this becomes the minimum possible value in the column.
+#'
+#' @returns
+#' A movement tibble like `data`, but with rounding applied to the selected
+#' numeric column.
+#'
+#' @seealso [signif()], which this function wraps.
+#'
+#' @import checkmate
+#' @importFrom purrr has_element
+#'
+#' @export
+round_weights_signif <- function(data, digits,
+                                 column = movenetenv$options$movedata_cols$weight){
+
+  #########################
+  ### Config file check ###
+  #########################
+
+  if (!has_element(names(movenetenv$options), "movedata_cols")){
+    stop("The loaded configurations do not match the required type of data (movement data). Please ensure an appropriate config file is loaded.")
+  }
+
+  #######################
+  ### Argument checks ###
+  #######################
+
+  assert_data_frame(data)
+  assert_names(names(data),
+               must.include = column,
+               .var.name = "data")
+  assert_data_frame(data[column], types = "numeric", ncols = 1)
+  qassert(digits, "X1[1,22]") #a single integerish value between 1-22, not missing
+
+  ################
+  ### Rounding ###
+  ################
+
+  data[column] <- signif(data[[column]], digits)
+
+  data[column][which(data[column] < 10^digits),] <- 10^digits #set 10^digits as minimum
+
+  return(data)
+}
+
+################################################################################
 #' Anonymise data by replacing holding identifiers with prefix-integer
 #' combinations
 #'
