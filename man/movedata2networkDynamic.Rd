@@ -77,5 +77,8 @@ rm(movement_data, holding_data)
 \item \code{\link[networkDynamic:networkDynamic]{networkDynamic::networkDynamic()}} for the underlying network-generating process.
 \item \code{vignette("network-analysis")} for an overview of the movenet network analysis workflow.
 }
+
+Other network-related functions: 
+\code{\link{movedata2igraph}()}
 }
 \concept{network-related functions}

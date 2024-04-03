@@ -1,3 +1,118 @@
+#' Create a static network representation of movenet-format movement data
+#'
+#' `movedata2igraph()` converts movenet-format movement and (optional)
+#' holding data tibbles into an igraph static network representation. This
+#' assumes the network is directed with no hyperedges. Loops are allowed;
+#' multiplex edges can be made by using edge attributes.
+#'
+#' @details
+#' Any `movement_data` columns beyond `from` and `to` are set as edge attributes
+#' in the network, and any `holding_data` columns beyond `id` are set as node
+#' attributes.
+#'
+#' @param movement_data A movenet-format movement data tibble.
+#' @param holding_data A movenet-format holding data tibble (optional).
+#' @param incl_nonactive_holdings A logical that indicates whether to include
+#'   holdings from `holding_data` that are not present in `movement_data`.
+#'   Default is `FALSE`. If set to `TRUE`, holdings that don't trade within the
+#'   period covered by `movement_data` are included in the network.
+#'
+#' @returns
+#' An igraph object consisting of a directed static network, with nodes
+#' representing holdings, and edges representing moves between holdings.
+#' Additionally, information is printed out about the constructed network;
+#' this output is passed on from [igraph::graph_from_data_frame()], the meaning
+#' of all elements is explained in [`igraph::igraph`].
+#'
+#' @examples
+#' movement_data <- head(example_movement_data, 20)
+#' holding_data <- head(example_holding_data, 20)
+#'
+#' # Create a network using only movement_data
+#' movedata2igraph(movement_data)
+#'
+#' # Create a network using movement_data and holding_data, including only
+#' # active holdings
+#' movedata2igraph(movement_data, holding_data,
+#'                 incl_nonactive_holdings = FALSE)
+#'
+#' # Create a network using movement_data and holding_data, including both
+#' # active and non-active holdings
+#' movedata2igraph(movement_data, holding_data,
+#'                 incl_nonactive_holdings = TRUE)
+#'
+#' rm(movement_data, holding_data)
+#'
+#' @seealso
+#' * [igraph::graph_from_data_frame()] for the underlying network-generating process.
+#' * [`igraph::igraph`] for an explanation of the printed output.
+#' * `vignette("network-analysis")` for an overview of the movenet network analysis workflow.
+#' @family network-related functions
+#'
+#' @importFrom dplyr filter select
+#' @importFrom igraph graph_from_data_frame
+#' @importFrom tibble add_row
+#'
+#' @export
+movedata2igraph <- function(movement_data, holding_data = NULL,
+                            incl_nonactive_holdings = FALSE){
+
+  #######################
+  ### Argument checks ###
+  #######################
+
+  assert_data_frame(movement_data, min.cols = 4, null.ok = FALSE)
+  assert_character(movement_data[[1]], any.missing = FALSE)
+  assert_character(movement_data[[2]], any.missing = FALSE)
+  assert_date(movement_data[[3]], any.missing = FALSE)
+  assert_numeric(movement_data[[4]], any.missing = TRUE)
+
+  assert_data_frame(holding_data, min.cols = 1, null.ok = TRUE)
+  if(!is.null(holding_data)){
+    #check that holding_ids are unique - should this be done in "reformat_data"?!
+    assert_character(holding_data[[1]], unique = TRUE, any.missing = FALSE)
+
+    holding_ids <- holding_data[[1]]
+  }
+
+  assert_flag(incl_nonactive_holdings, null.ok = FALSE)
+
+  ############################################################
+  ### Ensure consistency between movement and holding data ###
+  ############################################################
+
+  active_holding_ids <- unique(c(movement_data[[1]],movement_data[[2]]))
+
+  if(!is.null(holding_data)){
+
+    #If there are any holding ids present in movement_data, but missing from
+    #holding_data, add these ids to holding_data with NAs for other columns
+    missing_holding_ids <- !(active_holding_ids %in% holding_ids)
+    if(any(missing_holding_ids)){
+      holding_data <-
+        holding_data %>%
+        add_row("{names(holding_data)[1]}" :=
+                  active_holding_ids[which(missing_holding_ids)])
+      holding_ids <- holding_data[[1]]
+    }
+
+    #If there are any holding ids present in holding_data but missing from
+    #movement_data, and if incl_nonactive_holdings == FALSE, delete these ids.
+    additional_holding_ids <- !(holding_ids %in% active_holding_ids)
+    if(any(additional_holding_ids) && isFALSE(incl_nonactive_holdings)){
+      holding_data <-
+        holding_data %>%
+        dplyr::filter(.data[[names(holding_data)[1]]] %in% active_holding_ids)
+    }
+  }
+
+  ######################
+  ### Create network ###
+  ######################
+
+  graph_from_data_frame(movement_data, vertices = holding_data)
+}
+
 #' Create a dynamic network representation of movenet-format movement data
 #'
 #' `movedata2networkDynamic()` converts movenet-format movement and (optional)
@@ -89,8 +204,7 @@ movedata2networkDynamic <- function(movement_data, holding_data = NULL,
     holding_ids <- holding_data[[1]]
     }
 
-  assert_logical(incl_nonactive_holdings, len = 1, any.missing = FALSE,
-                 null.ok = FALSE)
+  assert_flag(incl_nonactive_holdings, null.ok = FALSE)
 
   ############################################################
   ### Ensure consistency between movement and holding data ###
