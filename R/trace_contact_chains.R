@@ -941,21 +941,24 @@ contactchains2leaflet <- function(movement_data, holding_data,
                      fillOpacity = 0.2,
                      group = "Root holding(s)",
                      clusterOptions = markerClusterOptions(),
-                     popup = popups_root) %>%
+                     popup = popups_root,
+                     options = pathOptions(pane = "holdingsPane")) %>%
     addCircleMarkers(data = holding_data_in,
                      color = "blue",
                      opacity = 0.5,
                      fillOpacity = 0.2,
                      group = "Originating holdings",
                      clusterOptions = markerClusterOptions(),
-                     popup = popups_in) %>%
+                     popup = popups_in,
+                     options = pathOptions(pane = "holdingsPane")) %>%
     addCircleMarkers(data = holding_data_out,
                      color = "red",
                      opacity = 0.5,
                      fillOpacity = 0.2,
                      group = "Destination holdings",
                      clusterOptions = markerClusterOptions(),
-                     popup = popups_out) %>%
+                     popup = popups_out,
+                     options = pathOptions(pane = "holdingsPane")) %>%
 
     # Use JS plugins to add moves and grouped layer controls
     htmlwidgets::onRender("function(el, x, data) {
@@ -973,6 +976,11 @@ contactchains2leaflet <- function(movement_data, holding_data,
     });
     map.addControl(sidebar);
     */
+
+    // Create a pane with a zIndex of 450 to make sure the holding markers are
+    // drawn on top of the admin area backgrounds
+    map.createPane('holdingsPane');
+    map.getPane('holdingsPane').style.zIndex = 450;
 
     // Retrieve layer groups defined in R, allowing use in grouped layer control panel
 
@@ -993,13 +1001,20 @@ contactchains2leaflet <- function(movement_data, holding_data,
     // First make list of properties I don't want to report on in the map
     var excludedProperties = ['direction', 'edge_id_on_connection', 'edge_width', 'offset']
 
+    // Create a pane with a zIndex of 450 to make sure the movement arrows are
+    // drawn on top of the admin area backgrounds
+    map.createPane('movementArrows');
+    map.getPane('movementArrows').style.zIndex = 450;
+
+    // Add ingoing and outgoing movements
     movement_geojson_in.features.forEach(function(edge){
       var edge_coords = L.GeoJSON.coordsToLatLngs(edge.geometry.coordinates, 0);
       var polyline = L.polyline(edge_coords, {
               color: 'blue',
               weight: edge.properties.edge_width,
               opacity: 1,
-              offset: edge.properties.offset
+              offset: edge.properties.offset,
+              pane: 'movementArrows'
             }).arrowheads({
               offset: 0, yawn: 30, fill: true, size: '25px'
             }).addTo(groups.ingoing_edges)
@@ -1019,7 +1034,8 @@ contactchains2leaflet <- function(movement_data, holding_data,
               color: 'red',
               weight: edge.properties.edge_width,
               opacity: 1,
-              offset: edge.properties.offset
+              offset: edge.properties.offset,
+              pane: 'movementArrows'
             }).arrowheads({
               offset: 0, yawn: 30, fill: true, size: '25px'
             }).addTo(groups.outgoing_edges)
