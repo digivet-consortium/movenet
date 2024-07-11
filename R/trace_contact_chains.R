@@ -675,11 +675,10 @@ contactchains2leaflet <- function(movement_data, holding_data,
 
   # Create a dynamically set "breaks" vector for the edge_width legend in the map
   values <- sort(unique(movement_data$edge_width))
-  starts <- 10^log2(values[-length(values)]) #starts of the weight bins (except last bin)
-  ends <- (10^(log2(values[-length(values)])+1))-1 #ends of the weight bins (except last bin)
+  starts <- 10^log2(values) #starts of the weight bins
+  ends <- (10^(log2(values)+1))-1 #ends of the weight bins
   breaks <- setNames(values,
-                     c(paste(starts, ends, sep = " - "), #create "start - end" label for all bins except last
-                       paste(">", 10^log2(max(values))))) #add "> start" for last bin
+                     paste(starts, ends, sep = " - ")) #create "start - end" label for all bins
 
 # Convert movement data to GeoJSON for JS Leaflet plugins -----------------
 
