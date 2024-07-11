@@ -1,6 +1,6 @@
 #Test for multiple roots, tEnd, days // inBegin etc.
 #
-#Test that ContactTrace2movedata() and ContactTrace2holdingdata() work when
+# Test that ContactTrace2movedata() and ContactTrace2holdingdata() work when
 # contact_tracing_results includes a holding or connection multiple times, as both "in" and "out".
 # -> to create movement_data for testing this:
 # structure(list(departure_cph = c("95/216/1100", "95/216/1100",
@@ -579,16 +579,19 @@ contactchains2leaflet <- function(movement_data, holding_data,
     movement_data %>%
 
     # First add point coordinates and admin area coordinates for origin and destination holdings.
-    left_join(y = {holding_data %>% select(all_of(colname_id), coordinates, adm_area_coords)},
+    left_join(y = {holding_data %>% select(all_of(colname_id), coordinates, any_of("adm_area_coords"))},
               by = setNames(colname_id, colname_from),
               relationship = "many-to-one") %>%
-    rename(coords_from = coordinates,
-           adm_area_from = adm_area_coords) %>%
-    left_join(y = {holding_data %>% select(all_of(colname_id), coordinates, adm_area_coords)},
+    rename(coords_from = coordinates) %>%
+    #if adm_area_coords exist, rename to adm_area_from
+    { if("adm_area_coords" %in% names(.)){
+      rename(., adm_area_from = adm_area_coords) } else {.} } %>%
+    left_join(y = {holding_data %>% select(all_of(colname_id), coordinates, any_of("adm_area_coords"))},
               by = setNames(colname_id, colname_to),
               relationship = "many-to-one") %>%
-    rename(coords_to = coordinates,
-           adm_area_to = adm_area_coords) %>%
+    rename(coords_to = coordinates) %>%
+    { if("adm_area_coords" %in% names(.)){
+      rename(., adm_area_to = adm_area_coords) } else {.} } %>%
 
     # Then transform point coordinates to linestring: to do this, need to convert
     # the tibble to long format, add a "line_id", and then summarise by "line_id".
@@ -682,12 +685,12 @@ contactchains2leaflet <- function(movement_data, holding_data,
 
   movement_geojson_in <-
     movement_data[which(movement_data$direction == "in"),] %>%
-    select(-coords_from, -coords_to, -adm_area_from, -adm_area_to) %>%
+    select(-coords_from, -coords_to, -any_of(c("adm_area_from", "adm_area_to"))) %>%
     geojsonsf::sf_geojson()
 
   movement_geojson_out <-
     movement_data[which(movement_data$direction == "out"),] %>%
-    select(-coords_from, -coords_to, -adm_area_from, -adm_area_to) %>%
+    select(-coords_from, -coords_to, -any_of(c("adm_area_from", "adm_area_to"))) %>%
     geojsonsf::sf_geojson()
 
 # Register JS Leaflet plugins ---------------------------------------------
