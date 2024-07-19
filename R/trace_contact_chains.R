@@ -362,7 +362,7 @@ ContactTrace2movedata <- function(contact_trace_object, original_movement_data){
       lapply(function(x) {
         x %>%
           as("data.frame") %>%
-          select(source, destination, t, n) %>%
+          select(source, destination, t, n, direction) %>%
           dplyr::right_join(original_movement_data, .,  #requires this set of keys to be unique
                             by = setNames(c("source", "destination", "t", "n"),
                                           c(colname_from, colname_to, colname_date,
@@ -372,7 +372,7 @@ ContactTrace2movedata <- function(contact_trace_object, original_movement_data){
     } else {
       contact_trace_object %>%
         as("data.frame") %>%
-        select(source, destination, t, n) %>%
+        select(source, destination, t, n, direction) %>%
         dplyr::right_join(original_movement_data, .,  #requires this set of keys to be unique
                           by = setNames(c("source", "destination", "t", "n"),
                                         c(colname_from, colname_to, colname_date,
