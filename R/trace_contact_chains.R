@@ -421,16 +421,21 @@ ContactTrace2holdingdata <- function(contact_trace_object,
   colname_id <- names(original_holding_data)[1]
 
   # Create data.frames with movement data for ingoing and outgoing contact chains
+  #Need to make sure this works for contact_trace_object being a list of
+  #ContactTrace objects, in case of multiple roots, as well as a single vector
   tree <-
-    contact_trace_object %>%
-    #Need to make sure this works for contact_trace_object being a list of
-    #ContactTrace objects, in case of multiple roots
-    lapply(function(x) {
-      EpiContactTrace::NetworkStructure(x) %>%
+    if(length(contact_trace_object) > 1){
+      contact_trace_object %>%
+        lapply(function(x) {
+          EpiContactTrace::NetworkStructure(x) %>%
+            build_tree2() #modified version of EpiContactTrace:::build_tree()
+        }) %>% purrr::flatten() #flatten the list of lists to a single list
+    #                          but this creates a list with elements with duplicated
+    #                          names, which causes problems a few lines further on
+    } else {
+      EpiContactTrace::NetworkStructure(contact_trace_object) %>%
         build_tree2() #modified version of EpiContactTrace:::build_tree()
-    }) %>% purrr::flatten() #flatten the list of lists to a single list
-  #                          but this creates a list with elements with duplicated
-  #                          names, which causes problems a few lines further on
+    }
 
   # If coordinates are not provided, use EpiContactTrace's position_tree() to
   # determine node positions for a schematic figure.
