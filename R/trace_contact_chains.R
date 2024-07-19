@@ -1,4 +1,12 @@
-#Test for multiple roots, tEnd, days // inBegin etc.
+# Test for multiple roots, tEnd, days // inBegin etc.
+# Test if root not in movement_data
+# Test if root not in holding_data
+# Test if not all movement_data holdings in holding_data or not all have coordinates
+# Test with the same holding being both root and in, root and out, in and out
+# Test with the same holding occurring multiple times along a single contact chain
+# Test with the same movement being part of ingoing and outgoing contact chains
+
+# Need to make sure that all identified holdings have coordinates... or what?
 #
 # Test that ContactTrace2movedata() and ContactTrace2holdingdata() work when
 # contact_tracing_results includes a holding or connection multiple times, as both "in" and "out".
@@ -12,6 +20,22 @@
 # qty_pigs = c(1, 2, 3, 4, 5, 6)), row.names = c(NA, -6L),
 # class = c("tbl_df", "tbl", "data.frame"))
 # This should not result in Error.
+
+# Test:
+# trace_contact_chains(head(example_movement_data, 10), head(holding_data, 10),"95/216/110",2019-02-08,100)
+# results in Error - Assertion on 'tEnd' failed: Must be of class 'Date', not 'double'.
+# (but actually it can be of class character as well. Lines 205-9)
+#---
+# trace_contact_chains(head(example_movement_data, 10), head(holding_data, 10),"95/216/110","2019-02-08",100)
+# results in Error in build_tree2(.)- identical(length(root), 1L) is not TRUE
+# (this is because I mistyped the root holding id, should be "95/216/1100" not "95/216/110")
+# Error occurs within ContactTrace2holdingdata(). ContactTrace2movedata() gives an empty tibble.
+# What should happen if root not in movement_data or not in holding_data?
+#---
+# trace_contact_chains(head(example_movement_data, 10), head(holding_data, 10),"95/216/1100","2019-02-08",100)
+# results in Error in pointData.default(sanitize_sf(obj)) :
+# Don't know how to get location data from object of class sfc_GEOMETRYCOLLECTION,sfc
+#---
 
 # I use snake_case in my functions -but in trace_contact_chains I have copied
 # across several arguments from EpiContactTrace, which uses camelCase. Adapt to
@@ -190,7 +214,7 @@ trace_contact_chains <- function(movement_data, holding_data,
     if (any(is.character(tEnd), is.factor(tEnd))) {
       assert_date(as.Date(tEnd), any.missing = FALSE, null.ok = FALSE)
     } else {
-      assert_date(tEnd, any.missing = FALSE, null.ok = FALSE)
+      assert_date(tEnd, any.missing = FALSE, null.ok = FALSE) #actually this results in unhelpful error message, as date can be given as a character
     }
 
     if(any(duplicated(tEnd))){
@@ -333,15 +357,29 @@ ContactTrace2movedata <- function(contact_trace_object, original_movement_data){
   colname_date <- names(original_movement_data)[3]
   colname_weight <- names(original_movement_data)[4]
 
-  contact_trace_object %>%
-    as("data.frame") %>%
-    select(source, destination, t, n, direction) %>%
-    dplyr::right_join(original_movement_data, .,  #requires this set of keys to be unique
-                      by = setNames(c("source", "destination", "t", "n"),
-                                    c(colname_from, colname_to, colname_date,
-                                      colname_weight)),
-                      relationship = "one-to-many") #one row in contact_trace_object can match to at most one row in original_movement_data
-}
+  if(length(contact_trace_object) > 1){ #if there are multiple roots and contact_trace_object is a list
+    contact_trace_object %>%
+      lapply(function(x) {
+        x %>%
+          as("data.frame") %>%
+          select(source, destination, t, n) %>%
+          dplyr::right_join(original_movement_data, .,  #requires this set of keys to be unique
+                            by = setNames(c("source", "destination", "t", "n"),
+                                          c(colname_from, colname_to, colname_date,
+                                            colname_weight)),
+                            relationship = "one-to-many") #one row in contact_trace_object can match to at most one row in original_movement_data
+      }) %>% purrr::reduce(rbind) #this binds the tibbles together into one
+    } else {
+      contact_trace_object %>%
+        as("data.frame") %>%
+        select(source, destination, t, n) %>%
+        dplyr::right_join(original_movement_data, .,  #requires this set of keys to be unique
+                          by = setNames(c("source", "destination", "t", "n"),
+                                        c(colname_from, colname_to, colname_date,
+                                          colname_weight)),
+                          relationship = "one-to-many") #one row in contact_trace_object can match to at most one row in original_movement_data
+    }
+  }
 
 
 #' Convert ContactTrace object into movenet-format holding data
@@ -385,8 +423,14 @@ ContactTrace2holdingdata <- function(contact_trace_object,
   # Create data.frames with movement data for ingoing and outgoing contact chains
   tree <-
     contact_trace_object %>%
-    EpiContactTrace::NetworkStructure() %>%
-    build_tree2() #modified version of EpiContactTrace:::build_tree()
+    #Need to make sure this works for contact_trace_object being a list of
+    #ContactTrace objects, in case of multiple roots
+    lapply(function(x) {
+      EpiContactTrace::NetworkStructure(x) %>%
+        build_tree2() #modified version of EpiContactTrace:::build_tree()
+    }) %>% purrr::flatten() #flatten the list of lists to a single list
+  #                          but this creates a list with elements with duplicated
+  #                          names, which causes problems a few lines further on
 
   # If coordinates are not provided, use EpiContactTrace's position_tree() to
   # determine node positions for a schematic figure.
@@ -403,6 +447,8 @@ ContactTrace2holdingdata <- function(contact_trace_object,
     }
 
   # Add direction column to the dataframes
+  # This doesn't work for a flattened list of dataframes, because the names are duplicated
+  # and directions are added just to the first elements called ingoing & outgoing
     positions_dfs$ingoing["direction"] <- c("root",rep("in",nrow(positions_dfs$ingoing)-1))
   }
   if(!is.null(positions_dfs$outgoing)){
@@ -579,14 +625,14 @@ contactchains2leaflet <- function(movement_data, holding_data,
     movement_data %>%
 
     # First add point coordinates and admin area coordinates for origin and destination holdings.
-    left_join(y = {holding_data %>% select(all_of(colname_id), coordinates, any_of("adm_area_coords"))},
+    left_join(y = {holding_data %>% select(all_of(colname_id), coordinates, any_of("adm_area_coords")) %>% unique},
               by = setNames(colname_id, colname_from),
               relationship = "many-to-one") %>%
     rename(coords_from = coordinates) %>%
     #if adm_area_coords exist, rename to adm_area_from
     { if("adm_area_coords" %in% names(.)){
       rename(., adm_area_from = adm_area_coords) } else {.} } %>%
-    left_join(y = {holding_data %>% select(all_of(colname_id), coordinates, any_of("adm_area_coords"))},
+    left_join(y = {holding_data %>% select(all_of(colname_id), coordinates, any_of("adm_area_coords")) %>% unique},
               by = setNames(colname_id, colname_to),
               relationship = "many-to-one") %>%
     rename(coords_to = coordinates) %>%
