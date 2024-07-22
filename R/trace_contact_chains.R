@@ -5,6 +5,9 @@
 # Test with the same holding being both root and in, root and out, in and out
 # Test with the same holding occurring multiple times along a single contact chain
 # Test with the same movement being part of ingoing and outgoing contact chains
+# Test with there being only ingoing or only outgoing contact chains, with and without map
+#   trace_contact_chains(example_movement_data, example_holding_data, "95/216/1100", "2019-05-01", 15)
+#   The above only has ingoing contact chains, no outgoing
 
 # Need to make sure that all identified holdings have coordinates... or what?
 #
@@ -432,14 +435,16 @@ ContactTrace2holdingdata <- function(contact_trace_object,
   # and directions are added just to the first elements called ingoing & outgoing
   ingoing <- grepl("ingoing",names(positions_dfs))
   outgoing <- grepl("outgoing",names(positions_dfs))
-  if(any(ingoing)){
-    positions_dfs[ingoing] <-
-      lapply(positions_dfs[ingoing],
+  if(any(sapply(positions_dfs[ingoing], function(x) !is.null(x)))){
+    positions_dfs[ingoing][which(sapply(positions_dfs[ingoing], function(x) !is.null(x)))] <-
+      lapply(positions_dfs[ingoing][which(sapply(positions_dfs[ingoing], function(x) !is.null(x)))],
              function(x) {cbind(x, direction = c("root",rep("in",nrow(x)-1)))})
   }
-  if(any(outgoing)){
-    positions_dfs[outgoing] <-
-      lapply(positions_dfs[outgoing],
+  # test whether there are any elements in list positions_dfs[outgoing] that arent null
+
+  if(any(sapply(positions_dfs[outgoing], function(x) !is.null(x)))){
+    positions_dfs[outgoing][which(sapply(positions_dfs[outgoing], function(x) !is.null(x)))] <-
+      lapply(positions_dfs[outgoing][which(sapply(positions_dfs[outgoing], function(x) !is.null(x)))],
              function(x) {cbind(x, direction = c("root",rep("out",nrow(x)-1)))})
   }
 
@@ -667,7 +672,8 @@ contactchains2leaflet <- function(movement_data, holding_data,
 
     movement_data %>%
       filter(direction == direction_subset) %>%
-      filter(adm_area_from != adm_area_to) %>% #filtering out within-admin-area moves
+      { if(nrow(.) == 0) { . # use this construction to prevent error when . is empty (0 rows)
+      } else { filter(., adm_area_from != adm_area_to) }} %>% #filtering out within-admin-area moves
       group_by(.data[[adm_area]]) %>%
       summarise(total_weight := sum(.data[[colname_weight]]),
                 n_moves = dplyr::n()) %>%
@@ -1048,60 +1054,65 @@ contactchains2leaflet <- function(movement_data, holding_data,
     map.getPane('movementArrows').style.zIndex = 450;
 
     // Add ingoing and outgoing movements
-    movement_geojson_in.features.forEach(function(edge){
-      var edge_coords = L.GeoJSON.coordsToLatLngs(edge.geometry.coordinates, 0);
-      var polyline = L.polyline(edge_coords, {
-              color: 'blue',
-              weight: edge.properties.edge_width,
-              opacity: 1,
-              offset: edge.properties.offset,
-              pane: 'movementArrows'
-            }).arrowheads({
-              offset: 0, yawn: 30, fill: true, size: '25px'
-            }).addTo(groups.ingoing_edges)
+    if (movement_geojson_in.features.length > 0) {
+      movement_geojson_in.features.forEach(function(edge){
+        var edge_coords = L.GeoJSON.coordsToLatLngs(edge.geometry.coordinates, 0);
+        var polyline = L.polyline(edge_coords, {
+                color: 'blue',
+                weight: edge.properties.edge_width,
+                opacity: 1,
+                offset: edge.properties.offset,
+                pane: 'movementArrows'
+              }).arrowheads({
+                offset: 0, yawn: 30, fill: true, size: '25px'
+              }).addTo(groups.ingoing_edges)
 
-      // Add popup with text based on all edge properties
-      var text = '';
-      for (var prop in edge.properties) {
-        if (edge.properties.hasOwnProperty(prop) && !excludedProperties.includes(prop)) {
-          text += '<b>'+ prop + ': </b>' + edge.properties[prop] + '<br>';
+        // Add popup with text based on all edge properties
+        var text = '';
+        for (var prop in edge.properties) {
+          if (edge.properties.hasOwnProperty(prop) && !excludedProperties.includes(prop)) {
+            text += '<b>'+ prop + ': </b>' + edge.properties[prop] + '<br>';
+          }
         }
-      }
-      polyline.bindPopup(text);
-    });
-    movement_geojson_out.features.forEach(function(edge){
-      var edge_coords = L.GeoJSON.coordsToLatLngs(edge.geometry.coordinates, 0);
-      var polyline = L.polyline(edge_coords, {
-              color: 'red',
-              weight: edge.properties.edge_width,
-              opacity: 1,
-              offset: edge.properties.offset,
-              pane: 'movementArrows'
-            }).arrowheads({
-              offset: 0, yawn: 30, fill: true, size: '25px'
-            }).addTo(groups.outgoing_edges)
-
-      // Add popup with text based on all edge properties
-      var text = '';
-      for (var prop in edge.properties) {
-        if (edge.properties.hasOwnProperty(prop) && !excludedProperties.includes(prop)) {
-          text += '<b>'+ prop + ': </b>' + edge.properties[prop] + '<br>';
-        }
-      }
-      polyline.bindPopup(text);
-    });
+        polyline.bindPopup(text);
+      });
+    };
     groups.ingoing_edges.addTo(map);
-    groups.outgoing_edges.addTo(map);
+    if (movement_geojson_out.features.length > 0) {
+      movement_geojson_out.features.forEach(function(edge){
+        var edge_coords = L.GeoJSON.coordsToLatLngs(edge.geometry.coordinates, 0);
+        var polyline = L.polyline(edge_coords, {
+                color: 'red',
+                weight: edge.properties.edge_width,
+                opacity: 1,
+                offset: edge.properties.offset,
+                pane: 'movementArrows'
+              }).arrowheads({
+                offset: 0, yawn: 30, fill: true, size: '25px'
+              }).addTo(groups.outgoing_edges)
+
+        // Add popup with text based on all edge properties
+        var text = '';
+        for (var prop in edge.properties) {
+          if (edge.properties.hasOwnProperty(prop) && !excludedProperties.includes(prop)) {
+            text += '<b>'+ prop + ': </b>' + edge.properties[prop] + '<br>';
+          }
+        }
+        polyline.bindPopup(text);
+      });
+      groups.outgoing_edges.addTo(map);
+    };
+
 
     // Set up grouped layer control
 
     var groupedOverlays = {
       'Incoming contact chains': {
-          '<span class=\"fa-stack\" style=\"max-width: 12px; max-height: 12px; vertical-align: top;\"><i class=\"fa-solid fa-circle fa-stack-1x\" style=\"color: blue; opacity: 0.2\"></i><i class=\"fa-regular fa-circle fa-stack-1x\" style=\"color: blue; opacity: 0.5\"></i></span> Originating holdings': groups.originating_holdings,
-          '<i class=\"fa-solid fa-right-long\" style=\"color: blue\"></i> Incoming movements': groups.ingoing_edges},
+          '<span class=\"fa-stack\" style=\"max-width: 12px; max-height: 12px; vertical-align: top;\"><i class=\"fa-solid fa-circle fa-stack-1x\" style=\"color: blue; opacity: 0.2\"></i><i class=\"fa-regular fa-circle fa-stack-1x\" style=\"color: blue; opacity: 0.5\"></i></span> Originating holdings': groups.originating_holdings ?? [],
+          '<i class=\"fa-solid fa-right-long\" style=\"color: blue\"></i> Incoming movements': groups.ingoing_edges ?? []},
       'Outgoing contact chains': {
-          '<span class=\"fa-stack\" style=\"max-width: 12px; max-height: 12px; vertical-align: top;\"><i class=\"fa-solid fa-circle fa-stack-1x\" style=\"color: red; opacity: 0.2\"></i><i class=\"fa-regular fa-circle fa-stack-1x\" style=\"color: red; opacity: 0.5\"></i></span> Destination holdings': groups.destination_holdings,
-          '<i class=\"fa-solid fa-right-long\" style=\"color: red\"></i> Outgoing movements': groups.outgoing_edges}
+          '<span class=\"fa-stack\" style=\"max-width: 12px; max-height: 12px; vertical-align: top;\"><i class=\"fa-solid fa-circle fa-stack-1x\" style=\"color: red; opacity: 0.2\"></i><i class=\"fa-regular fa-circle fa-stack-1x\" style=\"color: red; opacity: 0.5\"></i></span> Destination holdings': groups.destination_holdings ?? [],
+          '<i class=\"fa-solid fa-right-long\" style=\"color: red\"></i> Outgoing movements': groups.outgoing_edges ?? []}
       };
 
     // Make the Administrative area groups exclusive (use radio inputs)
