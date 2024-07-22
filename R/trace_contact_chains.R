@@ -168,9 +168,6 @@ trace_contact_chains <- function(movement_data, holding_data,
             "ignored as no 'admin_areas_map' is provided.")
   }
 
-  # Would actually like holding_data as optional argument, using EpiContactTrace
-  # positioning of nodes, but this currently is buggy...
-
   # The lines below mostly paraphrase EpiContactTrace::Trace's arg checks,
   # except for the check for vector length that is not included here, and I have
   # added some checks and warnings for duplicate value.
@@ -461,11 +458,16 @@ ContactTrace2holdingdata <- function(contact_trace_object,
 #' Build contact tracing trees
 #'
 #' Internal helper function that processes contact tracing results from
-#' EpiContactTrace's `Trace()` function into separate dataframes for ingoing
-#' and outgoing contact chains.
+#' EpiContactTrace's `Trace()` function into separate dataframes for ingoing and
+#' outgoing contact chains.
 #'
-#' @details Modified from `EpiContactTrace:::build_tree()` (fixed a bug in
-#' parent assignment).
+#' @details Modified from a function in Maria Noremark and Stefan Widgren's `EpiContactTrace`.
+#' (`EpiContactTrace:::build_tree()`). Originally modified by Carlijn Bogaardt on 22 April 2024,
+#' first committed on 10 July 2024. The modification fixes a bug in parent assignment.
+#'
+#' @references Maria Noremark and Stefan Widgren (2014). EpiContactTrace: an
+#'   R-package for contact tracing during livestock disease outbreaks and for
+#'   risk-based surveillance. BMC Veterinary Research, 10:71, URL \href{https://bmcvetres.biomedcentral.com/articles/10.1186/1746-6148-10-71}{https://bmcvetres.biomedcentral.com/articles/10.1186/1746-6148-10-71}
 #'
 #' @param network_structure A data.frame with contact tracing data, resulting
 #' from `EpiContactTrace::NetworkStructure()`.
@@ -498,7 +500,7 @@ build_tree2 <- function(network_structure){
     for (lev in rev(seq_len(max(tree_in$level)))) {
       for (src in tree_in$node[tree_in$level == lev]) {
         if (lev > 1) {
-          i <- which(network_structure$source == src &
+          i <- which(network_structure$source == src & # Modification CB: added this first condition, missing from original build_tree()
                        network_structure$direction == "in" &
                        network_structure$distance == lev)
           dst <- network_structure$destination[i]
@@ -527,7 +529,7 @@ build_tree2 <- function(network_structure){
     for (lev in rev(seq_len(max(tree_out$level)))) {
       for (dst in tree_out$node[tree_out$level == lev]) {
         if (lev > 1) {
-          i <- which(network_structure$destination == dst &
+          i <- which(network_structure$destination == dst & # Modification CB: added this first condition, missing from original build_tree()
                        network_structure$direction == "out" &
                        network_structure$distance == lev)
           src <- network_structure$source[i]

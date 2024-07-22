@@ -19,11 +19,17 @@ positioning of nodes in a schematic figure.
 }
 \description{
 Internal helper function that processes contact tracing results from
-EpiContactTrace's \code{Trace()} function into separate dataframes for ingoing
-and outgoing contact chains.
+EpiContactTrace's \code{Trace()} function into separate dataframes for ingoing and
+outgoing contact chains.
 }
 \details{
-Modified from \code{EpiContactTrace:::build_tree()} (fixed a bug in
-parent assignment).
+Modified from a function in Maria Noremark and Stefan Widgren's \code{EpiContactTrace}.
+(\code{EpiContactTrace:::build_tree()}). Originally modified by Carlijn Bogaardt on 22 April 2024,
+first committed on 10 July 2024. The modification fixes a bug in parent assignment.
+}
+\references{
+Maria Noremark and Stefan Widgren (2014). EpiContactTrace: an
+R-package for contact tracing during livestock disease outbreaks and for
+risk-based surveillance. BMC Veterinary Research, 10:71, URL \href{https://bmcvetres.biomedcentral.com/articles/10.1186/1746-6148-10-71}{https://bmcvetres.biomedcentral.com/articles/10.1186/1746-6148-10-71}
 }
 \keyword{internal}
