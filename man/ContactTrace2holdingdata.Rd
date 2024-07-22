@@ -19,18 +19,13 @@ holdings that are part of the contact chains in \code{contact_trace_object}, and
 as columns all original attribute columns from \code{original_holding_data} and
 additionally "direction" ("root" for root holdings, "in" for holdings that
 are part of ingoing contact chains, or "out" for moves that are part of
-outgoing contact chains). If \code{original_holding_data} does not include a
-coordinates colummn, two columns "x" and "y" coding for relative positions
-of nodes in a schematic figure. If \code{original_holding_data} is \code{NULL}, a
-tibble with only the columns "holding_id", "x", "y", and "direction" is
-returned.
+outgoing contact chains). If \code{original_holding_data} is \code{NULL}, a
+tibble with only the columns "holding_id" and "direction" is returned.
 }
 \description{
 Internal helper function that processes contact tracing results from
 EpiContactTrace's \code{Trace()} function back into movenet format, and adds in
 any holding attributes from the original movenet-format holding data tibble.
-If holding coordinates are not provided, EpiContactTrace's \code{position_tree()}
-is used to determine node positions for a schematic figure.
 }
 \details{
 This uses EpiContactTrace internal functions and a modified version
