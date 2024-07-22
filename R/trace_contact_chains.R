@@ -587,7 +587,7 @@ build_tree2 <- function(network_structure){
 #' @importFrom tidyr pivot_longer pivot_wider replace_na
 #' @import leaflet
 #' @importFrom leaflegend addLegendLine
-#' @importFrom sf st_cast st_as_sf st_join st_transform st_geometry<-
+#' @importFrom sf st_cast st_as_sf st_join st_transform st_drop_geometry st_geometry<-
 #'
 #' @keywords internal
 contactchains2leaflet <- function(movement_data, holding_data,
