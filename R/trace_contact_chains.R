@@ -1,3 +1,14 @@
+# Currently if there are contact chains for some but not all roots, the function prints a message and prints
+# a maps with the contact chains and with all root holdings.
+# But if there are no contact chains for any roots, no map is produced.
+# Is a map with just the root holding markers but no contact chains still valuable?
+
+# The standard EpiContactTrace output is quite informative, with a summary of dates and the numbers of contact chains,
+# but it also prints all the chains which can get long.
+# Is there value to printing the contact_trace_object (either full or summary-only) on screen but not "returning" it?
+# It's perhaps a bit complicated when the output is a list of the contact_trace_object and the leaflet widget.
+
+
 # Test for multiple roots, tEnd, days // inBegin etc.
 # Test if root not in movement_data
 # Test if root not in holding_data
@@ -287,15 +298,38 @@ trace_contact_chains <- function(movement_data, holding_data,
                            root, tEnd, days, inBegin, inEnd, outBegin, outEnd,
                            maxDistance)
 
-  # Get attributes from original data tibbles and convert back to movenet format
-  cc_movement_data <- ContactTrace2movedata(contact_tracing_results, movement_data)
-  cc_holding_data <- ContactTrace2holdingdata(contact_tracing_results, holding_data)
+  # Print message if there are no ingoing or outgoing contact chains.
+  if(length(contact_tracing_results) > 1){
+    n_contact_chains <-
+      sapply(contact_tracing_results, function(x) {
+        sum(length(x@ingoingContacts@source), length(x@outgoingContacts@source))})
+  } else {
+    n_contact_chains <-
+      sum(length(contact_tracing_results@ingoingContacts@source),
+          length(contact_tracing_results@outgoingContacts@source))
+  }
+  if(any(n_contact_chains == 0)){
+    root_no_cc <- names(which(n_contact_chains == 0))
+    message(paste0("No ingoing or outgoing contact chains for root(s) ",
+                   paste0(root_no_cc, collapse = ", "),
+                   " during the search period."))
+  }
+
+  root_cc <- names(which(n_contact_chains != 0))
+  if(length(root_cc) == 0){
+    message("No contact chains to plot.")
+  } else {
+    message(paste0("Creating map with contact chains for root(s) ", paste0(root_cc, collapse = ", "), "."))
+
+    # Get attributes from original data tibbles and convert back to movenet format
+    cc_movement_data <- ContactTrace2movedata(contact_tracing_results, movement_data)
+    cc_holding_data <- ContactTrace2holdingdata(contact_tracing_results, holding_data)
 
 # Plot contact chains on Leaflet map --------------------------------------
-
-  contactchains2leaflet(cc_movement_data, cc_holding_data, admin_areas_map,
-                        colour_domain_weight_in, colour_domain_weight_out,
-                        colour_domain_moves_in, colour_domain_moves_out)
+    contactchains2leaflet(cc_movement_data, cc_holding_data, admin_areas_map,
+                          colour_domain_weight_in, colour_domain_weight_out,
+                          colour_domain_moves_in, colour_domain_moves_out)
+  }
 }
 
 #' Make movement data compatible with EpiContactTrace's `Trace()` function
@@ -388,10 +422,6 @@ ContactTrace2movedata <- function(contact_trace_object, original_movement_data){
 #' EpiContactTrace's `Trace()` function back into movenet format, and adds in
 #' any holding attributes from the original movenet-format holding data tibble.
 #'
-#' @details
-#' This uses EpiContactTrace internal functions and a modified version
-#' of `build_tree()` (the original is buggy).
-#'
 #' @param contact_trace_object A ContactTrace object returned by
 #'  EpiContactTrace's `Trace()` function.
 #' @param original_holding_data An (optional) movenet-format holding data tibble
@@ -405,9 +435,7 @@ ContactTrace2movedata <- function(contact_trace_object, original_movement_data){
 #'  outgoing contact chains). If `original_holding_data` is `NULL`, a
 #'  tibble with only the columns "holding_id" and "direction" is returned.
 #'
-#' @seealso [EpiContactTrace::NetworkStructure()],
-#'
-#' @importFrom dplyr select right_join
+#' @importFrom dplyr right_join
 #'
 #' @keywords internal
 ContactTrace2holdingdata <- function(contact_trace_object,
@@ -415,144 +443,42 @@ ContactTrace2holdingdata <- function(contact_trace_object,
 
   colname_id <- names(original_holding_data)[1]
 
-  # Create data.frames with movement data for ingoing and outgoing contact chains
-  #Need to make sure this works for contact_trace_object being a list of
-  #ContactTrace objects, in case of multiple roots, as well as a single vector
-  positions_dfs <-
-    if(length(contact_trace_object) > 1){
-      contact_trace_object %>%
-        lapply(function(x) {
-          EpiContactTrace::NetworkStructure(x) %>%
-            build_tree2() #modified version of EpiContactTrace:::build_tree()
-        }) %>% unlist(recursive = FALSE)
-    } else {
-      EpiContactTrace::NetworkStructure(contact_trace_object) %>%
-        build_tree2() #modified version of EpiContactTrace:::build_tree()
-    }
-
-  # Add direction column to the dataframes
-  # This doesn't work for a flattened list of dataframes, because the names are duplicated
-  # and directions are added just to the first elements called ingoing & outgoing
-  ingoing <- grepl("ingoing",names(positions_dfs))
-  outgoing <- grepl("outgoing",names(positions_dfs))
-  if(any(sapply(positions_dfs[ingoing], function(x) !is.null(x)))){
-    positions_dfs[ingoing][which(sapply(positions_dfs[ingoing], function(x) !is.null(x)))] <-
-      lapply(positions_dfs[ingoing][which(sapply(positions_dfs[ingoing], function(x) !is.null(x)))],
-             function(x) {cbind(x, direction = c("root",rep("in",nrow(x)-1)))})
+  # Create data.frame with holding data for root nodes, and nodes in ingoing and
+  # outgoing contact chains.
+  # Need to make sure this works for contact_trace_object being a list of
+  # ContactTrace objects, in case of multiple roots, as well as a single vector.
+  if(length(contact_trace_object) > 1){
+    roots <- sapply(contact_trace_object, function(x) x@root)
+    ins <- sapply(contact_trace_object, function(x) {
+      c(x@ingoingContacts@source,
+        x@ingoingContacts@destination[which(x@ingoingContacts@distance != 1)])}) %>%
+        unlist(use.names = FALSE) %>% # concatenate results from multiple roots into one vector
+        unique()
+    outs <- sapply(contact_trace_object, function(x) {
+      c(x@outgoingContacts@source[which(x@outgoingContacts@distance != 1)],
+        x@outgoingContacts@destination)}) %>%
+        unlist(use.names = FALSE) %>% # concatenate results from multiple roots into one vector
+        unique()
+  } else {
+    roots <- contact_trace_object@root
+    ins <- c(contact_trace_object@ingoingContacts@source,
+             contact_trace_object@ingoingContacts@destination) %>% unique()
+    outs <- c(contact_trace_object@outgoingContacts@source,
+              contact_trace_object@outgoingContacts@destination) %>% unique()
   }
-  # test whether there are any elements in list positions_dfs[outgoing] that arent null
+  roots_df <- tibble(holding_id=roots, direction="root")
+  ins_df <- tibble(holding_id=ins, direction="in")
+  outs_df <- tibble(holding_id=outs, direction="out")
+  holdings_df <- rbind(roots_df, ins_df, outs_df)
 
-  if(any(sapply(positions_dfs[outgoing], function(x) !is.null(x)))){
-    positions_dfs[outgoing][which(sapply(positions_dfs[outgoing], function(x) !is.null(x)))] <-
-      lapply(positions_dfs[outgoing][which(sapply(positions_dfs[outgoing], function(x) !is.null(x)))],
-             function(x) {cbind(x, direction = c("root",rep("out",nrow(x)-1)))})
-  }
-
-  # Join the dataframes together and add original holding attributes
-  dplyr::bind_rows(positions_dfs) %>%
-    select(-parent, -level, holding_id = node) %>%
+  # Add original holding attributes
+  holdings_df %>%
     unique() %>%
     { if(!is.null(original_holding_data)){
       dplyr::right_join(original_holding_data, .,
                         by = setNames("holding_id", colname_id),
                         relationship = "one-to-many")
-    } else {as_tibble(.)}}
-}
-
-
-#' Build contact tracing trees
-#'
-#' Internal helper function that processes contact tracing results from
-#' EpiContactTrace's `Trace()` function into separate dataframes for ingoing and
-#' outgoing contact chains.
-#'
-#' @details Modified from a function in Maria Noremark and Stefan Widgren's `EpiContactTrace`.
-#' (`EpiContactTrace:::build_tree()`). Originally modified by Carlijn Bogaardt on 22 April 2024,
-#' first committed on 10 July 2024. The modification fixes a bug in parent assignment.
-#'
-#' @references Maria Noremark and Stefan Widgren (2014). EpiContactTrace: an
-#'   R-package for contact tracing during livestock disease outbreaks and for
-#'   risk-based surveillance. BMC Veterinary Research, 10:71, URL \href{https://bmcvetres.biomedcentral.com/articles/10.1186/1746-6148-10-71}{https://bmcvetres.biomedcentral.com/articles/10.1186/1746-6148-10-71}
-#'
-#' @param network_structure A data.frame with contact tracing data, resulting
-#' from `EpiContactTrace::NetworkStructure()`.
-#'
-#' @returns A list with two dataframes, `ingoing` and `outgoing`, containing
-#'  movement data for ingoing and outgoing contact chains, respectively. The
-#'  dataframes have columns "node" (holding id), "parent" (holding id of the
-#'  parent node) and "level" (distance from root). "level" is required for the
-#'  positioning of nodes in a schematic figure.
-#'
-#' @keywords internal
-build_tree2 <- function(network_structure){
-  stopifnot(is.data.frame(network_structure))
-  root <- unique(network_structure$root)
-  stopifnot(identical(length(root), 1L))
-  tree_in <- network_structure[network_structure$direction ==
-                                 "in", ]
-  tree_out <- network_structure[network_structure$direction ==
-                                  "out", ]
-  result <- list(ingoing = NULL, outgoing = NULL)
-  root_node <- data.frame(node = root[1], parent = NA_character_,
-                          level = 0, stringsAsFactors = FALSE)
-  if (nrow(tree_in)) {
-    i <- order(tree_in$distance, tree_in$source)
-    tree_in <- tree_in[i, c("source", "distance")]
-    tree_in <- tree_in[!duplicated(tree_in$source), ]
-    tree_in$parent <- NA_character_
-    colnames(tree_in)[1:2] <- c("node", "level")
-    tree_in <- tree_in[, colnames(root_node)]
-    for (lev in rev(seq_len(max(tree_in$level)))) {
-      for (src in tree_in$node[tree_in$level == lev]) {
-        if (lev > 1) {
-          i <- which(network_structure$source == src & # Modification CB: added this first condition, missing from original build_tree()
-                       network_structure$direction == "in" &
-                       network_structure$distance == lev)
-          dst <- network_structure$destination[i]
-          dst <- unique(dst)
-        }
-        else {
-          dst <- root
-        }
-        stopifnot(length(dst) > 0)
-        tree_in$parent[tree_in$level == lev & tree_in$node ==
-                         src] <- dst[1]
-      }
-    }
-    tree_in <- rbind(root_node, tree_in)
-    rownames(tree_in) <- NULL
-    result$ingoing <- tree_in
-  }
-  if (nrow(tree_out)) {
-    i <- order(tree_out$distance, tree_out$destination)
-    tree_out <- tree_out[i, c("destination", "distance")]
-    tree_out <- tree_out[!duplicated(tree_out$destination),
-    ]
-    tree_out$parent <- NA_character_
-    colnames(tree_out)[1:2] <- c("node", "level")
-    tree_out <- tree_out[, colnames(root_node)]
-    for (lev in rev(seq_len(max(tree_out$level)))) {
-      for (dst in tree_out$node[tree_out$level == lev]) {
-        if (lev > 1) {
-          i <- which(network_structure$destination == dst & # Modification CB: added this first condition, missing from original build_tree()
-                       network_structure$direction == "out" &
-                       network_structure$distance == lev)
-          src <- network_structure$source[i]
-          src <- unique(src)
-        }
-        else {
-          src <- root
-        }
-        stopifnot(length(src) > 0)
-        tree_out$parent[tree_out$level == lev & tree_out$node ==
-                          dst] <- src[1]
-      }
-    }
-    tree_out <- rbind(root_node, tree_out)
-    rownames(tree_out) <- NULL
-    result$outgoing <- tree_out
-  }
-  return(result)
+    } else {.} }
 }
 
 #' Create Leaflet map with ingoing and outgoing contact chains

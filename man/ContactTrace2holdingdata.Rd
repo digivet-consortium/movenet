@@ -27,11 +27,4 @@ Internal helper function that processes contact tracing results from
 EpiContactTrace's \code{Trace()} function back into movenet format, and adds in
 any holding attributes from the original movenet-format holding data tibble.
 }
-\details{
-This uses EpiContactTrace internal functions and a modified version
-of \code{build_tree()} (the original is buggy).
-}
-\seealso{
-\code{\link[EpiContactTrace:NetworkStructure-methods]{EpiContactTrace::NetworkStructure()}},
-}
 \keyword{internal}
