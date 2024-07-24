@@ -307,6 +307,7 @@ trace_contact_chains <- function(movement_data, holding_data,
     n_contact_chains <-
       sum(length(contact_tracing_results@ingoingContacts@source),
           length(contact_tracing_results@outgoingContacts@source))
+    names(n_contact_chains) = contact_tracing_results@root
   }
   if(any(n_contact_chains == 0)){
     root_no_cc <- names(which(n_contact_chains == 0))
@@ -462,8 +463,8 @@ ContactTrace2holdingdata <- function(contact_trace_object,
   } else {
     roots <- contact_trace_object@root
     ins <- c(contact_trace_object@ingoingContacts@source,
-             contact_trace_object@ingoingContacts@destination) %>% unique()
-    outs <- c(contact_trace_object@outgoingContacts@source,
+             contact_trace_object@ingoingContacts@destination[which(contact_trace_object@ingoingContacts@distance != 1)]) %>% unique()
+    outs <- c(contact_trace_object@outgoingContacts@source[which(contact_trace_object@outgoingContacts@distance != 1)],
               contact_trace_object@outgoingContacts@destination) %>% unique()
   }
   roots_df <- tibble(holding_id=roots, direction="root")
