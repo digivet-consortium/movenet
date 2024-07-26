@@ -16,7 +16,7 @@
 # Test with the same holding being both root and in, root and out, in and out
 # Test with the same holding occurring multiple times along a single contact chain
 # Test with the same movement being part of ingoing and outgoing contact chains
-# Test with there being only ingoing or only outgoing contact chains, with and without map
+# Test with there being only ingoing or only outgoing contact chains, with map
 #   trace_contact_chains(example_movement_data, example_holding_data, "95/216/1100", "2019-05-01", 15)
 #   The above only has ingoing contact chains, no outgoing
 
@@ -157,6 +157,14 @@ trace_contact_chains <- function(movement_data, holding_data,
                must.include = "coordinates",
                .var.name = "holding_data")
   assert_class(holding_data$coordinates, c("sfc_POINT","sfc"))
+  #check that all holdings in holding_data have coordinates
+  if(any(st_is_empty(holding_data$coordinates))){ #replaces the any.missing assertion, as missing coordinates are not coded as NAs but as empty geometries
+    stop("Assertion on 'holding_data[\"coordinates\"]' failed: Coordinates must be provided for all holdings, but some geometries are empty (missing coordinates).", call. = FALSE)
+  }
+  #check that all holdings in movement_data occur in holding_data
+  if(any(!movement_data[[1]] %in% holding_data[[1]] | !movement_data[[2]] %in% holding_data[[1]])){
+    stop("Coordinates must be provided for all holdings in 'movement data', but not all holdings in 'movement_data' are present in 'holding_data'.", call. = FALSE)
+  }
 
   assert_class(admin_areas_map, c("sf","data.frame"), null.ok = TRUE)
 
