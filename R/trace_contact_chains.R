@@ -8,19 +8,18 @@
 # Is there value to printing the contact_trace_object (either full or summary-only) on screen but not "returning" it?
 # It's perhaps a bit complicated when the output is a list of the contact_trace_object and the leaflet widget.
 
+# I use snake_case in my functions -but in trace_contact_chains I have copied
+# across several arguments from EpiContactTrace, which uses camelCase. Adapt to
+# snake_case or leave as they are?
 
 # Test for multiple roots, tEnd, days // inBegin etc.
-# Test if root not in movement_data
-# Test if root not in holding_data
-# Test if not all movement_data holdings in holding_data or not all have coordinates
-# Test with the same holding being both root and in, root and out, in and out
+# Test if root not in movement_data -> currently "No ingoing or outgoing contact chains..." message is printed. Better to have a specific error?
+# Test with the same holding being both root and in, root and out, as part of different contact chains
 # Test with the same holding occurring multiple times along a single contact chain
-# Test with the same movement being part of ingoing and outgoing contact chains
 # Test with there being only ingoing or only outgoing contact chains, with map
 #   trace_contact_chains(example_movement_data, example_holding_data, "95/216/1100", "2019-05-01", 15)
 #   The above only has ingoing contact chains, no outgoing
 
-# Need to make sure that all identified holdings have coordinates... or what?
 #
 # Test that ContactTrace2movedata() and ContactTrace2holdingdata() work when
 # contact_tracing_results includes a holding or connection multiple times, as both "in" and "out".
@@ -33,30 +32,13 @@
 #                            class = "Date"),
 # qty_pigs = c(1, 2, 3, 4, 5, 6)), row.names = c(NA, -6L),
 # class = c("tbl_df", "tbl", "data.frame"))
-# This should not result in Error.
-
+#--
 # Test:
 # trace_contact_chains(head(example_movement_data, 10), head(holding_data, 10),"95/216/110",2019-02-08,100)
 # results in Error - Assertion on 'tEnd' failed: Must be of class 'Date', not 'double'.
 # (but actually it can be of class character as well. Lines 205-9)
 #---
-# trace_contact_chains(head(example_movement_data, 10), head(holding_data, 10),"95/216/110","2019-02-08",100)
-# results in Error in build_tree2(.)- identical(length(root), 1L) is not TRUE
-# (this is because I mistyped the root holding id, should be "95/216/1100" not "95/216/110")
-# Error occurs within ContactTrace2holdingdata(). ContactTrace2movedata() gives an empty tibble.
-# What should happen if root not in movement_data or not in holding_data?
-#---
-# trace_contact_chains(head(example_movement_data, 10), head(holding_data, 10),"95/216/1100","2019-02-08",100)
-# results in Error in pointData.default(sanitize_sf(obj)) :
-# Don't know how to get location data from object of class sfc_GEOMETRYCOLLECTION,sfc
-#---
 
-# I use snake_case in my functions -but in trace_contact_chains I have copied
-# across several arguments from EpiContactTrace, which uses camelCase. Adapt to
-# snake_case or leave as they are?
-
-# Would actually like holding_data as optional argument, using EpiContactTrace
-# positioning of nodes, but this currently is buggy...
 
 
 #' Trace ingoing and outgoing contact chains and visualise data on a Leaflet map
