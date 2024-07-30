@@ -28,29 +28,35 @@ trace_contact_chains(
 \item{holding_data}{A movenet-format holding tibble that includes a
 "coordinates" column.}
 
-\item{root}{A vector of root holdings to perform contact tracing for.}
+\item{root}{A vector with one or more root holdings to perform contact
+tracing for.}
 
-\item{tEnd}{the last date to include ingoing and outgoing
-movements. Defaults to \code{NULL}}
+\item{tEnd}{A single date, or character or factor that can be converted to a
+date, representing the last date to include both ingoing and outgoing
+movements. Defaults to \code{NULL}.}
 
-\item{days}{the number of previous days before tEnd to include
-ingoing and outgoing movements. Defaults to \code{NULL}}
+\item{days}{A single numeric representing the number of days prior to \code{tEnd}
+to include ingoing and outgoing movements for. Defaults to \code{NULL}.}
 
-\item{inBegin}{the first date to include ingoing
-movements. Defaults to \code{NULL}}
+\item{inBegin}{A single date, or character or factor that can be converted to
+a date, representing the first date to include ingoing movements for.
+Defaults to \code{NULL}.}
 
-\item{inEnd}{the last date to include ingoing movements. Defaults
-to \code{NULL}}
+\item{inEnd}{A single date, or character or factor that can be converted to a
+date, representing the last date to include ingoing movements for. Defaults
+to \code{NULL}.}
 
-\item{outBegin}{the first date to include outgoing
-movements. Defaults to \code{NULL}}
+\item{outBegin}{A single date, or character or factor that can be converted
+to a date, representing the first date to include outgoing movements for.
+Defaults to \code{NULL}.}
 
-\item{outEnd}{the last date to include outgoing
-movements. Defaults to \code{NULL}}
+\item{outEnd}{A single date, or character or factor that can be converted to
+a date, representing the last date to include outgoing movements for.
+Defaults to \code{NULL}.}
 
-\item{maxDistance}{stop contact tracing at maxDistance (inclusive)
-from root. Default is \code{NULL} i.e. don't use the
-maxDistance stop criteria.}
+\item{maxDistance}{A single numeric representing the maximum 'distance' (in
+number of movements) away from the root node, at which to stop contact
+tracing. Defaults to \code{NULL}, i.e. don't use the maxDistance stop criterion.}
 
 \item{admin_areas_map}{An sf dataframe with administrative area boundaries.}
 
@@ -91,19 +97,16 @@ or outgoing movements to each area.
 \details{
 The time period can either be specified using \code{tEnd} and \code{days}, or
 using \code{inBegin}, \code{inEnd}, \code{outBegin} and \code{outEnd}. If using \code{tEnd} and
-\code{days}, the time period for ingoing and outgoing contacts ends at \code{tEnd} and
-starts at \code{days} prior to \code{tEnd}. The tracing will be performed for each
-combination of \code{root}, \code{tEnd} and \code{days}. An alternative way is to use
+\code{days}, the time period for ingoing and outgoing contacts ends at \code{tEnd}
+and starts at \code{days} prior to \code{tEnd}. An alternative way is to use
 \code{inBegin}, \code{inEnd}, \code{outBegin} and \code{outEnd}. The time period for ingoing
 contacts starts at \code{inBegin} and ends at \code{inEnd}. For outgoing contacts the
-time period starts at \code{outBegin} and ends at \code{outEnd}. The vectors \code{root},
-\code{inBegin}, \code{inEnd}, \code{outBegin}, and \code{outEnd} must have the same lengths and
-the tracing will be performed for each index of them.
+time period starts at \code{outBegin} and ends at \code{outEnd}.
 
-If \code{admin_areas_map} is provided, administrative area boundaries are added to
-the Leaflet map. Additionally, contact chain data are summarised
-geographically and the user can choose to colour the map by the total weight
-or number of ingoing movements from or outgoing movements to each
+If \code{admin_areas_map} is provided, administrative area boundaries are added
+to the Leaflet map. Additionally, contact chain data are summarised
+geographically and the user can choose to colour the map by the total
+weight or number of ingoing movements from or outgoing movements to each
 administrative area. By default, the colour scales for these geographical
 layers are determined by the ranges of the respective values in the data,
 however they can be set via the \code{colour_domain_weight_in},

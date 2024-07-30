@@ -53,8 +53,28 @@
 #' @param movement_data A movenet-format movement tibble.
 #' @param holding_data A movenet-format holding tibble that includes a
 #'   "coordinates" column.
-#' @param root A vector of root holdings to perform contact tracing for.
-#' @inheritParams EpiContactTrace::Trace
+#' @param root A vector with one or more root holdings to perform contact
+#'   tracing for.
+#' @param tEnd A single date, or character or factor that can be converted to a
+#'   date, representing the last date to include both ingoing and outgoing
+#'   movements. Defaults to `NULL`.
+#' @param days A single numeric representing the number of days prior to `tEnd`
+#'   to include ingoing and outgoing movements for. Defaults to `NULL`.
+#' @param inBegin A single date, or character or factor that can be converted to
+#'   a date, representing the first date to include ingoing movements for.
+#'   Defaults to `NULL`.
+#' @param inEnd A single date, or character or factor that can be converted to a
+#'   date, representing the last date to include ingoing movements for. Defaults
+#'   to `NULL`.
+#' @param outBegin A single date, or character or factor that can be converted
+#'   to a date, representing the first date to include outgoing movements for.
+#'   Defaults to `NULL`.
+#' @param outEnd A single date, or character or factor that can be converted to
+#'   a date, representing the last date to include outgoing movements for.
+#'   Defaults to `NULL`.
+#' @param maxDistance A single numeric representing the maximum 'distance' (in
+#'   number of movements) away from the root node, at which to stop contact
+#'   tracing. Defaults to `NULL`, i.e. don't use the maxDistance stop criterion.
 #' @param admin_areas_map An sf dataframe with administrative area boundaries.
 #' @param colour_domain_weight_in A numeric vector representing the range (i.e.
 #'   `c(min, max)`) of possible aggregate ingoing weight values to colour
@@ -74,26 +94,23 @@
 #'   from the data.
 #'
 #' @details The time period can either be specified using `tEnd` and `days`, or
-#' using `inBegin`, `inEnd`, `outBegin` and `outEnd`. If using `tEnd` and
-#' `days`, the time period for ingoing and outgoing contacts ends at `tEnd` and
-#' starts at `days` prior to `tEnd`. The tracing will be performed for each
-#' combination of `root`, `tEnd` and `days`. An alternative way is to use
-#' `inBegin`, `inEnd`, `outBegin` and `outEnd`. The time period for ingoing
-#' contacts starts at `inBegin` and ends at `inEnd`. For outgoing contacts the
-#' time period starts at `outBegin` and ends at `outEnd`. The vectors `root`,
-#' `inBegin`, `inEnd`, `outBegin`, and `outEnd` must have the same lengths and
-#' the tracing will be performed for each index of them.
+#'   using `inBegin`, `inEnd`, `outBegin` and `outEnd`. If using `tEnd` and
+#'   `days`, the time period for ingoing and outgoing contacts ends at `tEnd`
+#'   and starts at `days` prior to `tEnd`. An alternative way is to use
+#'   `inBegin`, `inEnd`, `outBegin` and `outEnd`. The time period for ingoing
+#'   contacts starts at `inBegin` and ends at `inEnd`. For outgoing contacts the
+#'   time period starts at `outBegin` and ends at `outEnd`.
 #'
-#' If `admin_areas_map` is provided, administrative area boundaries are added to
-#' the Leaflet map. Additionally, contact chain data are summarised
-#' geographically and the user can choose to colour the map by the total weight
-#' or number of ingoing movements from or outgoing movements to each
-#' administrative area. By default, the colour scales for these geographical
-#' layers are determined by the ranges of the respective values in the data,
-#' however they can be set via the `colour_domain_weight_in`,
-#' `colour_domain_weight_out`, `colour_domain_moves_in`, and/or
-#' `colour_domain_moves_out` arguments in order to make colours comparable
-#' across maps.
+#'   If `admin_areas_map` is provided, administrative area boundaries are added
+#'   to the Leaflet map. Additionally, contact chain data are summarised
+#'   geographically and the user can choose to colour the map by the total
+#'   weight or number of ingoing movements from or outgoing movements to each
+#'   administrative area. By default, the colour scales for these geographical
+#'   layers are determined by the ranges of the respective values in the data,
+#'   however they can be set via the `colour_domain_weight_in`,
+#'   `colour_domain_weight_out`, `colour_domain_moves_in`, and/or
+#'   `colour_domain_moves_out` arguments in order to make colours comparable
+#'   across maps.
 #'
 #' @returns A Leaflet map (HTML widget object) with graphics layers for holdings
 #'   and movements that are part of ingoing and outgoing contact chains, and for
@@ -173,9 +190,13 @@ trace_contact_chains <- function(movement_data, holding_data,
   }
 
   # The lines below mostly paraphrase EpiContactTrace::Trace's arg checks,
-  # except for the check for vector length that is not included here, and I have
-  # added some checks and warnings for duplicate value.
-  # Argument checks copied to (1) remove the reference to "Trace" in
+  # except for
+  # - dates are only allowed to have length 1 here, not vector
+  # - if root length >1, then inBegin etc. must be recycled to the same length to
+  #   avoid error in Trace
+
+  # the check for vector length that is not included here.
+  # Argument checks were copied to (1) remove the reference to "Trace" in
   # custom_error_message below, and (2) to have consistent checkmate error
   # messages throughout (most of) movenet.
 
@@ -213,21 +234,12 @@ trace_contact_chains <- function(movement_data, holding_data,
     }
 
     if (any(is.character(tEnd), is.factor(tEnd))) {
-      assert_date(as.Date(tEnd), any.missing = FALSE, null.ok = FALSE)
+      assert_date(as.Date(tEnd), any.missing = FALSE, len = 1, null.ok = FALSE)
     } else {
-      assert_date(tEnd, any.missing = FALSE, null.ok = FALSE) #actually this results in unhelpful error message, as date can be given as a character
+      assert_date(tEnd, any.missing = FALSE, len = 1, null.ok = FALSE) #actually this results in unhelpful error message, as date can be given as a character
     }
 
-    if(any(duplicated(tEnd))){
-      warning(paste0("'tEnd' contains duplicated values, but these must be unique. ",
-                     "Duplicate values will be removed."))
-    }
-
-    assert_integerish(days, any.missing = FALSE, null.ok = FALSE, lower = 0)
-    if(any(duplicated(days))){
-      warning(paste0("'days' contains duplicated values, but these must be unique. ",
-                     "Duplicate values will be removed."))
-    }
+    assert_int(days, na.ok = FALSE, null.ok = FALSE, lower = 0)
 
     if(any(duplicated(root))){
       warning(paste0("'root' contains duplicated values, but these must be unique. ",
@@ -246,27 +258,36 @@ trace_contact_chains <- function(movement_data, holding_data,
     }
 
     if (any(is.character(inBegin), is.factor(inBegin))) {
-      assert_date(as.Date(inBegin), any.missing = FALSE, null.ok = TRUE)
+      assert_date(as.Date(inBegin), any.missing = FALSE, len = 1, null.ok = TRUE)
     } else {
-      assert_date(inBegin, any.missing = FALSE, null.ok = TRUE)
+      assert_date(inBegin, any.missing = FALSE, len = 1, null.ok = TRUE)
     }
 
     if (any(is.character(inEnd), is.factor(inEnd))) {
-      assert_date(as.Date(inEnd), any.missing = FALSE, null.ok = TRUE)
+      assert_date(as.Date(inEnd), any.missing = FALSE, len = 1, null.ok = TRUE)
     } else {
-      assert_date(inEnd, any.missing = FALSE, null.ok = TRUE)
+      assert_date(inEnd, any.missing = FALSE, len = 1, null.ok = TRUE)
     }
 
     if (any(is.character(outBegin), is.factor(outBegin))) {
-      assert_date(as.Date(outBegin), any.missing = FALSE, null.ok = TRUE)
+      assert_date(as.Date(outBegin), any.missing = FALSE, len = 1, null.ok = TRUE)
     } else {
-      assert_date(outBegin, any.missing = FALSE, null.ok = TRUE)
+      assert_date(outBegin, any.missing = FALSE, len = 1, null.ok = TRUE)
     }
 
     if (any(is.character(outEnd), is.factor(outEnd))) {
-      assert_date(as.Date(outEnd), any.missing = FALSE, null.ok = TRUE)
+      assert_date(as.Date(outEnd), any.missing = FALSE, len = 1, null.ok = TRUE)
     } else {
-      assert_date(outEnd, any.missing = FALSE, null.ok = TRUE)
+      assert_date(outEnd, any.missing = FALSE, len = 1, null.ok = TRUE)
+    }
+
+    # if length(root) > 1, then inBegin etc. must be recycled to the same length,
+    # because Trace requires these to be the same length.
+    if(length(root) > 1){
+      inBegin <- rep(inBegin, length(root))
+      inEnd <- rep(inEnd, length(root))
+      outBegin <- rep(outBegin, length(root))
+      outEnd <- rep(outEnd, length(root))
     }
 
   } else {
