@@ -3,66 +3,113 @@ remove_widget_ids <- function(x) {
   gsub("htmlwidget-[a-z0-9]{20}","htmlwidget-",x)
 }
 
-test_that("trace_contact_chains() works when a single root is given, with single tEnd, and both in- and outgoing contact chains exist", {
-  map <- trace_contact_chains(example_movement_data, example_holding_data, "95/216/1100", tEnd = "2019-07-01", 90)
+test_that("trace_contact_chains() works when a single root is given, with tEnd, and both in- and outgoing contact chains exist", {
+  map <- trace_contact_chains(example_movement_data, example_holding_data,
+                              "95/216/1100", tEnd = "2019-07-01", 90)
   expect_snapshot(map)
   expect_snapshot_output(remove_widget_ids(htmltools::renderTags(map)$html))
  })
 
-test_that("trace_contact_chains() works when a single root is given, with single tEnd, and only outgoing contact chains exist", {
-  map <- trace_contact_chains(example_movement_data, example_holding_data, "95/216/1100", tEnd = "2019-07-01", 30)
+test_that("trace_contact_chains() works when a single root is given, with inBegin etc., and both in- and outgoing contact chains exist", {
+  map <- trace_contact_chains(example_movement_data, example_holding_data,
+                              "95/216/1100",
+                              inBegin = "2019-04-01", inEnd = "2019-07-01",
+                              outBegin = "2019-04-01", outEnd = "2019-07-01")
   expect_snapshot(map)
   expect_snapshot_output(remove_widget_ids(htmltools::renderTags(map)$html))
 })
 
-test_that("trace_contact_chains() works when a single root is given, with single tEnd, and only ingoing contact chains exist", {
-  map <- trace_contact_chains(example_movement_data, example_holding_data, "95/216/1100", tEnd = "2019-05-01", 15)
+test_that("trace_contact_chains() works when a single root is given, with tEnd, and only outgoing contact chains exist", {
+  map <- trace_contact_chains(example_movement_data, example_holding_data,
+                              "95/216/1100", tEnd = "2019-07-01", 30)
+  expect_snapshot(map)
+  expect_snapshot_output(remove_widget_ids(htmltools::renderTags(map)$html))
+})
+
+test_that("trace_contact_chains() works when a single root is given, with inBegin etc., and only outgoing contact chains exist", {
+  map <- trace_contact_chains(example_movement_data, example_holding_data,
+                              "95/216/1100",
+                              inBegin = "2019-06-01", inEnd = "2019-07-01",
+                              outBegin = "2019-06-01", outEnd = "2019-07-01")
+  expect_snapshot(map)
+  expect_snapshot_output(remove_widget_ids(htmltools::renderTags(map)$html))
+})
+
+test_that("trace_contact_chains() works when a single root is given, with tEnd, and only ingoing contact chains exist", {
+  map <- trace_contact_chains(example_movement_data, example_holding_data,
+                              "95/216/1100", tEnd = "2019-05-01", 15)
   expect_snapshot(map)
   expect_snapshot_output(remove_widget_ids(htmltools::renderTags(map)$html))
 })
 
 test_that("trace_contact_chains() prints message and doesn't generate a map, when no contact chains exist", {
-  map <- trace_contact_chains(example_movement_data, example_holding_data, "95/216/1100", tEnd = "2019-05-01", 2)
-  expect_message(map, "No ingoing or outgoing contact chains for root(s) 95/216/1100 during the search period.",
+  expect_message(trace_contact_chains(example_movement_data,
+                                      example_holding_data,
+                                      "95/216/1100", tEnd = "2019-05-01", 2),
+                 "No ingoing or outgoing contact chains for root(s) 95/216/1100 during the search period.",
                  fixed = TRUE)
-  expect_message(map, "No contact chains to plot.", fixed = TRUE)
-  expect_null(map)  #no map produced
+  expect_message(trace_contact_chains(example_movement_data,
+                                      example_holding_data,
+                                      "95/216/1100", tEnd = "2019-05-01", 2),
+                 "No contact chains to plot.", fixed = TRUE)
+  expect_null(trace_contact_chains(example_movement_data,
+                                   example_holding_data,
+                                   "95/216/1100", tEnd = "2019-05-01", 2)) #no map produced
 
-  map <- trace_contact_chains(example_movement_data, example_holding_data, c("95/216/1100","76/613/8076"), tEnd = "2019-05-01", 2)
-  expect_message(map, "No ingoing or outgoing contact chains for root(s) 95/216/1100, 76/613/8076 during the search period.",
+  expect_message(trace_contact_chains(example_movement_data,
+                                      example_holding_data,
+                                      c("95/216/1100","76/613/8076"),
+                                      tEnd = "2019-05-01", 2),
+                 "No ingoing or outgoing contact chains for root(s) 95/216/1100, 76/613/8076 during the search period.",
                  fixed = TRUE)
-  expect_message(map, "No contact chains to plot.", fixed = TRUE)
-  expect_null(map)  #no map produced
+  expect_message(trace_contact_chains(example_movement_data,
+                                      example_holding_data,
+                                      c("95/216/1100","76/613/8076"),
+                                      tEnd = "2019-05-01", 2),
+                 "No contact chains to plot.", fixed = TRUE)
+  expect_null(trace_contact_chains(example_movement_data,
+                                   example_holding_data,
+                                   c("95/216/1100","76/613/8076"),
+                                   tEnd = "2019-05-01", 2)) #no map produced
 })
 
-test_that("trace_contact_chains() works when multiple roots are given, with single tEnd, and in- and outgoing contact chains exist for both roots", {
-  map <- trace_contact_chains(example_movement_data, example_holding_data, c("95/216/1100","76/613/8076"), tEnd = "2019-05-01", 50)
+test_that("trace_contact_chains() works when multiple roots are given, and in- and outgoing contact chains exist for both roots", {
+  map <- trace_contact_chains(example_movement_data, example_holding_data,
+                              c("95/216/1100","76/613/8076"),
+                              tEnd = "2019-05-01", 50)
   expect_snapshot(map)
   expect_snapshot_output(remove_widget_ids(htmltools::renderTags(map)$html))
 })
 
-test_that("trace_contact_chains() works when multiple roots are given, with single tEnd, and contact chains exist for only one root", {
+test_that("trace_contact_chains() works when multiple roots are given, and contact chains exist for only one root", {
   map <- trace_contact_chains(example_movement_data, example_holding_data, c("95/216/1100","76/613/8076"), tEnd = "2019-05-01", 15)
   expect_snapshot(map)
   expect_snapshot_output(remove_widget_ids(htmltools::renderTags(map)$html))
 })
 
 test_that("trace_contact_chains() throws an error when coordinates are not provided for all holdings", {
-  expect_error(trace_contact_chains(example_movement_data, example_holding_data[1:2,], "95/216/1100", tEnd = "2019-05-01", 2),
+  expect_error(trace_contact_chains(example_movement_data,
+                                    example_holding_data[1:2,],
+                                    "95/216/1100", tEnd = "2019-05-01", 2),
                "Coordinates must be provided for all holdings in 'movement data', but not all holdings in 'movement_data' are present in 'holding_data'.",
                fixed = TRUE)
   example_holding_data$coordinates[[1]]<-sf::st_point()  #Create EMPTY geometry for one of the holdings
-  expect_error(trace_contact_chains(example_movement_data, example_holding_data, "95/216/1100", tEnd = "2019-05-01", 2),
+  expect_error(trace_contact_chains(example_movement_data, example_holding_data,
+                                    "95/216/1100", tEnd = "2019-05-01", 2),
                "Assertion on 'holding_data[\"coordinates\"]' failed: Coordinates must be provided for all holdings, but some geometries are empty (missing coordinates).",
                fixed = TRUE)
 })
 
 test_that("trace_contact_chains() prints 'No ingoing or outgoing contact chains' message and doesn't generate map when root not found in movement data", {
-  map <- trace_contact_chains(example_movement_data, example_holding_data, "XX", tEnd = "2019-07-01", 90)
-  expect_message(map, "No ingoing or outgoing contact chains for root(s) XX during the search period.",
+  expect_message(trace_contact_chains(example_movement_data, example_holding_data,
+                                      "XX", tEnd = "2019-07-01", 90),
+                 "No ingoing or outgoing contact chains for root(s) XX during the search period.",
                  fixed = TRUE)
-  expect_message(map, "No contact chains to plot.", fixed = TRUE)
-  expect_null(map)  #no map produced
+  expect_message(trace_contact_chains(example_movement_data, example_holding_data,
+                                      "XX", tEnd = "2019-07-01", 90),
+                 "No contact chains to plot.", fixed = TRUE)
+  expect_null(trace_contact_chains(example_movement_data, example_holding_data,
+                                   "XX", tEnd = "2019-07-01", 90))  #no map produced
 })
 
 test_that("trace_contact_chains() behaviour for multiple in/out/root statuses within a single contact chain is as expected", {
