@@ -12,7 +12,6 @@
 # across several arguments from EpiContactTrace, which uses camelCase. Adapt to
 # snake_case or leave as they are?
 
-# Test for multiple roots, tEnd, days // inBegin etc.
 # Test if root not in movement_data -> currently "No ingoing or outgoing contact chains..." message is printed. Better to have a specific error?
 # Test with the same holding being both root and in, root and out, as part of different contact chains
 # Test with the same holding occurring multiple times along a single contact chain
@@ -52,7 +51,7 @@
 #'
 #' @param movement_data A movenet-format movement tibble.
 #' @param holding_data A movenet-format holding tibble that includes a
-#'   "coordinates" column.
+#'   "coordinates" column. Holding identifiers must be unique.
 #' @param root A vector with one or more root holdings to perform contact
 #'   tracing for.
 #' @param tEnd A single date, or character or factor that can be converted to a
@@ -143,14 +142,14 @@ trace_contact_chains <- function(movement_data, holding_data,
 # Argument checks ---------------------------------------------------------
 
   assert_data_frame(movement_data, min.cols = 4, null.ok = FALSE)
-  assert_character(movement_data[[1]], any.missing = FALSE)
-  assert_character(movement_data[[2]], any.missing = FALSE)
-  assert_date(movement_data[[3]], any.missing = FALSE)
-  assert_numeric(movement_data[[4]], any.missing = TRUE)
+  assert_character(movement_data[[1]], any.missing = FALSE, .var.name = paste0("movement_data$", names(movement_data)[1]))
+  assert_character(movement_data[[2]], any.missing = FALSE, .var.name = paste0("movement_data$", names(movement_data)[2]))
+  assert_date(movement_data[[3]], any.missing = FALSE, .var.name = paste0("movement_data$", names(movement_data)[3]))
+  assert_numeric(movement_data[[4]], any.missing = TRUE, .var.name = paste0("movement_data$", names(movement_data)[4]))
 
   assert_data_frame(holding_data, min.cols = 1, null.ok = FALSE)
   #check that holding_ids are unique
-  assert_character(holding_data[[1]], unique = TRUE, any.missing = FALSE)
+  assert_character(holding_data[[1]], unique = TRUE, any.missing = FALSE, .var.name = paste0("holding_data$", names(holding_data)[1]))
   #check that holding_data has a coordinates column, of class sfc
   assert_names(names(holding_data),
                must.include = "coordinates",
@@ -200,11 +199,11 @@ trace_contact_chains <- function(movement_data, holding_data,
   # custom_error_message below, and (2) to have consistent checkmate error
   # messages throughout (most of) movenet.
 
-  # EpiContactTrace does movement_data <- unique(movement_data) , so need to ensure
-  # all movements are unique.
   if(any(duplicated(movement_data))){
-    warning(paste0("'movement_data' contains duplicated rows (movements), but ",
-                   "these must be unique. Duplicate rows will be removed."))
+    message(paste0("'movement_data' contains duplicated rows (movements). ",
+                   "To optimise visibility on the map, aggregate all movements",
+                   " occurring between the same holdings on the same day, for",
+                   " example with `round_dates(movement_data, 'day')`."))
   }
 
   ## root is supposed to be a character or integer identifier , NAs not allowed
@@ -377,9 +376,6 @@ movedata2EpiContactTrace <- function(movement_data){
 #' EpiContactTrace's `Trace()` function back into movenet format, and adds in
 #' any movement attributes from the original movenet-format movement data tibble.
 #'
-#' @details This requires for "repeated movements on one day" to be aggregated,
-#' otherwise it's complicated to ensure a correct join.
-#'
 #' @param contact_trace_object A ContactTrace object returned by
 #'  EpiContactTrace's `Trace()` function.
 #' @param original_movement_data The movenet-format movement data tibble that was
@@ -413,7 +409,7 @@ ContactTrace2movedata <- function(contact_trace_object, original_movement_data){
                             by = setNames(c("source", "destination", "t", "n"),
                                           c(colname_from, colname_to, colname_date,
                                             colname_weight)),
-                            relationship = "one-to-many") #one row in contact_trace_object can match to at most one row in original_movement_data
+                            relationship = "many-to-many") #one row in contact_trace_object can match to at most one row in original_movement_data
       }) %>% purrr::reduce(rbind) #this binds the tibbles together into one
     } else {
       contact_trace_object %>%
@@ -423,7 +419,7 @@ ContactTrace2movedata <- function(contact_trace_object, original_movement_data){
                           by = setNames(c("source", "destination", "t", "n"),
                                         c(colname_from, colname_to, colname_date,
                                           colname_weight)),
-                          relationship = "one-to-many") #one row in contact_trace_object can match to at most one row in original_movement_data
+                          relationship = "many-to-many") #one row in contact_trace_object can match to at most one row in original_movement_data
     }
   }
 
