@@ -4,5 +4,8 @@
 ^README\.Rmd$
 ^_pkgdown\.yml$
 ^docs$
+^notebooks
+^releases
+^reports$
 ^pkgdown$
 ^\.github$

@@ -119,8 +119,6 @@
 #'
 #' @export
 #'
-#' @examples
-#'
 #' @seealso
 #' * [EpiContactTrace::Trace()] for the underlying contact chain tracing functionality.
 #' * [leaflet::leaflet()] for the underlying mapping functionality.
@@ -394,6 +392,7 @@ movedata2EpiContactTrace <- function(movement_data){
 #' @seealso [EpiContactTrace::Trace()]
 #'
 #' @importFrom dplyr select right_join
+#' @importFrom methods as
 #'
 #' @keywords internal
 ContactTrace2movedata <- function(contact_trace_object, original_movement_data){
@@ -408,22 +407,26 @@ ContactTrace2movedata <- function(contact_trace_object, original_movement_data){
       lapply(function(x) {
         x %>%
           as("data.frame") %>%
-          select(source, destination, t, n, direction) %>%
-          dplyr::right_join(original_movement_data, .,  #requires this set of keys to be unique
+          select(.data$source, .data$destination, .data$t, .data$n, .data$direction) %>%
+          {function(x){
+            dplyr::right_join(original_movement_data, x,  #requires this set of keys to be unique
                             by = setNames(c("source", "destination", "t", "n"),
                                           c(colname_from, colname_to, colname_date,
                                             colname_weight)),
                             relationship = "one-to-many") #one row in contact_trace_object can match to at most one row in original_movement_data
+          }}()
       }) %>% purrr::reduce(rbind) #this binds the tibbles together into one
     } else {
       contact_trace_object %>%
         as("data.frame") %>%
-        select(source, destination, t, n, direction) %>%
-        dplyr::right_join(original_movement_data, .,  #requires this set of keys to be unique
+        select(.data$source, .data$destination, .data$t, .data$n, .data$direction) %>%
+        {function(x){
+          dplyr::right_join(original_movement_data, x,  #requires this set of keys to be unique
                           by = setNames(c("source", "destination", "t", "n"),
                                         c(colname_from, colname_to, colname_date,
                                           colname_weight)),
                           relationship = "one-to-many") #one row in contact_trace_object can match to at most one row in original_movement_data
+        }}()
     }
   }
 
@@ -486,11 +489,13 @@ ContactTrace2holdingdata <- function(contact_trace_object,
   # Add original holding attributes
   holdings_df %>%
     unique() %>%
-    { if(!is.null(original_holding_data)){
-      dplyr::right_join(original_holding_data, .,
+    {function(x){
+      if(!is.null(original_holding_data)){
+        dplyr::right_join(original_holding_data, x,
                         by = setNames("holding_id", colname_id),
                         relationship = "one-to-many")
-    } else {.} }
+      } else {x}
+    }}()
 }
 
 #' Create Leaflet map with ingoing and outgoing contact chains
@@ -504,17 +509,30 @@ ContactTrace2holdingdata <- function(contact_trace_object,
 #'   are part of ingoing and outgoing contact chains.
 #' @param admin_areas_map An sf object containing multipolygons for relevant
 #'   administrative areas.
-#' @param colour_domain_weight_in
-#' @param colour_domain_weight_out
-#' @param colour_domain_moves_in
-#' @param colour_domain_moves_out
-#'
+#' @param colour_domain_weight_in A numeric vector representing the range (i.e.
+#'   `c(min, max)`) of possible aggregate ingoing weight values to colour
+#'   administrative areas by. If `NULL` (default), the range will be determined
+#'   from the data.
+#' @param colour_domain_weight_out A numeric vector representing the range (i.e.
+#'   `c(min, max)`) of possible aggregate outgoing weight values to colour
+#'   administrative areas by.  If `NULL` (default), the range will be determined
+#'   from the data.
+#' @param colour_domain_moves_in A numeric vector representing the range (i.e.
+#'   `c(min, max)`) of possible aggregate numbers of ingoing moves to colour
+#'   administrative areas by. If `NULL` (default), the range will be determined
+#'   from the data.
+#' @param colour_domain_moves_out A numeric vector representing the range (i.e.
+#'   `c(min, max)`) of possible aggregate numbers of outgoing moves to colour
+#'   administrative areas by. If `NULL` (default), the range will be determined
+#'   from the data.
+#'#'
 #' @returns A Leaflet map (HTML widget object) with graphics layers for holdings
 #'   and moves that are part of ingoing and outgoing contact chains, and for the
 #'   provided administrative area boundaries. Further layers can be added using
 #'   `%>%`.
 #'
 #' @importFrom dplyr left_join arrange group_by summarize
+#' @importFrom tidyselect all_of any_of
 #' @importFrom tidyr pivot_longer pivot_wider replace_na
 #' @import leaflet
 #' @importFrom leaflegend addLegendLine
@@ -551,8 +569,10 @@ contactchains2leaflet <- function(movement_data, holding_data,
     # that of y (admin_areas_map)
 
     admin_areas_map %>%
-      mutate(adm_area_coords = geometry) %>% #duplicate the geometry column
-      st_join(x = holding_data, y = .) -> holding_data
+      mutate(adm_area_coords = .data$geometry) %>% #duplicate the geometry column
+      {function(y){
+        st_join(x = holding_data, y = y)
+      }}() -> holding_data
   }
 
 # Add linestring coordinates to movement data -----------------------------
@@ -561,19 +581,19 @@ contactchains2leaflet <- function(movement_data, holding_data,
     movement_data %>%
 
     # First add point coordinates and admin area coordinates for origin and destination holdings.
-    left_join(y = {holding_data %>% select(all_of(colname_id), coordinates, any_of("adm_area_coords")) %>% unique},
+    left_join(y = {holding_data %>% select(all_of("colname_id"), .data$coordinates, any_of("adm_area_coords")) %>% unique()},
               by = setNames(colname_id, colname_from),
               relationship = "many-to-one") %>%
-    rename(coords_from = coordinates) %>%
+    rename(coords_from = .data$coordinates) %>%
     #if adm_area_coords exist, rename to adm_area_from
     { if("adm_area_coords" %in% names(.)){
-      rename(., adm_area_from = adm_area_coords) } else {.} } %>%
-    left_join(y = {holding_data %>% select(all_of(colname_id), coordinates, any_of("adm_area_coords")) %>% unique},
+      rename(., adm_area_from = .data$adm_area_coords) } else {.} } %>%
+    left_join(y = {holding_data %>% select(all_of("colname_id"), .data$coordinates, any_of("adm_area_coords")) %>% unique()},
               by = setNames(colname_id, colname_to),
               relationship = "many-to-one") %>%
-    rename(coords_to = coordinates) %>%
+    rename(coords_to = .data$coordinates) %>%
     { if("adm_area_coords" %in% names(.)){
-      rename(., adm_area_to = adm_area_coords) } else {.} } %>%
+      rename(., adm_area_to = .data$adm_area_coords) } else {.} } %>%
 
     # Then transform point coordinates to linestring: to do this, need to convert
     # the tibble to long format, add a "line_id", and then summarise by "line_id".
@@ -584,17 +604,17 @@ contactchains2leaflet <- function(movement_data, holding_data,
     st_as_sf(sf_column_name = "coordinates") %>%
     { coords_long <- .
       coords_long_linestring <-
-        group_by(.data = ., line_id) %>%
+        group_by(.data = ., .data$line_id) %>%
         summarize(do_union=FALSE) %>%
         st_cast("LINESTRING") %>%
-        rename(geometry = coordinates)
+        rename(geometry = .data$coordinates)
       left_join(x=coords_long, y = as.data.frame(coords_long_linestring), by = c("line_id"))
     } %>%  #need to convert back to sf object
     `st_geometry<-`("geometry") %>%
 
     # Convert back to wide format and remove "line_id".
     tidyr::pivot_wider(names_from = "coord_type", values_from = "coordinates") %>%
-    select(-line_id)
+    select(-.data$line_id)
 
 # Summarise movement data by admin area -----------------------------------
 
@@ -609,9 +629,11 @@ contactchains2leaflet <- function(movement_data, holding_data,
     colname_weight <- names(movement_data)[4]
 
     movement_data %>%
-      filter(direction == direction_subset) %>%
-      { if(nrow(.) == 0) { . # use this construction to prevent error when . is empty (0 rows)
-      } else { filter(., adm_area_from != adm_area_to) }} %>% #filtering out within-admin-area moves
+      filter(.data$direction == direction_subset) %>%
+      {function(x){
+        if(nrow(x) == 0) { x # use this construction to prevent error when x is empty (0 rows)
+        } else { filter(x, .data$adm_area_from != .data$adm_area_to) } #filtering out within-admin-area moves
+      }}() %>%
       group_by(.data[[adm_area]]) %>%
       summarise(total_weight := sum(.data[[colname_weight]]),
                 n_moves = dplyr::n()) %>%
@@ -667,12 +689,12 @@ contactchains2leaflet <- function(movement_data, holding_data,
 
   movement_geojson_in <-
     movement_data[which(movement_data$direction == "in"),] %>%
-    select(-coords_from, -coords_to, -any_of(c("adm_area_from", "adm_area_to"))) %>%
+    select(-.data$coords_from, -.data$coords_to, -any_of(c("adm_area_from", "adm_area_to"))) %>%
     geojsonsf::sf_geojson()
 
   movement_geojson_out <-
     movement_data[which(movement_data$direction == "out"),] %>%
-    select(-coords_from, -coords_to, -any_of(c("adm_area_from", "adm_area_to"))) %>%
+    select(-.data$coords_from, -.data$coords_to, -any_of(c("adm_area_from", "adm_area_to"))) %>%
     geojsonsf::sf_geojson()
 
 # Register JS Leaflet plugins ---------------------------------------------

@@ -33,7 +33,7 @@ noise between \code{-range} and \code{range}, following a uniform distribution.
 If this were to result in a data point becoming \verb{<= 0}, the amount of jitter
 for this data point is resampled, until the resulting data point becomes
 positive. This is to capture that any movement in a livestock movement
-database, is assumed to have a positive weight (quantity of animals moved).
+database is assumed to have a positive weight (quantity of animals moved).
 }
 \seealso{
 \code{\link[base:jitter]{base::jitter()}}, which this function is based on.

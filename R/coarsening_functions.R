@@ -152,10 +152,10 @@ jitter_dates <- function(data, range){
 #' wraps.
 #'
 #' @import checkmate
-#' @importFrom dplyr group_by mutate rename summarise ungroup
+#' @importFrom dplyr group_by mutate rename summarise ungroup row_number
 #' @importFrom lubridate floor_date
 #' @importFrom purrr has_element
-#' @importFrom rlang :=
+#' @importFrom rlang := .data
 #'
 #' @export
 round_dates <- function(data, unit,

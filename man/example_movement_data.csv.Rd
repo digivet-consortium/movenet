@@ -49,8 +49,8 @@ data fields typically found in ScotEID's Scottish pig movement datasets.
 }
 \seealso{
 Other example data files and structures: 
-\code{\link{example_holding_data.csv}},
 \code{\link{example_holding_data}},
+\code{\link{example_holding_data.csv}},
 \code{\link{example_movement_data}},
 \code{\link{local_spread_probabilities_ASF}}
 }

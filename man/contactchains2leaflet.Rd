@@ -24,7 +24,26 @@ are part of ingoing and outgoing contact chains.}
 \item{admin_areas_map}{An sf object containing multipolygons for relevant
 administrative areas.}
 
-\item{colour_domain_moves_out}{}
+\item{colour_domain_weight_in}{A numeric vector representing the range (i.e.
+\code{c(min, max)}) of possible aggregate ingoing weight values to colour
+administrative areas by. If \code{NULL} (default), the range will be determined
+from the data.}
+
+\item{colour_domain_weight_out}{A numeric vector representing the range (i.e.
+\code{c(min, max)}) of possible aggregate outgoing weight values to colour
+administrative areas by.  If \code{NULL} (default), the range will be determined
+from the data.}
+
+\item{colour_domain_moves_in}{A numeric vector representing the range (i.e.
+\code{c(min, max)}) of possible aggregate numbers of ingoing moves to colour
+administrative areas by. If \code{NULL} (default), the range will be determined
+from the data.}
+
+\item{colour_domain_moves_out}{A numeric vector representing the range (i.e.
+\code{c(min, max)}) of possible aggregate numbers of outgoing moves to colour
+administrative areas by. If \code{NULL} (default), the range will be determined
+from the data.
+#'}
 }
 \value{
 A Leaflet map (HTML widget object) with graphics layers for holdings

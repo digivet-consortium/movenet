@@ -46,8 +46,8 @@ was obtained from \code{example_holding_data.csv}.
 
 Other example data files and structures: 
 \code{\link{example_holding_data.csv}},
-\code{\link{example_movement_data.csv}},
 \code{\link{example_movement_data}},
+\code{\link{example_movement_data.csv}},
 \code{\link{local_spread_probabilities_ASF}}
 }
 \concept{example data files and structures}

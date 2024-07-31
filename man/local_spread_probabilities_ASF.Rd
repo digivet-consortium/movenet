@@ -41,10 +41,10 @@ populations. \emph{Veterinary Microbiology}, \emph{193}, 7-16.
 }
 \seealso{
 Other example data files and structures: 
-\code{\link{example_holding_data.csv}},
 \code{\link{example_holding_data}},
-\code{\link{example_movement_data.csv}},
-\code{\link{example_movement_data}}
+\code{\link{example_holding_data.csv}},
+\code{\link{example_movement_data}},
+\code{\link{example_movement_data.csv}}
 }
 \concept{example data files and structures}
 \keyword{datasets}

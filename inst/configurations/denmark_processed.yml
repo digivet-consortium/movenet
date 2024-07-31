@@ -10,3 +10,17 @@ movedata_cols:
   to: "CHRNR_MODTAGER" #Column name or number for Identifier of destination holding/establishment/..
   date: "DATO_FLYTNING" #Column name or number for Date of transport (if multiple date types are available, use the one deemed most appropriate)
   weight: "ANTAL_FLYT_DYR" #Column name or number for Number of pigs transported
+
+holdingdata_fileopts:
+  separator: ','
+  encoding: UTF-8
+  decimal: '.'
+  coord_EPSG_code: 3035
+  country_code: DK
+  
+holdingdata_cols:
+  id: "CHR"
+  coord_x: coord_x
+  coord_y: coord_y
+  type: holding_type
+  herd_size: herd_size
