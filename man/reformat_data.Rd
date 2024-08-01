@@ -103,7 +103,7 @@ rm("old_config", "movenetenv", "movement_data", "holding_data")
 \seealso{
 \itemize{
 \item \code{\link[=asciify]{asciify()}} for the underlying ASCIIfication process.
-\item \code{\link{vignette("movenet")}} for getting started with movenet.
+\item \code{vignette("movenet")} for getting started with movenet.
 }
 
 Other functions for initial data processing: 

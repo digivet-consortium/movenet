@@ -43,7 +43,7 @@ A fully synthetic livestock movement dataset, created to illustrate the
 structure of movenet-format movement data tibbles.
 }
 \seealso{
-\code{\link{vignette("movenet")}} for a detailed illustration of how this tibble
+\code{vignette("movenet")} for a detailed illustration of how this tibble
 was obtained from \code{example_movement_data.csv}.
 
 Other example data files and structures: 

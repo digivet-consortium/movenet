@@ -223,7 +223,7 @@ round_dates <- function(data, unit,
                   sum(.data[[movenetenv$options$movedata_cols$weight]]),
                 ...) |>
       ungroup() |>
-      rename("{movenetenv$options$movedata_cols$weight}" := summed_weight)
+      rename("{movenetenv$options$movedata_cols$weight}" := .data$summed_weight)
     #using "summed_weight" and then renaming to the data-specific weight
     #variable, to avoid problems with additional weight summarising
     #functions. If the original name is kept, any additional functions are

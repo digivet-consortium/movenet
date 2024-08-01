@@ -40,6 +40,8 @@
 #---
 
 
+globalVariables(c(".","total_weight"))
+
 
 #' Trace ingoing and outgoing contact chains and visualise data on a Leaflet map
 #'
@@ -391,7 +393,7 @@ movedata2EpiContactTrace <- function(movement_data){
 #'
 #' @seealso [EpiContactTrace::Trace()]
 #'
-#' @importFrom dplyr select right_join
+#' @importFrom dplyr select right_join across
 #' @importFrom methods as
 #'
 #' @keywords internal
@@ -536,7 +538,7 @@ ContactTrace2holdingdata <- function(contact_trace_object,
 #' @importFrom tidyr pivot_longer pivot_wider replace_na
 #' @import leaflet
 #' @importFrom leaflegend addLegendLine
-#' @importFrom sf st_cast st_as_sf st_join st_transform st_drop_geometry st_geometry<-
+#' @importFrom sf st_cast st_is_empty st_as_sf st_join st_transform st_drop_geometry st_geometry<-
 #'
 #' @keywords internal
 contactchains2leaflet <- function(movement_data, holding_data,
@@ -664,7 +666,7 @@ contactchains2leaflet <- function(movement_data, holding_data,
   movement_data <-
     movement_data %>%
     arrange(.data[[colname_from]], .data[[colname_to]],
-            direction, .data[[colname_date]]) %>%
+            .data$direction, .data[[colname_date]]) %>%
     mutate(edge_id_on_connection = row_number(),
            .by = all_of(c(colname_from, colname_to)))
 
@@ -675,7 +677,7 @@ contactchains2leaflet <- function(movement_data, holding_data,
   movement_data <-
     movement_data %>%
     mutate(edge_width = 2^floor(log10(.data[[colname_weight]]))) %>%
-    mutate(offset = -(cumsum(edge_width + betw_width) - (edge_width + betw_width)/2),
+    mutate(offset = -(cumsum(.data$edge_width + betw_width) - (.data$edge_width + betw_width)/2),
            .by = all_of(c(colname_from, colname_to)))
 
   # Create a dynamically set "breaks" vector for the edge_width legend in the map

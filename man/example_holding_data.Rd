@@ -41,7 +41,7 @@ A fully synthetic livestock holding dataset, created to illustrate the
 structure of movenet-format holding data tibbles.
 }
 \seealso{
-\code{\link{vignette("movenet")}} for a detailed illustration of how this tibble
+\code{vignette("movenet")} for a detailed illustration of how this tibble
 was obtained from \code{example_holding_data.csv}.
 
 Other example data files and structures: 
