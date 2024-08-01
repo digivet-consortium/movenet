@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
-movenet uses the [Statnet suite of packages](https://statnet.org/packages/) (e.g. networkDynamic and tsna) for (temporal) social network analysis. We are currently working on  the functions in this section - e.g. creation of a pdf report with network measures of particular relevance to disease transmission.
+movenet uses the [Statnet suite of packages](https://statnet.org/packages/) (e.g. networkDynamic and tsna) for (temporal) social network analysis. We are currently working on the functions in this section - e.g. creation of a pdf report with network measures of particular relevance to disease transmission.
 
 ```{r setup}
 library(movenet)
@@ -25,7 +25,7 @@ holding_data <- example_holding_data
 
 ## Generating a temporal network representation
 
-Currently it is possible to generate a temporal network (networkDynamic) representation
+We can generate a temporal network (networkDynamic) representation
 of movement data and optional holding data, as follows:
 
 ```{R warning = FALSE}
@@ -37,26 +37,35 @@ network
 
 ## Calculate summary statistics for selected temporal network measures
 
+This networkDynamic representation can then be used to calculate various network
+summary measures, such as finding the maximum reachability in the network:
+
 ```{R}
-# Find the maximum reachability in the network, and which nodes have this property.
-parallel_summarise_temporal_node_properties(list(network), n_threads = 1,
+max_reachability <- parallel_summarise_temporal_node_properties(list(network), n_threads = 1,
                                             node_property = "forward reachability",
                                             statistics = list(max = max),
                                             identify_nodes = TRUE)
+unlist(max_reachability)
 ```
 
 
 ## Create a temporal social network analysis report
 
-```{R, eval = FALSE}
-# Create a network analysis report, with analyses of monthly network snapshots
+The movenet package provides a function to create a network analysis report,
+with analyses of monthly network snapshots:
+
+```{R eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE, results='hide'}
 create_temporal_network_analysis_report(
   network,
-  output_file = paste0(tempdir(),"\\network_report.yml"),
+  output_file = file.path(tempdir(),"network_report.html"),
   incl_reachability_analysis = FALSE,
   n_threads = 1,
   whole_months = TRUE,
   time_unit = "month")
-  
 ```
+This creates an html document that can be opened in a browser, and contains a
+full report as shown below:
 
+```{R, echo = FALSE}
+suppressWarnings(htmltools::includeHTML(file.path(tempdir(),"network_report.html")))
+```

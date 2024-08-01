@@ -45,17 +45,20 @@ create_temporal_network_analysis_report <- function(network, output_file,
   report_source <- system.file("reports/temporal_network_analysis.Rmd",
                                package = "movenet")
   #Have this vary according to an arg report_type?
+  if(length(report_source)!=1L || report_source=="") stop("Internal error:  temporal_network_analysis.Rmd file not found")
 
   old_defaults <- set_flextable_defaults(font.size = 10)
 
   #Knit report
-  render(input = report_source,
+  fn <- render(input = report_source,
          output_format = "html_document",
          output_file = output_file,
          envir = net_env,
          params = list(incl_reachability_analysis = incl_reachability_analysis))
 
   do.call(set_flextable_defaults, old_defaults)
+
+  invisible(fn)
 
 }
 
