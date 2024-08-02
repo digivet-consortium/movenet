@@ -8,30 +8,8 @@
 # Is there value to printing the contact_trace_object (either full or summary-only) on screen but not "returning" it?
 # It's perhaps a bit complicated when the output is a list of the contact_trace_object and the leaflet widget.
 
-# I use snake_case in my functions -but in trace_contact_chains I have copied
-# across several arguments from EpiContactTrace, which uses camelCase. Adapt to
-# snake_case or leave as they are?
-
-# Test if root not in movement_data -> currently "No ingoing or outgoing contact chains..." message is printed. Better to have a specific error?
-# Test with the same holding being both root and in, root and out, as part of different contact chains
 # Test with the same holding occurring multiple times along a single contact chain
-# Test with there being only ingoing or only outgoing contact chains, with map
-#   trace_contact_chains(example_movement_data, example_holding_data, "95/216/1100", "2019-05-01", 15)
-#   The above only has ingoing contact chains, no outgoing
-
 #
-# Test that ContactTrace2movedata() and ContactTrace2holdingdata() work when
-# contact_tracing_results includes a holding or connection multiple times, as both "in" and "out".
-# -> to create movement_data for testing this:
-# structure(list(departure_cph = c("95/216/1100", "95/216/1100",
-# "69/196/5890", "52/577/5349", "39/103/5541", "41/788/6464"),
-# dest_cph = c("69/196/5890", "52/577/5349", "39/103/5541",
-#              "39/103/5541", "41/788/6464", "69/196/5890"),
-# departure_date = structure(c(17897, 17898, 17899, 17899, 17897, 17897),
-#                            class = "Date"),
-# qty_pigs = c(1, 2, 3, 4, 5, 6)), row.names = c(NA, -6L),
-# class = c("tbl_df", "tbl", "data.frame"))
-#--
 # Test:
 # trace_contact_chains(head(example_movement_data, 10), head(holding_data, 10),"95/216/110",2019-02-08,100)
 # results in Error - Assertion on 'tEnd' failed: Must be of class 'Date', not 'double'.
@@ -142,14 +120,19 @@ trace_contact_chains <- function(movement_data, holding_data,
 # Argument checks ---------------------------------------------------------
 
   assert_data_frame(movement_data, min.cols = 4, null.ok = FALSE)
-  assert_character(movement_data[[1]], any.missing = FALSE, .var.name = paste0("movement_data$", names(movement_data)[1]))
-  assert_character(movement_data[[2]], any.missing = FALSE, .var.name = paste0("movement_data$", names(movement_data)[2]))
-  assert_date(movement_data[[3]], any.missing = FALSE, .var.name = paste0("movement_data$", names(movement_data)[3]))
-  assert_numeric(movement_data[[4]], any.missing = TRUE, .var.name = paste0("movement_data$", names(movement_data)[4]))
+  assert_character(movement_data[[1]], any.missing = FALSE,
+                   .var.name = paste0("movement_data$", names(movement_data)[1]))
+  assert_character(movement_data[[2]], any.missing = FALSE,
+                   .var.name = paste0("movement_data$", names(movement_data)[2]))
+  assert_date(movement_data[[3]], any.missing = FALSE,
+              .var.name = paste0("movement_data$", names(movement_data)[3]))
+  assert_numeric(movement_data[[4]], any.missing = TRUE,
+                 .var.name = paste0("movement_data$", names(movement_data)[4]))
 
   assert_data_frame(holding_data, min.cols = 1, null.ok = FALSE)
   #check that holding_ids are unique
-  assert_character(holding_data[[1]], unique = TRUE, any.missing = FALSE, .var.name = paste0("holding_data$", names(holding_data)[1]))
+  assert_character(holding_data[[1]], unique = TRUE, any.missing = FALSE,
+                   .var.name = paste0("holding_data$", names(holding_data)[1]))
   #check that holding_data has a coordinates column, of class sfc
   assert_names(names(holding_data),
                must.include = "coordinates",
@@ -337,9 +320,16 @@ trace_contact_chains <- function(movement_data, holding_data,
     cc_holding_data <- ContactTrace2holdingdata(contact_tracing_results, holding_data)
 
 # Plot contact chains on Leaflet map --------------------------------------
-    contactchains2leaflet(cc_movement_data, cc_holding_data, admin_areas_map,
-                          colour_domain_weight_in, colour_domain_weight_out,
-                          colour_domain_moves_in, colour_domain_moves_out)
+    contactchains2leaflet(cc_movement_data, cc_holding_data,
+                          tEnd = tEnd, days = days,
+                          inBegin = inBegin, inEnd = inEnd,
+                          outBegin = outBegin, outEnd = outEnd,
+                          maxDistance = maxDistance,
+                          admin_areas_map = admin_areas_map,
+                          colour_domain_weight_in = colour_domain_weight_in,
+                          colour_domain_weight_out = colour_domain_weight_out,
+                          colour_domain_moves_in = colour_domain_moves_in,
+                          colour_domain_moves_out = colour_domain_moves_out)
   }
 }
 
@@ -494,16 +484,13 @@ ContactTrace2holdingdata <- function(contact_trace_object,
 #' Internal helper function that plots ingoing and outgoing contact chains onto
 #' a Leaflet map with default OpenStreetMap background.
 #'
+#' @inheritParams trace_contact_chains
 #' @param movement_data A movenet-format movement data tibble, with movements
 #'   that are part of ingoing and outgoing contact chains.
 #' @param holding_data A movenet-format holding data tibble, with holdings that
 #'   are part of ingoing and outgoing contact chains.
 #' @param admin_areas_map An sf object containing multipolygons for relevant
 #'   administrative areas.
-#' @param colour_domain_weight_in
-#' @param colour_domain_weight_out
-#' @param colour_domain_moves_in
-#' @param colour_domain_moves_out
 #'
 #' @returns A Leaflet map (HTML widget object) with graphics layers for holdings
 #'   and moves that are part of ingoing and outgoing contact chains, and for the
@@ -518,6 +505,13 @@ ContactTrace2holdingdata <- function(contact_trace_object,
 #'
 #' @keywords internal
 contactchains2leaflet <- function(movement_data, holding_data,
+                                  tEnd = NULL,
+                                  days = NULL,
+                                  inBegin = NULL,
+                                  inEnd = NULL,
+                                  outBegin = NULL,
+                                  outEnd = NULL,
+                                  maxDistance = NULL,
                                   admin_areas_map = NULL,
                                   colour_domain_weight_in = NULL,
                                   colour_domain_weight_out = NULL,
@@ -529,6 +523,26 @@ contactchains2leaflet <- function(movement_data, holding_data,
   colname_date <- names(movement_data)[3]
   colname_weight <- names(movement_data)[4]
   colname_id <- names(holding_data)[1]
+
+
+# Create date strings -----------------------------------------------------
+
+  # Create strings indicating the tracing periods, to display in the control
+  # panel of the Leaflet map.
+
+  if(!is.null(tEnd) & !is.null(days)){
+    tEnd <- as.Date(tEnd)
+    tStart <- tEnd - days
+    dates_in <- paste0(format(tStart, "%Y-%m-%d"), " to ", format(tEnd, "%Y-%m-%d"))
+    dates_out <- dates_in
+  } else if(!is.null(inBegin) & !is.null(inEnd) & !is.null(outBegin) & !is.null(outEnd)){
+    inBegin <- as.Date(inBegin)
+    inEnd <- as.Date(inEnd)
+    outBegin <- as.Date(outBegin)
+    outEnd <- as.Date(outEnd)
+    dates_in <- paste0(format(inBegin, "%Y-%m-%d"), " to ", format(inEnd, "%Y-%m-%d"))
+    dates_out <- paste0(format(outBegin, "%Y-%m-%d"), " to ", format(outEnd, "%Y-%m-%d"))
+  }
 
 # Transform coordinates to WGS84 for compatibility with Leaflet -----------
 
@@ -944,8 +958,11 @@ contactchains2leaflet <- function(movement_data, holding_data,
     # Use JS plugins to add moves and grouped layer controls
     htmlwidgets::onRender("function(el, x, data) {
     var edge;
-    var movement_geojson_in = data.movement_geojson_in
-    var movement_geojson_out = data.movement_geojson_out
+    var movement_geojson_in = data.movement_geojson_in;
+    var movement_geojson_out = data.movement_geojson_out;
+    var dates_in = data.dates_in;
+    var dates_out = data.dates_out;
+    var max_distance = data.max_distance;
     var map = this;
 
     /*
@@ -1039,12 +1056,11 @@ contactchains2leaflet <- function(movement_data, holding_data,
 
 
     // Set up grouped layer control
-
     var groupedOverlays = {
-      'Incoming contact chains': {
+      ['Incoming contact chains<br>(' + dates_in + (max_distance !== null ? ',<br>max distance from root: ' + max_distance : '') + ')']: {
           '<span class=\"fa-stack\" style=\"max-width: 12px; max-height: 12px; vertical-align: top;\"><i class=\"fa-solid fa-circle fa-stack-1x\" style=\"color: blue; opacity: 0.2\"></i><i class=\"fa-regular fa-circle fa-stack-1x\" style=\"color: blue; opacity: 0.5\"></i></span> Originating holdings': groups.originating_holdings ?? [],
           '<i class=\"fa-solid fa-right-long\" style=\"color: blue\"></i> Incoming movements': groups.ingoing_edges ?? []},
-      'Outgoing contact chains': {
+      ['Outgoing contact chains<br>(' + dates_out + (max_distance !== null ? ',<br>max distance from root: ' + max_distance : '') + ')']: {
           '<span class=\"fa-stack\" style=\"max-width: 12px; max-height: 12px; vertical-align: top;\"><i class=\"fa-solid fa-circle fa-stack-1x\" style=\"color: red; opacity: 0.2\"></i><i class=\"fa-regular fa-circle fa-stack-1x\" style=\"color: red; opacity: 0.5\"></i></span> Destination holdings': groups.destination_holdings ?? [],
           '<i class=\"fa-solid fa-right-long\" style=\"color: red\"></i> Outgoing movements': groups.outgoing_edges ?? []}
       };
@@ -1148,7 +1164,10 @@ contactchains2leaflet <- function(movement_data, holding_data,
     }
 
 ", data = list(movement_geojson_in = movement_geojson_in,
-                    movement_geojson_out = movement_geojson_out)) %>%
+               movement_geojson_out = movement_geojson_out,
+               dates_in = dates_in,
+               dates_out = dates_out,
+               max_distance = maxDistance)) %>%
     hideGroup(c("Ingoing weight", "Ingoing moves", "Outgoing weight", "Outgoing moves")) %>%
 
     # Add a legend for movement weights

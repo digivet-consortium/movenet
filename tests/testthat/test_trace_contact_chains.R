@@ -21,11 +21,22 @@ test_that("trace_contact_chains() works when a single root is given, with inBegi
   expect_snapshot_output(remove_widget_ids(htmltools::renderTags(map)$html))
   expect_message(trace_contact_chains(example_movement_data, example_holding_data,
                                       "95/216/1100",
-                                      inBegin = "2019-04-01", inEnd = "2019-07-01",
+                                      inBegin = "2019-01-01", inEnd = "2019-04-01",
                                       outBegin = "2019-04-01", outEnd = "2019-07-01"),
                  "Creating map with contact chains for root(s) 95/216/1100.",
                  fixed = TRUE)
 
+})
+
+test_that("trace_contact_chains() works as expected when a maxDistance is given", {
+  map <- trace_contact_chains(example_movement_data, example_holding_data,
+                              "95/216/1100", tEnd = "2019-07-01",
+                              maxDistance = 2, 90)
+  expect_snapshot_output(remove_widget_ids(htmltools::renderTags(map)$html))
+  expect_message(trace_contact_chains(example_movement_data, example_holding_data,
+                                      "95/216/1100", tEnd = "2019-07-01", 90),
+                 "Creating map with contact chains for root(s) 95/216/1100.",
+                 fixed = TRUE)
 })
 
 test_that("trace_contact_chains() works when a single root is given, with tEnd, and only outgoing contact chains exist", {

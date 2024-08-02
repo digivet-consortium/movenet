@@ -25,10 +25,6 @@ Internal helper function that processes contact tracing results from
 EpiContactTrace's \code{Trace()} function back into movenet format, and adds in
 any movement attributes from the original movenet-format movement data tibble.
 }
-\details{
-This requires for "repeated movements on one day" to be aggregated,
-otherwise it's complicated to ensure a correct join.
-}
 \seealso{
 \code{\link[EpiContactTrace:Trace]{EpiContactTrace::Trace()}}
 }

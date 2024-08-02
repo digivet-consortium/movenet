@@ -26,7 +26,7 @@ trace_contact_chains(
 \item{movement_data}{A movenet-format movement tibble.}
 
 \item{holding_data}{A movenet-format holding tibble that includes a
-"coordinates" column.}
+"coordinates" column. Holding identifiers must be unique.}
 
 \item{root}{A vector with one or more root holdings to perform contact
 tracing for.}
