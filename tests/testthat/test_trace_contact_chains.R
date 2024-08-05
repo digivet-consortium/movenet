@@ -16,7 +16,7 @@ test_that("trace_contact_chains() works when a single root is given, with tEnd, 
 test_that("trace_contact_chains() works when a single root is given, with inBegin etc., and both in- and outgoing contact chains exist", {
   map <- trace_contact_chains(example_movement_data, example_holding_data,
                               "95/216/1100",
-                              inBegin = "2019-04-01", inEnd = "2019-07-01",
+                              inBegin = "2019-01-01", inEnd = "2019-04-01",
                               outBegin = "2019-04-01", outEnd = "2019-07-01")
   expect_snapshot_output(remove_widget_ids(htmltools::renderTags(map)$html))
   expect_message(trace_contact_chains(example_movement_data, example_holding_data,
