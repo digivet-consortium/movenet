@@ -500,7 +500,6 @@ ContactTrace2holdingdata <- function(contact_trace_object,
 #' @importFrom dplyr left_join arrange group_by summarize
 #' @importFrom tidyr pivot_longer pivot_wider replace_na
 #' @import leaflet
-#' @importFrom leaflegend addLegendLine
 #' @importFrom sf st_cast st_as_sf st_join st_transform st_drop_geometry st_geometry<-
 #'
 #' @keywords internal
@@ -666,12 +665,28 @@ contactchains2leaflet <- function(movement_data, holding_data,
     mutate(offset = -(cumsum(edge_width + betw_width) - (edge_width + betw_width)/2),
            .by = all_of(c(colname_from, colname_to)))
 
-  # Create a dynamically set "breaks" vector for the edge_width legend in the map
-  values <- sort(unique(movement_data$edge_width))
-  starts <- 10^log2(values) #starts of the weight bins
-  ends <- (10^(log2(values)+1))-1 #ends of the weight bins
-  breaks <- setNames(values,
-                     paste(starts, ends, sep = " - ")) #create "start - end" label for all bins
+  # Helper function to create a legend for movement weight line thickness.
+  # Adapted from the addLegendLine() function in Thomas Roh's `Leaflegend`
+  # (2024), by Carlijn Bogaardt, 5 Aug 2024.
+  # Required this adaptation because of errors and incorrect showing of labels
+  # in some cases with just one weight bin.
+  add_line_legend <- function(map, values){
+    values <- sort(unique(values))
+    starts <- 10^log2(values) #starts of the weight bins
+    ends <- (10^(log2(values)+1))-1 #ends of the weight bins
+    labels <- paste(starts, ends, sep = " - ") #create "start - end" label for all bins
+
+    symbols <- Map(leaflegend::makeSymbol, shape = "rect", width = 20,
+                   height = values, color = "transparent", fillColor = "red",
+                   opacity = 1, fillOpacity = 1, `stroke-width` = 0)
+
+    leaflegend::addLegendImage(map, images = symbols, labels = labels,
+                               title = "Movement weight",
+                               labelStyle = "", orientation = "vertical",
+                               width = 20, height = values, group = NULL,
+                               className = "info legend leaflet-control",
+                               data = movement_data, position = "bottomright")
+  }
 
 # Convert movement data to GeoJSON for JS Leaflet plugins -----------------
 
@@ -1168,15 +1183,11 @@ contactchains2leaflet <- function(movement_data, holding_data,
                dates_in = dates_in,
                dates_out = dates_out,
                max_distance = maxDistance)) %>%
+
     hideGroup(c("Ingoing weight", "Ingoing moves", "Outgoing weight", "Outgoing moves")) %>%
 
-    # Add a legend for movement weights
-    addLegendLine(values = ~edge_width, title = "Movement weight",
-                  color = "red", orientation = "vertical",
-                  breaks = breaks,
-                  baseSize = mean(movement_data$edge_width),
-                  data = movement_data,
-                  position = "bottomright")
+    # Add legend for movement weights
+    add_line_legend(values = movement_data$edge_width)
 
   # # Create custom html div for sidebar and attach to leaflet_map
   # sidebar_div <- htmltools::tags$div(id="sidebar")
@@ -1189,3 +1200,6 @@ contactchains2leaflet <- function(movement_data, holding_data,
   leaflet_map
 
 }
+
+
+

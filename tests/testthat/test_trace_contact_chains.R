@@ -225,3 +225,14 @@ test_that("trace_contact_chains() throws an error with duplicate holding ids", {
                fixed = TRUE)
 })
 
+test_that("trace_contact_chains() works correctly with single weight bins (no more addLegendLine errors)",{
+  map <- trace_contact_chains(example_movement_data, example_holding_data,
+                              "95/216/1100", tEnd = "2019-07-01", 20)
+  expect_snapshot_output(remove_widget_ids(htmltools::renderTags(map)$html))
+  expect_message(trace_contact_chains(example_movement_data,
+                                      example_holding_data,
+                                      "95/216/1100", tEnd = "2019-07-01", 20),
+                 "Creating map with contact chains for root(s) 95/216/1100.",
+                 fixed = TRUE)
+}
+)
