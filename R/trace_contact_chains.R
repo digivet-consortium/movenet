@@ -97,6 +97,20 @@
 #' @export
 #'
 #' @examples
+#' # Trace contact chains for a single root holding, over 90 days to 2019-07-01.
+#' trace_contact_chains(example_movement_data, example_holding_data,
+#' root = "95/216/1100", tEnd = "2019-07-01", days = 90)
+#'
+#' # Trace contact chains for a single root holding, with a maximum distance of
+#' # 2 movements from root
+#' trace_contact_chains(example_movement_data, example_holding_data,
+#' root = "95/216/1100", tEnd = "2019-07-01", days = 90, maxDistance = 2)
+#'
+#' # Trace contact chains for a single root holding, using different periods for
+#' # ingoing and outgoing contact chains.
+#' trace_contact_chains(example_movement_data, example_holding_data,
+#' root = "95/216/1100", inBegin = "2019-01-01", inEnd = "2019-04-01",
+#' outBegin = "2019-04-01", outEnd = "2019-07-01")
 #'
 #' @seealso
 #' * [EpiContactTrace::Trace()] for the underlying contact chain tracing functionality.
