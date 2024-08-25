@@ -112,6 +112,11 @@
 #' root = "95/216/1100", inBegin = "2019-01-01", inEnd = "2019-04-01",
 #' outBegin = "2019-04-01", outEnd = "2019-07-01")
 #'
+#' # Trace contact chains and summarise data by administrative area.
+#' trace_contact_chains(example_movement_data, example_holding_data,
+#' root = "95/216/1100", tEnd = "2019-07-01", days = 90,
+#' admin_areas_map = example_admin_areas)
+#'
 #' @seealso
 #' * [EpiContactTrace::Trace()] for the underlying contact chain tracing functionality.
 #' * [leaflet::leaflet()] for the underlying mapping functionality.
