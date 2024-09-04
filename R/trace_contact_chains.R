@@ -645,8 +645,8 @@ contactchains2leaflet <- function(movement_data, holding_data,
                 n_moves = dplyr::n()) %>%
       left_join(x = admin_areas_map, y = as.data.frame(.),
                 by = setNames(adm_area, "geometry"),
-                relationship = "one-to-one") %>%
-      replace_na(list(total_weight = 0, n_moves = 0))
+                relationship = "one-to-one")
+      # replace_na(list(total_weight = 0, n_moves = 0))
   }
 
   if(!is.null(admin_areas_map)){
@@ -797,7 +797,6 @@ contactchains2leaflet <- function(movement_data, holding_data,
   # The function is called from within the leaflet map construction.
 
     warning_messages <- list() #variable to store warning messages in
-
     apply_palette <- function(palette_name, values) {
 
       withCallingHandlers({
@@ -957,6 +956,14 @@ contactchains2leaflet <- function(movement_data, holding_data,
     if(length(warning_messages) > 0){
       stop(paste0("The following error(s) occurred when defining colour scales for administrative areas:\n - ", paste0(warning_messages, collapse = "\n - ")), call. = FALSE)
     }
+
+    # Ensure NA box aligns with colour ramp in legend (from https://github.com/rstudio/leaflet/issues/615#issue-431696781)
+    css_fix <- "div.info.legend.leaflet-control br {clear: both;}" # CSS to correct spacing
+    html_fix <- htmltools::tags$style(type = "text/css", css_fix)  # Convert CSS to HTML
+    leaflet_map <-
+      leaflet_map %>%
+      htmlwidgets::prependContent(html_fix) # Insert into leaflet HTML code
+
   }
 
     # Add holdings as "circle markers", with colour depending on their inclusion
