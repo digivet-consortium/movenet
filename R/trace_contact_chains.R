@@ -887,59 +887,114 @@ contactchains2leaflet <- function(movement_data, holding_data,
                     color = "black",
                     weight = 2,
                     fillColor = ~apply_palette("pal_ingoing_weight", total_weight),
-                    fillOpacity = 0.5,
+                    fillOpacity = 0.7,
                     group = "Ingoing weight") %>%
         addPolygons(data = adm_area_ingoing_data,
                     color = "black",
                     weight = 2,
                     fillColor = ~apply_palette("pal_ingoing_moves", n_moves),
-                    fillOpacity = 0.5,
+                    fillOpacity = 0.7,
                     group = "Ingoing moves") %>%
         addPolygons(data = adm_area_outgoing_data,
                     color = "black",
                     weight = 2,
                     fillColor = ~apply_palette("pal_outgoing_weight", total_weight),
-                    fillOpacity = 0.5,
+                    fillOpacity = 0.7,
                     group = "Outgoing weight") %>%
         addPolygons(data = adm_area_outgoing_data,
                     color = "black",
                     weight = 2,
                     fillColor = ~apply_palette("pal_outgoing_moves", n_moves),
-                    fillOpacity = 0.5,
+                    fillOpacity = 0.7,
                     group = "Outgoing moves") %>%
 
         # Add colour legends, but suppress color scale related warnings (these are
         # redundant with custom error messages thrown by apply_palette)
         {withCallingHandlers({
-          addLegend(map = .,
-                    data = adm_area_ingoing_data,
-                    title = "Ingoing moves from area",
-                    position = "bottomleft",
-                    pal = pal_ingoing_moves,
-                    values = ~n_moves,
-                    layerId = "Ingoing_moves_legend",
-                    className = "info legend ingoing-moves") %>%
-            addLegend(data = adm_area_outgoing_data,
-                      title = "Outgoing moves to area",
+          {inmoves_values_notna <- unique(adm_area_ingoing_data$n_moves)[!is.na(unique(adm_area_ingoing_data$n_moves))]
+          if(length(inmoves_values_notna) > 1){
+            addLegend(map = .,
+                      data = adm_area_ingoing_data,
+                      title = "Ingoing moves from area",
                       position = "bottomleft",
-                      pal = pal_outgoing_moves,
+                      pal = pal_ingoing_moves,
                       values = ~n_moves,
-                      layerId = "Outgoing_moves_legend",
-                      className = "info legend outgoing-moves") %>%
-            addLegend(data = adm_area_ingoing_data,
-                      title = "Ingoing weight from area",
+                      layerId = "Ingoing_moves_legend",
+                      className = "info legend ingoing-moves")
+          } else {
+            addLegend(map = .,
+                      data = adm_area_ingoing_data,
+                      title = "Ingoing moves from area",
                       position = "bottomleft",
-                      pal = pal_ingoing_weight,
-                      values = ~total_weight,
-                      layerId = "Ingoing_weight_legend",
-                      className = "info legend ingoing-weight") %>%
-            addLegend(data = adm_area_outgoing_data,
-                      title = "Outgoing weight to area",
-                      position = "bottomleft",
-                      pal = pal_outgoing_weight,
-                      values = ~total_weight,
-                      layerId = "Outgoing_weight_legend",
-                      className = "info legend outgoing-weight")
+                      colors = c(pal_ingoing_moves(inmoves_values_notna),"grey"),
+                      labels = c(inmoves_values_notna,"NA"),
+                      values = ~n_moves,
+                      layerId = "Ingoing_moves_legend",
+                      className = "info legend ingoing-moves")
+          }} %>%
+            {outmoves_values_notna <- unique(adm_area_outgoing_data$n_moves)[!is.na(unique(adm_area_outgoing_data$n_moves))]
+             if(length(outmoves_values_notna) > 1){
+              addLegend(map = .,
+                        data = adm_area_outgoing_data,
+                        title = "Outgoing moves to area",
+                        position = "bottomleft",
+                        pal = pal_outgoing_moves,
+                        values = ~n_moves,
+                        layerId = "Outgoing_moves_legend",
+                        className = "info legend outgoing-moves")
+            } else {
+              addLegend(map = .,
+                        data = adm_area_outgoing_data,
+                        title = "Outgoing moves to area",
+                        position = "bottomleft",
+                        colors = c(pal_outgoing_moves(outmoves_values_notna),"grey"),
+                        labels = c(outmoves_values_notna,"NA"),
+                        values = ~n_moves,
+                        layerId = "Outgoing_moves_legend",
+                        className = "info legend outgoing-moves")
+            }} %>%
+            {inweight_values_notna <- unique(adm_area_ingoing_data$total_weight)[!is.na(unique(adm_area_ingoing_data$total_weight))]
+              if(length(inweight_values_notna) > 1){
+              addLegend(map = .,
+                        data = adm_area_ingoing_data,
+                        title = "Ingoing weight from area",
+                        position = "bottomleft",
+                        pal = pal_ingoing_weight,
+                        values = ~total_weight,
+                        layerId = "Ingoing_weight_legend",
+                        className = "info legend ingoing-weight")
+            } else {
+              addLegend(map = .,
+                        data = adm_area_ingoing_data,
+                        title = "Ingoing weight from area",
+                        position = "bottomleft",
+                        colors = c(pal_ingoing_weight(inweight_values_notna),"grey"),
+                        labels = c(inweight_values_notna,"NA"),
+                        values = ~total_weight,
+                        layerId = "Ingoing_weight_legend",
+                        className = "info legend ingoing-weight")
+            }} %>%
+            {outweight_values_notna <- unique(adm_area_outgoing_data$total_weight)[!is.na(unique(adm_area_outgoing_data$total_weight))]
+              if(length(outweight_values_notna) > 1){
+              addLegend(map = .,
+                        data = adm_area_outgoing_data,
+                        title = "Outgoing weight to area",
+                        position = "bottomleft",
+                        pal = pal_outgoing_weight,
+                        values = ~total_weight,
+                        layerId = "Outgoing_weight_legend",
+                        className = "info legend outgoing-weight")
+            } else {
+              addLegend(map = .,
+                        data = adm_area_outgoing_data,
+                        title = "Outgoing weight to area",
+                        position = "bottomleft",
+                        colors = c(pal_outgoing_weight(outweight_values_notna),"grey"),
+                        labels = c(outweight_values_notna,"NA"),
+                        values = ~total_weight,
+                        layerId = "Outgoing_weight_legend",
+                        className = "info legend outgoing-weight")
+            }}
         }, warning = function(w) {
           if (grepl("Some values were outside the color scale and will be treated as NA", w$message)) {
             invokeRestart("muffleWarning")
