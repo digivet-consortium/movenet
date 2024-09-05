@@ -13,6 +13,14 @@ test_that("trace_contact_chains() works when a single root is given, with tEnd, 
                  fixed = TRUE)
  })
 
+test_that("trace_contact_chains() admin area plotting works when a single root is given", {
+  map <- trace_contact_chains(example_movement_data, example_holding_data,
+                              "95/216/1100", tEnd = "2019-07-01", 90,
+                              admin_areas = example_admin_areas)
+  expect_snapshot_output(remove_widget_ids(htmltools::renderTags(map)$html))
+})
+
+
 test_that("trace_contact_chains() works when a single root is given, with inBegin etc., and both in- and outgoing contact chains exist", {
   map <- trace_contact_chains(example_movement_data, example_holding_data,
                               "95/216/1100",
@@ -49,6 +57,13 @@ test_that("trace_contact_chains() works when a single root is given, with tEnd, 
                  fixed = TRUE)
 })
 
+test_that("trace_contact_chains() admin area plotting works when a single root is given and only outgoing contact chains exist", {
+  map <- trace_contact_chains(example_movement_data, example_holding_data,
+                              "95/216/1100", tEnd = "2019-07-01", 30,
+                              admin_areas = example_admin_areas)
+  expect_snapshot_output(remove_widget_ids(htmltools::renderTags(map)$html))
+})
+
 test_that("trace_contact_chains() works when a single root is given, with inBegin etc., and only outgoing contact chains exist", {
   map <- trace_contact_chains(example_movement_data, example_holding_data,
                               "95/216/1100",
@@ -72,6 +87,15 @@ test_that("trace_contact_chains() works when a single root is given, with tEnd, 
                  "Creating map with contact chains for root(s) 95/216/1100.",
                  fixed = TRUE)
 })
+
+
+test_that("trace_contact_chains() admin area plotting works when a single root is given and only ingoing contact chains exist", {
+  map <- trace_contact_chains(example_movement_data, example_holding_data,
+                              "95/216/1100", tEnd = "2019-05-01", 15,
+                              admin_areas = example_admin_areas)
+  expect_snapshot_output(remove_widget_ids(htmltools::renderTags(map)$html))
+})
+
 
 test_that("trace_contact_chains() prints message and doesn't generate a map, when no contact chains exist", {
   expect_message(trace_contact_chains(example_movement_data,
