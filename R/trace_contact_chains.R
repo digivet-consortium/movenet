@@ -780,6 +780,12 @@ contactchains2leaflet <- function(movement_data, holding_data,
     if(is.null(colour_domain_moves_in)) {colour_domain_moves_in <- adm_area_ingoing_data$n_moves}
     if(is.null(colour_domain_moves_out)) {colour_domain_moves_out <- adm_area_outgoing_data$n_moves}
 
+    #to avoid error in colorNumeric when there are no ingoing or outgoing weights (all values are NA):
+    if(all(is.na(colour_domain_weight_in))){colour_domain_weight_in <- c(1,2)}
+    if(all(is.na(colour_domain_moves_in))){{colour_domain_moves_in <- c(1,2)}}
+    if(all(is.na(colour_domain_weight_out))){colour_domain_weight_out <- c(1,2)}
+    if(all(is.na(colour_domain_moves_out))){colour_domain_moves_out <- c(1,2)}
+
     pal_ingoing_weight <-
       colorNumeric("Blues", colour_domain_weight_in, na.color = "grey")
     pal_ingoing_moves <-
@@ -788,7 +794,6 @@ contactchains2leaflet <- function(movement_data, holding_data,
       colorNumeric("Reds", colour_domain_weight_out, na.color = "grey")
     pal_outgoing_moves <-
       colorNumeric("Reds", colour_domain_moves_out, na.color = "grey")
-
   }
 
   # Helper function to apply colour palette, with custom warning message, and
