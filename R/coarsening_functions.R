@@ -31,10 +31,8 @@ jitter_dates <- function(data, range){
   #########################
 
   if (!has_element(names(movenetenv$options), "movedata_cols")){
-    stop("The loaded configurations do not match the type of data (movement data). Please ensure an appropriate config file is loaded.")
+    stop("The loaded configurations do not match the required type of data (movement data). Please ensure an appropriate config file is loaded.")
   }
-
-  dates <- data[[movenetenv$options$movedata_cols$date]]
 
   #######################
   ### Argument checks ###
@@ -42,7 +40,9 @@ jitter_dates <- function(data, range){
 
   assert_data_frame(data)
   assert_names(names(data),
-               must.include = movenetenv$options$movedata_cols$date)
+               must.include = movenetenv$options$movedata_cols$date,
+               .var.name = "data")
+  dates <- data[[movenetenv$options$movedata_cols$date]]
   assert_date(dates,
               .var.name =
                 paste0("data[[", movenetenv$options$movedata_cols$date,"]]"))
@@ -167,11 +167,8 @@ round_dates <- function(data, unit,
   #########################
 
   if (!has_element(names(movenetenv$options), "movedata_cols")){
-    stop("The loaded configurations do not match the type of data (movement
-    data). Please ensure an appropriate config file is loaded.")
+    stop("The loaded configurations do not match the required type of data (movement data). Please ensure an appropriate config file is loaded.")
   }
-
-  dates <- data[[movenetenv$options$movedata_cols$date]]
 
   #######################
   ### Argument checks ###
@@ -179,7 +176,9 @@ round_dates <- function(data, unit,
 
   assert_data_frame(data)
   assert_names(names(data),
-               must.include = movenetenv$options$movedata_cols$date)
+               must.include = movenetenv$options$movedata_cols$date,
+               .var.name = "data")
+  dates <- data[[movenetenv$options$movedata_cols$date]]
   assert_date(dates,
               .var.name =
                 paste0("data[[", movenetenv$options$movedata_cols$date,"]]"))
@@ -272,7 +271,7 @@ round_dates <- function(data, unit,
 #' If this were to result in a data point becoming `<= 0`, the amount of jitter
 #' for this data point is resampled, until the resulting data point becomes
 #' positive. This is to capture that any movement in a livestock movement
-#' database, is assumed to have a positive weight (quantity of animals moved).
+#' database is assumed to have a positive weight (quantity of animals moved).
 #'
 #' @returns
 #' A movement tibble like `data`, but with jitter applied to the selected
@@ -293,8 +292,7 @@ jitter_weights <- function(data, range,
   #########################
 
   if (!has_element(names(movenetenv$options), "movedata_cols")){
-    stop("The loaded configurations do not match the type of data (movement
-    data). Please ensure an appropriate config file is loaded.")
+    stop("The loaded configurations do not match the required type of data (movement data). Please ensure an appropriate config file is loaded.")
   }
 
   #######################
@@ -303,7 +301,8 @@ jitter_weights <- function(data, range,
 
   assert_data_frame(data)
   assert_names(names(data),
-               must.include = column)
+               must.include = column,
+               .var.name = "data")
   assert_data_frame(data[column], types = "numeric", ncols = 1)
   qassert(range, "N1(0,)") #a single finite numeric(double or int) of value > 0, not missing
 
@@ -373,8 +372,7 @@ round_weights <- function(data, unit,
   #########################
 
   if (!has_element(names(movenetenv$options), "movedata_cols")){
-    stop("The loaded configurations do not match the type of data (movement
-    data). Please ensure an appropriate config file is loaded.")
+    stop("The loaded configurations do not match the required type of data (movement data). Please ensure an appropriate config file is loaded.")
   }
 
   #######################
@@ -383,7 +381,8 @@ round_weights <- function(data, unit,
 
   assert_data_frame(data)
   assert_names(names(data),
-               must.include = column)
+               must.include = column,
+               .var.name = "data")
   assert_data_frame(data[column], types = "numeric", ncols = 1)
   qassert(unit, "N1(0,)") #a single finite numeric(double or int) of value > 0, not missing
 
@@ -459,12 +458,17 @@ anonymise <- function(data, prefix = NULL, key = NULL){
 
   assert_data_frame(data)
   assert(
-    check_names(names(data),
+    (test_names(names(data),
                 must.include = c(movenetenv$options$movedata_cols$from,
-                                 movenetenv$options$movedata_cols$to)),
-    check_names(names(data),
+                                 movenetenv$options$movedata_cols$to))
+     && !(is.null(movenetenv$options$movedata_cols$from))
+     && !(is.null(movenetenv$options$movedata_cols$to))),
+    (test_names(names(data),
                 must.include = movenetenv$options$holdingdata_cols$id)
-  )
+     && !(is.null(movenetenv$options$holdingdata_cols$id))),
+    .var.name = c("'Data' must be movement data, including 'from' and 'to' columns as defined in the loaded configurations",
+      "'Data' must be holding data, including an 'id' column as defined in the loaded configurations")
+    )
   assert_string(prefix, null.ok = TRUE)
   assert_character(key, any.missing = FALSE, names = "unique", null.ok = TRUE,
                    unique = TRUE)
