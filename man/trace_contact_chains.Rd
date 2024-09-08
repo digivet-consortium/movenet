@@ -26,7 +26,7 @@ trace_contact_chains(
 \item{movement_data}{A movenet-format movement tibble.}
 
 \item{holding_data}{A movenet-format holding tibble that includes a
-"coordinates" column.}
+"coordinates" column. Holding identifiers must be unique.}
 
 \item{root}{A vector with one or more root holdings to perform contact
 tracing for.}
@@ -113,6 +113,28 @@ however they can be set via the \code{colour_domain_weight_in},
 \code{colour_domain_weight_out}, \code{colour_domain_moves_in}, and/or
 \code{colour_domain_moves_out} arguments in order to make colours comparable
 across maps.
+}
+\examples{
+# Trace contact chains for a single root holding, over 90 days to 2019-07-01.
+trace_contact_chains(example_movement_data, example_holding_data,
+root = "95/216/1100", tEnd = "2019-07-01", days = 90)
+
+# Trace contact chains for a single root holding, with a maximum distance of
+# 2 movements from root
+trace_contact_chains(example_movement_data, example_holding_data,
+root = "95/216/1100", tEnd = "2019-07-01", days = 90, maxDistance = 2)
+
+# Trace contact chains for a single root holding, using different periods for
+# ingoing and outgoing contact chains.
+trace_contact_chains(example_movement_data, example_holding_data,
+root = "95/216/1100", inBegin = "2019-01-01", inEnd = "2019-04-01",
+outBegin = "2019-04-01", outEnd = "2019-07-01")
+
+# Trace contact chains and summarise data by administrative area.
+trace_contact_chains(example_movement_data, example_holding_data,
+root = "95/216/1100", tEnd = "2019-07-01", days = 90,
+admin_areas_map = example_admin_areas)
+
 }
 \seealso{
 \itemize{

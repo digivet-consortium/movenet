@@ -47,6 +47,7 @@ structure of movenet-format movement data tibbles.
 was obtained from \code{example_movement_data.csv}.
 
 Other example data files and structures: 
+\code{\link{example_admin_areas}},
 \code{\link{example_holding_data}},
 \code{\link{example_holding_data.csv}},
 \code{\link{example_movement_data.csv}},

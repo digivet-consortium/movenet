@@ -8,31 +8,8 @@
 # Is there value to printing the contact_trace_object (either full or summary-only) on screen but not "returning" it?
 # It's perhaps a bit complicated when the output is a list of the contact_trace_object and the leaflet widget.
 
-# I use snake_case in my functions -but in trace_contact_chains I have copied
-# across several arguments from EpiContactTrace, which uses camelCase. Adapt to
-# snake_case or leave as they are?
-
-# Test for multiple roots, tEnd, days // inBegin etc.
-# Test if root not in movement_data -> currently "No ingoing or outgoing contact chains..." message is printed. Better to have a specific error?
-# Test with the same holding being both root and in, root and out, as part of different contact chains
 # Test with the same holding occurring multiple times along a single contact chain
-# Test with there being only ingoing or only outgoing contact chains, with map
-#   trace_contact_chains(example_movement_data, example_holding_data, "95/216/1100", "2019-05-01", 15)
-#   The above only has ingoing contact chains, no outgoing
-
 #
-# Test that ContactTrace2movedata() and ContactTrace2holdingdata() work when
-# contact_tracing_results includes a holding or connection multiple times, as both "in" and "out".
-# -> to create movement_data for testing this:
-# structure(list(departure_cph = c("95/216/1100", "95/216/1100",
-# "69/196/5890", "52/577/5349", "39/103/5541", "41/788/6464"),
-# dest_cph = c("69/196/5890", "52/577/5349", "39/103/5541",
-#              "39/103/5541", "41/788/6464", "69/196/5890"),
-# departure_date = structure(c(17897, 17898, 17899, 17899, 17897, 17897),
-#                            class = "Date"),
-# qty_pigs = c(1, 2, 3, 4, 5, 6)), row.names = c(NA, -6L),
-# class = c("tbl_df", "tbl", "data.frame"))
-#--
 # Test:
 # trace_contact_chains(head(example_movement_data, 10), head(holding_data, 10),"95/216/110",2019-02-08,100)
 # results in Error - Assertion on 'tEnd' failed: Must be of class 'Date', not 'double'.
@@ -54,7 +31,7 @@ globalVariables(c(".","total_weight"))
 #'
 #' @param movement_data A movenet-format movement tibble.
 #' @param holding_data A movenet-format holding tibble that includes a
-#'   "coordinates" column.
+#'   "coordinates" column. Holding identifiers must be unique.
 #' @param root A vector with one or more root holdings to perform contact
 #'   tracing for.
 #' @param tEnd A single date, or character or factor that can be converted to a
@@ -121,6 +98,27 @@ globalVariables(c(".","total_weight"))
 #'
 #' @export
 #'
+#' @examples
+#' # Trace contact chains for a single root holding, over 90 days to 2019-07-01.
+#' trace_contact_chains(example_movement_data, example_holding_data,
+#' root = "95/216/1100", tEnd = "2019-07-01", days = 90)
+#'
+#' # Trace contact chains for a single root holding, with a maximum distance of
+#' # 2 movements from root
+#' trace_contact_chains(example_movement_data, example_holding_data,
+#' root = "95/216/1100", tEnd = "2019-07-01", days = 90, maxDistance = 2)
+#'
+#' # Trace contact chains for a single root holding, using different periods for
+#' # ingoing and outgoing contact chains.
+#' trace_contact_chains(example_movement_data, example_holding_data,
+#' root = "95/216/1100", inBegin = "2019-01-01", inEnd = "2019-04-01",
+#' outBegin = "2019-04-01", outEnd = "2019-07-01")
+#'
+#' # Trace contact chains and summarise data by administrative area.
+#' trace_contact_chains(example_movement_data, example_holding_data,
+#' root = "95/216/1100", tEnd = "2019-07-01", days = 90,
+#' admin_areas_map = example_admin_areas)
+#'
 #' @seealso
 #' * [EpiContactTrace::Trace()] for the underlying contact chain tracing functionality.
 #' * [leaflet::leaflet()] for the underlying mapping functionality.
@@ -143,14 +141,19 @@ trace_contact_chains <- function(movement_data, holding_data,
 # Argument checks ---------------------------------------------------------
 
   assert_data_frame(movement_data, min.cols = 4, null.ok = FALSE)
-  assert_character(movement_data[[1]], any.missing = FALSE)
-  assert_character(movement_data[[2]], any.missing = FALSE)
-  assert_date(movement_data[[3]], any.missing = FALSE)
-  assert_numeric(movement_data[[4]], any.missing = TRUE)
+  assert_character(movement_data[[1]], any.missing = FALSE,
+                   .var.name = paste0("movement_data$", names(movement_data)[1]))
+  assert_character(movement_data[[2]], any.missing = FALSE,
+                   .var.name = paste0("movement_data$", names(movement_data)[2]))
+  assert_date(movement_data[[3]], any.missing = FALSE,
+              .var.name = paste0("movement_data$", names(movement_data)[3]))
+  assert_numeric(movement_data[[4]], any.missing = TRUE,
+                 .var.name = paste0("movement_data$", names(movement_data)[4]))
 
   assert_data_frame(holding_data, min.cols = 1, null.ok = FALSE)
   #check that holding_ids are unique
-  assert_character(holding_data[[1]], unique = TRUE, any.missing = FALSE)
+  assert_character(holding_data[[1]], unique = TRUE, any.missing = FALSE,
+                   .var.name = paste0("holding_data$", names(holding_data)[1]))
   #check that holding_data has a coordinates column, of class sfc
   assert_names(names(holding_data),
                must.include = "coordinates",
@@ -200,11 +203,11 @@ trace_contact_chains <- function(movement_data, holding_data,
   # custom_error_message below, and (2) to have consistent checkmate error
   # messages throughout (most of) movenet.
 
-  # EpiContactTrace does movement_data <- unique(movement_data) , so need to ensure
-  # all movements are unique.
   if(any(duplicated(movement_data))){
-    warning(paste0("'movement_data' contains duplicated rows (movements), but ",
-                   "these must be unique. Duplicate rows will be removed."))
+    message(paste0("'movement_data' contains duplicated rows (movements). ",
+                   "To optimise visibility on the map, aggregate all movements",
+                   " occurring between the same holdings on the same day, for",
+                   " example with `round_dates(movement_data, 'day')`."))
   }
 
   ## root is supposed to be a character or integer identifier , NAs not allowed
@@ -338,9 +341,16 @@ trace_contact_chains <- function(movement_data, holding_data,
     cc_holding_data <- ContactTrace2holdingdata(contact_tracing_results, holding_data)
 
 # Plot contact chains on Leaflet map --------------------------------------
-    contactchains2leaflet(cc_movement_data, cc_holding_data, admin_areas_map,
-                          colour_domain_weight_in, colour_domain_weight_out,
-                          colour_domain_moves_in, colour_domain_moves_out)
+    contactchains2leaflet(cc_movement_data, cc_holding_data,
+                          tEnd = tEnd, days = days,
+                          inBegin = inBegin, inEnd = inEnd,
+                          outBegin = outBegin, outEnd = outEnd,
+                          maxDistance = maxDistance,
+                          admin_areas_map = admin_areas_map,
+                          colour_domain_weight_in = colour_domain_weight_in,
+                          colour_domain_weight_out = colour_domain_weight_out,
+                          colour_domain_moves_in = colour_domain_moves_in,
+                          colour_domain_moves_out = colour_domain_moves_out)
   }
 }
 
@@ -377,9 +387,6 @@ movedata2EpiContactTrace <- function(movement_data){
 #' EpiContactTrace's `Trace()` function back into movenet format, and adds in
 #' any movement attributes from the original movenet-format movement data tibble.
 #'
-#' @details This requires for "repeated movements on one day" to be aggregated,
-#' otherwise it's complicated to ensure a correct join.
-#'
 #' @param contact_trace_object A ContactTrace object returned by
 #'  EpiContactTrace's `Trace()` function.
 #' @param original_movement_data The movenet-format movement data tibble that was
@@ -415,8 +422,7 @@ ContactTrace2movedata <- function(contact_trace_object, original_movement_data){
                             by = setNames(c("source", "destination", "t", "n"),
                                           c(colname_from, colname_to, colname_date,
                                             colname_weight)),
-                            relationship = "one-to-many") #one row in contact_trace_object can match to at most one row in original_movement_data
-          }}()
+                            relationship = "many-to-many") 
       }) %>% purrr::reduce(rbind) #this binds the tibbles together into one
     } else {
       contact_trace_object %>%
@@ -427,8 +433,7 @@ ContactTrace2movedata <- function(contact_trace_object, original_movement_data){
                           by = setNames(c("source", "destination", "t", "n"),
                                         c(colname_from, colname_to, colname_date,
                                           colname_weight)),
-                          relationship = "one-to-many") #one row in contact_trace_object can match to at most one row in original_movement_data
-        }}()
+                          relationship = "many-to-many") 
     }
   }
 
@@ -505,29 +510,14 @@ ContactTrace2holdingdata <- function(contact_trace_object,
 #' Internal helper function that plots ingoing and outgoing contact chains onto
 #' a Leaflet map with default OpenStreetMap background.
 #'
+#' @inheritParams trace_contact_chains
 #' @param movement_data A movenet-format movement data tibble, with movements
 #'   that are part of ingoing and outgoing contact chains.
 #' @param holding_data A movenet-format holding data tibble, with holdings that
 #'   are part of ingoing and outgoing contact chains.
 #' @param admin_areas_map An sf object containing multipolygons for relevant
 #'   administrative areas.
-#' @param colour_domain_weight_in A numeric vector representing the range (i.e.
-#'   `c(min, max)`) of possible aggregate ingoing weight values to colour
-#'   administrative areas by. If `NULL` (default), the range will be determined
-#'   from the data.
-#' @param colour_domain_weight_out A numeric vector representing the range (i.e.
-#'   `c(min, max)`) of possible aggregate outgoing weight values to colour
-#'   administrative areas by.  If `NULL` (default), the range will be determined
-#'   from the data.
-#' @param colour_domain_moves_in A numeric vector representing the range (i.e.
-#'   `c(min, max)`) of possible aggregate numbers of ingoing moves to colour
-#'   administrative areas by. If `NULL` (default), the range will be determined
-#'   from the data.
-#' @param colour_domain_moves_out A numeric vector representing the range (i.e.
-#'   `c(min, max)`) of possible aggregate numbers of outgoing moves to colour
-#'   administrative areas by. If `NULL` (default), the range will be determined
-#'   from the data.
-#'#'
+#'
 #' @returns A Leaflet map (HTML widget object) with graphics layers for holdings
 #'   and moves that are part of ingoing and outgoing contact chains, and for the
 #'   provided administrative area boundaries. Further layers can be added using
@@ -537,11 +527,17 @@ ContactTrace2holdingdata <- function(contact_trace_object,
 #' @importFrom tidyselect all_of any_of
 #' @importFrom tidyr pivot_longer pivot_wider replace_na
 #' @import leaflet
-#' @importFrom leaflegend addLegendLine
 #' @importFrom sf st_cast st_is_empty st_as_sf st_join st_transform st_drop_geometry st_geometry<-
 #'
 #' @keywords internal
 contactchains2leaflet <- function(movement_data, holding_data,
+                                  tEnd = NULL,
+                                  days = NULL,
+                                  inBegin = NULL,
+                                  inEnd = NULL,
+                                  outBegin = NULL,
+                                  outEnd = NULL,
+                                  maxDistance = NULL,
                                   admin_areas_map = NULL,
                                   colour_domain_weight_in = NULL,
                                   colour_domain_weight_out = NULL,
@@ -553,6 +549,26 @@ contactchains2leaflet <- function(movement_data, holding_data,
   colname_date <- names(movement_data)[3]
   colname_weight <- names(movement_data)[4]
   colname_id <- names(holding_data)[1]
+
+
+# Create date strings -----------------------------------------------------
+
+  # Create strings indicating the tracing periods, to display in the control
+  # panel of the Leaflet map.
+
+  if(!is.null(tEnd) & !is.null(days)){
+    tEnd <- as.Date(tEnd)
+    tStart <- tEnd - days
+    dates_in <- paste0(format(tStart, "%Y-%m-%d"), " to ", format(tEnd, "%Y-%m-%d"))
+    dates_out <- dates_in
+  } else if(!is.null(inBegin) & !is.null(inEnd) & !is.null(outBegin) & !is.null(outEnd)){
+    inBegin <- as.Date(inBegin)
+    inEnd <- as.Date(inEnd)
+    outBegin <- as.Date(outBegin)
+    outEnd <- as.Date(outEnd)
+    dates_in <- paste0(format(inBegin, "%Y-%m-%d"), " to ", format(inEnd, "%Y-%m-%d"))
+    dates_out <- paste0(format(outBegin, "%Y-%m-%d"), " to ", format(outEnd, "%Y-%m-%d"))
+  }
 
 # Transform coordinates to WGS84 for compatibility with Leaflet -----------
 
@@ -641,8 +657,8 @@ contactchains2leaflet <- function(movement_data, holding_data,
                 n_moves = dplyr::n()) %>%
       left_join(x = admin_areas_map, y = as.data.frame(.),
                 by = setNames(adm_area, "geometry"),
-                relationship = "one-to-one") %>%
-      replace_na(list(total_weight = 0, n_moves = 0))
+                relationship = "one-to-one")
+      # replace_na(list(total_weight = 0, n_moves = 0))
   }
 
   if(!is.null(admin_areas_map)){
@@ -680,12 +696,28 @@ contactchains2leaflet <- function(movement_data, holding_data,
     mutate(offset = -(cumsum(.data$edge_width + betw_width) - (.data$edge_width + betw_width)/2),
            .by = all_of(c(colname_from, colname_to)))
 
-  # Create a dynamically set "breaks" vector for the edge_width legend in the map
-  values <- sort(unique(movement_data$edge_width))
-  starts <- 10^log2(values) #starts of the weight bins
-  ends <- (10^(log2(values)+1))-1 #ends of the weight bins
-  breaks <- setNames(values,
-                     paste(starts, ends, sep = " - ")) #create "start - end" label for all bins
+  # Helper function to create a legend for movement weight line thickness.
+  # Adapted from the addLegendLine() function in Thomas Roh's `Leaflegend`
+  # (2024), by Carlijn Bogaardt, 5 Aug 2024.
+  # Required this adaptation because of errors and incorrect showing of labels
+  # in some cases with just one weight bin.
+  add_line_legend <- function(map, values){
+    values <- sort(unique(values))
+    starts <- 10^log2(values) #starts of the weight bins
+    ends <- (10^(log2(values)+1))-1 #ends of the weight bins
+    labels <- paste(starts, ends, sep = " - ") #create "start - end" label for all bins
+
+    symbols <- Map(leaflegend::makeSymbol, shape = "rect", width = 20,
+                   height = values, color = "transparent", fillColor = "red",
+                   opacity = 1, fillOpacity = 1, `stroke-width` = 0)
+
+    leaflegend::addLegendImage(map, images = symbols, labels = labels,
+                               title = "Movement weight",
+                               labelStyle = "", orientation = "vertical",
+                               width = 20, height = values, group = NULL,
+                               className = "info legend leaflet-control",
+                               data = movement_data, position = "bottomright")
+  }
 
 # Convert movement data to GeoJSON for JS Leaflet plugins -----------------
 
@@ -760,6 +792,12 @@ contactchains2leaflet <- function(movement_data, holding_data,
     if(is.null(colour_domain_moves_in)) {colour_domain_moves_in <- adm_area_ingoing_data$n_moves}
     if(is.null(colour_domain_moves_out)) {colour_domain_moves_out <- adm_area_outgoing_data$n_moves}
 
+    #to avoid error in colorNumeric when there are no ingoing or outgoing weights (all values are NA):
+    if(all(is.na(colour_domain_weight_in))){colour_domain_weight_in <- c(1,2)}
+    if(all(is.na(colour_domain_moves_in))){{colour_domain_moves_in <- c(1,2)}}
+    if(all(is.na(colour_domain_weight_out))){colour_domain_weight_out <- c(1,2)}
+    if(all(is.na(colour_domain_moves_out))){colour_domain_moves_out <- c(1,2)}
+
     pal_ingoing_weight <-
       colorNumeric("Blues", colour_domain_weight_in, na.color = "grey")
     pal_ingoing_moves <-
@@ -768,7 +806,6 @@ contactchains2leaflet <- function(movement_data, holding_data,
       colorNumeric("Reds", colour_domain_weight_out, na.color = "grey")
     pal_outgoing_moves <-
       colorNumeric("Reds", colour_domain_moves_out, na.color = "grey")
-
   }
 
   # Helper function to apply colour palette, with custom warning message, and
@@ -777,7 +814,6 @@ contactchains2leaflet <- function(movement_data, holding_data,
   # The function is called from within the leaflet map construction.
 
     warning_messages <- list() #variable to store warning messages in
-
     apply_palette <- function(palette_name, values) {
 
       withCallingHandlers({
@@ -868,59 +904,114 @@ contactchains2leaflet <- function(movement_data, holding_data,
                     color = "black",
                     weight = 2,
                     fillColor = ~apply_palette("pal_ingoing_weight", total_weight),
-                    fillOpacity = 0.5,
+                    fillOpacity = 0.7,
                     group = "Ingoing weight") %>%
         addPolygons(data = adm_area_ingoing_data,
                     color = "black",
                     weight = 2,
                     fillColor = ~apply_palette("pal_ingoing_moves", n_moves),
-                    fillOpacity = 0.5,
+                    fillOpacity = 0.7,
                     group = "Ingoing moves") %>%
         addPolygons(data = adm_area_outgoing_data,
                     color = "black",
                     weight = 2,
                     fillColor = ~apply_palette("pal_outgoing_weight", total_weight),
-                    fillOpacity = 0.5,
+                    fillOpacity = 0.7,
                     group = "Outgoing weight") %>%
         addPolygons(data = adm_area_outgoing_data,
                     color = "black",
                     weight = 2,
                     fillColor = ~apply_palette("pal_outgoing_moves", n_moves),
-                    fillOpacity = 0.5,
+                    fillOpacity = 0.7,
                     group = "Outgoing moves") %>%
 
         # Add colour legends, but suppress color scale related warnings (these are
         # redundant with custom error messages thrown by apply_palette)
         {withCallingHandlers({
-          addLegend(map = .,
-                    data = adm_area_ingoing_data,
-                    title = "Ingoing moves from area",
-                    position = "bottomleft",
-                    pal = pal_ingoing_moves,
-                    values = ~n_moves,
-                    layerId = "Ingoing_moves_legend",
-                    className = "info legend ingoing-moves") %>%
-            addLegend(data = adm_area_outgoing_data,
-                      title = "Outgoing moves to area",
+          {inmoves_values_notna <- unique(adm_area_ingoing_data$n_moves)[!is.na(unique(adm_area_ingoing_data$n_moves))]
+          if(length(inmoves_values_notna) > 1){
+            addLegend(map = .,
+                      data = adm_area_ingoing_data,
+                      title = "Ingoing moves from area",
                       position = "bottomleft",
-                      pal = pal_outgoing_moves,
+                      pal = pal_ingoing_moves,
                       values = ~n_moves,
-                      layerId = "Outgoing_moves_legend",
-                      className = "info legend outgoing-moves") %>%
-            addLegend(data = adm_area_ingoing_data,
-                      title = "Ingoing weight from area",
+                      layerId = "Ingoing_moves_legend",
+                      className = "info legend ingoing-moves")
+          } else {
+            addLegend(map = .,
+                      data = adm_area_ingoing_data,
+                      title = "Ingoing moves from area",
                       position = "bottomleft",
-                      pal = pal_ingoing_weight,
-                      values = ~total_weight,
-                      layerId = "Ingoing_weight_legend",
-                      className = "info legend ingoing-weight") %>%
-            addLegend(data = adm_area_outgoing_data,
-                      title = "Outgoing weight to area",
-                      position = "bottomleft",
-                      pal = pal_outgoing_weight,
-                      values = ~total_weight,
-                      layerId = "Outgoing_weight_legend",
-                      className = "info legend outgoing-weight")
+                      colors = c(pal_ingoing_moves(inmoves_values_notna),"grey"),
+                      labels = c(inmoves_values_notna,"NA"),
+                      values = ~n_moves,
+                      layerId = "Ingoing_moves_legend",
+                      className = "info legend ingoing-moves")
+          }} %>%
+            {outmoves_values_notna <- unique(adm_area_outgoing_data$n_moves)[!is.na(unique(adm_area_outgoing_data$n_moves))]
+             if(length(outmoves_values_notna) > 1){
+              addLegend(map = .,
+                        data = adm_area_outgoing_data,
+                        title = "Outgoing moves to area",
+                        position = "bottomleft",
+                        pal = pal_outgoing_moves,
+                        values = ~n_moves,
+                        layerId = "Outgoing_moves_legend",
+                        className = "info legend outgoing-moves")
+            } else {
+              addLegend(map = .,
+                        data = adm_area_outgoing_data,
+                        title = "Outgoing moves to area",
+                        position = "bottomleft",
+                        colors = c(pal_outgoing_moves(outmoves_values_notna),"grey"),
+                        labels = c(outmoves_values_notna,"NA"),
+                        values = ~n_moves,
+                        layerId = "Outgoing_moves_legend",
+                        className = "info legend outgoing-moves")
+            }} %>%
+            {inweight_values_notna <- unique(adm_area_ingoing_data$total_weight)[!is.na(unique(adm_area_ingoing_data$total_weight))]
+              if(length(inweight_values_notna) > 1){
+              addLegend(map = .,
+                        data = adm_area_ingoing_data,
+                        title = "Ingoing weight from area",
+                        position = "bottomleft",
+                        pal = pal_ingoing_weight,
+                        values = ~total_weight,
+                        layerId = "Ingoing_weight_legend",
+                        className = "info legend ingoing-weight")
+            } else {
+              addLegend(map = .,
+                        data = adm_area_ingoing_data,
+                        title = "Ingoing weight from area",
+                        position = "bottomleft",
+                        colors = c(pal_ingoing_weight(inweight_values_notna),"grey"),
+                        labels = c(inweight_values_notna,"NA"),
+                        values = ~total_weight,
+                        layerId = "Ingoing_weight_legend",
+                        className = "info legend ingoing-weight")
+            }} %>%
+            {outweight_values_notna <- unique(adm_area_outgoing_data$total_weight)[!is.na(unique(adm_area_outgoing_data$total_weight))]
+              if(length(outweight_values_notna) > 1){
+              addLegend(map = .,
+                        data = adm_area_outgoing_data,
+                        title = "Outgoing weight to area",
+                        position = "bottomleft",
+                        pal = pal_outgoing_weight,
+                        values = ~total_weight,
+                        layerId = "Outgoing_weight_legend",
+                        className = "info legend outgoing-weight")
+            } else {
+              addLegend(map = .,
+                        data = adm_area_outgoing_data,
+                        title = "Outgoing weight to area",
+                        position = "bottomleft",
+                        colors = c(pal_outgoing_weight(outweight_values_notna),"grey"),
+                        labels = c(outweight_values_notna,"NA"),
+                        values = ~total_weight,
+                        layerId = "Outgoing_weight_legend",
+                        className = "info legend outgoing-weight")
+            }}
         }, warning = function(w) {
           if (grepl("Some values were outside the color scale and will be treated as NA", w$message)) {
             invokeRestart("muffleWarning")
@@ -937,6 +1028,14 @@ contactchains2leaflet <- function(movement_data, holding_data,
     if(length(warning_messages) > 0){
       stop(paste0("The following error(s) occurred when defining colour scales for administrative areas:\n - ", paste0(warning_messages, collapse = "\n - ")), call. = FALSE)
     }
+
+    # Ensure NA box aligns with colour ramp in legend (from https://github.com/rstudio/leaflet/issues/615#issue-431696781)
+    css_fix <- "div.info.legend.leaflet-control br {clear: both;}" # CSS to correct spacing
+    html_fix <- htmltools::tags$style(type = "text/css", css_fix)  # Convert CSS to HTML
+    leaflet_map <-
+      leaflet_map %>%
+      htmlwidgets::prependContent(html_fix) # Insert into leaflet HTML code
+
   }
 
     # Add holdings as "circle markers", with colour depending on their inclusion
@@ -972,8 +1071,11 @@ contactchains2leaflet <- function(movement_data, holding_data,
     # Use JS plugins to add moves and grouped layer controls
     htmlwidgets::onRender("function(el, x, data) {
     var edge;
-    var movement_geojson_in = data.movement_geojson_in
-    var movement_geojson_out = data.movement_geojson_out
+    var movement_geojson_in = data.movement_geojson_in;
+    var movement_geojson_out = data.movement_geojson_out;
+    var dates_in = data.dates_in;
+    var dates_out = data.dates_out;
+    var max_distance = data.max_distance;
     var map = this;
 
     /*
@@ -1067,12 +1169,11 @@ contactchains2leaflet <- function(movement_data, holding_data,
 
 
     // Set up grouped layer control
-
     var groupedOverlays = {
-      'Incoming contact chains': {
+      ['Incoming contact chains<br>(' + dates_in + (max_distance !== null ? ',<br>max distance from root: ' + max_distance : '') + ')']: {
           '<span class=\"fa-stack\" style=\"max-width: 12px; max-height: 12px; vertical-align: top;\"><i class=\"fa-solid fa-circle fa-stack-1x\" style=\"color: blue; opacity: 0.2\"></i><i class=\"fa-regular fa-circle fa-stack-1x\" style=\"color: blue; opacity: 0.5\"></i></span> Originating holdings': groups.originating_holdings ?? [],
           '<i class=\"fa-solid fa-right-long\" style=\"color: blue\"></i> Incoming movements': groups.ingoing_edges ?? []},
-      'Outgoing contact chains': {
+      ['Outgoing contact chains<br>(' + dates_out + (max_distance !== null ? ',<br>max distance from root: ' + max_distance : '') + ')']: {
           '<span class=\"fa-stack\" style=\"max-width: 12px; max-height: 12px; vertical-align: top;\"><i class=\"fa-solid fa-circle fa-stack-1x\" style=\"color: red; opacity: 0.2\"></i><i class=\"fa-regular fa-circle fa-stack-1x\" style=\"color: red; opacity: 0.5\"></i></span> Destination holdings': groups.destination_holdings ?? [],
           '<i class=\"fa-solid fa-right-long\" style=\"color: red\"></i> Outgoing movements': groups.outgoing_edges ?? []}
       };
@@ -1176,16 +1277,15 @@ contactchains2leaflet <- function(movement_data, holding_data,
     }
 
 ", data = list(movement_geojson_in = movement_geojson_in,
-                    movement_geojson_out = movement_geojson_out)) %>%
+               movement_geojson_out = movement_geojson_out,
+               dates_in = dates_in,
+               dates_out = dates_out,
+               max_distance = maxDistance)) %>%
+
     hideGroup(c("Ingoing weight", "Ingoing moves", "Outgoing weight", "Outgoing moves")) %>%
 
-    # Add a legend for movement weights
-    addLegendLine(values = ~edge_width, title = "Movement weight",
-                  color = "red", orientation = "vertical",
-                  breaks = breaks,
-                  baseSize = mean(movement_data$edge_width),
-                  data = movement_data,
-                  position = "bottomright")
+    # Add legend for movement weights
+    add_line_legend(values = movement_data$edge_width)
 
   # # Create custom html div for sidebar and attach to leaflet_map
   # sidebar_div <- htmltools::tags$div(id="sidebar")
@@ -1198,3 +1298,6 @@ contactchains2leaflet <- function(movement_data, holding_data,
   leaflet_map
 
 }
+
+
+

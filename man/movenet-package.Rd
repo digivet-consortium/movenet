@@ -27,6 +27,9 @@ Authors:
 
 Other contributors:
 \itemize{
+  \item Theo Pepler (\href{https://orcid.org/0000-0003-2961-6573}{ORCID}) [contributor]
+  \item Sibylle Mohr (\href{https://orcid.org/0000-0002-9089-6327}{ORCID}) [contributor]
+  \item Gianluigi Rossi (\href{https://orcid.org/0000-0002-6540-8467}{ORCID}) [contributor]
   \item Ruby Graham [contributor]
   \item Petter Hopp [contributor]
   \item Thomas Rosendal [contributor]

@@ -7,6 +7,13 @@
 contactchains2leaflet(
   movement_data,
   holding_data,
+  tEnd = NULL,
+  days = NULL,
+  inBegin = NULL,
+  inEnd = NULL,
+  outBegin = NULL,
+  outEnd = NULL,
+  maxDistance = NULL,
   admin_areas_map = NULL,
   colour_domain_weight_in = NULL,
   colour_domain_weight_out = NULL,
@@ -20,6 +27,33 @@ that are part of ingoing and outgoing contact chains.}
 
 \item{holding_data}{A movenet-format holding data tibble, with holdings that
 are part of ingoing and outgoing contact chains.}
+
+\item{tEnd}{A single date, or character or factor that can be converted to a
+date, representing the last date to include both ingoing and outgoing
+movements. Defaults to \code{NULL}.}
+
+\item{days}{A single numeric representing the number of days prior to \code{tEnd}
+to include ingoing and outgoing movements for. Defaults to \code{NULL}.}
+
+\item{inBegin}{A single date, or character or factor that can be converted to
+a date, representing the first date to include ingoing movements for.
+Defaults to \code{NULL}.}
+
+\item{inEnd}{A single date, or character or factor that can be converted to a
+date, representing the last date to include ingoing movements for. Defaults
+to \code{NULL}.}
+
+\item{outBegin}{A single date, or character or factor that can be converted
+to a date, representing the first date to include outgoing movements for.
+Defaults to \code{NULL}.}
+
+\item{outEnd}{A single date, or character or factor that can be converted to
+a date, representing the last date to include outgoing movements for.
+Defaults to \code{NULL}.}
+
+\item{maxDistance}{A single numeric representing the maximum 'distance' (in
+number of movements) away from the root node, at which to stop contact
+tracing. Defaults to \code{NULL}, i.e. don't use the maxDistance stop criterion.}
 
 \item{admin_areas_map}{An sf object containing multipolygons for relevant
 administrative areas.}
@@ -43,7 +77,6 @@ from the data.}
 \code{c(min, max)}) of possible aggregate numbers of outgoing moves to colour
 administrative areas by. If \code{NULL} (default), the range will be determined
 from the data.
-#'}
 }
 \value{
 A Leaflet map (HTML widget object) with graphics layers for holdings
