@@ -10,12 +10,12 @@
 
 The goal of movenet is to simplify the effective use of livestock
 movement data in veterinary public health. It facilitates the dataflow
-from livestock movement data to social network analysis and disease
-transmission models, while addressing common data issues such as the
-diversity of data formats and privacy preservation.
+from livestock movement data to social network analysis, while
+addressing common data issues such as the diversity of data formats and
+privacy preservation.
 
 <figure>
-<img src="man/figures/movenet_summary.png"
+<img src="man/figures/movenet_summary_figure_20240908.png"
 alt="Flow chart showing the workflows of the movenet package, as well as how movenet addresses some common data challenges." />
 <figcaption aria-hidden="true">Flow chart showing the workflows of the
 movenet package, as well as how movenet addresses some common data
@@ -45,9 +45,6 @@ livestock movement data and (optional) holding data:
 
 - generation of network representations, and **social network
   analysis**, of livestock movement data
-
-- integration of livestock movement and/or holding data into
-  **transmission models**
 
 - exploration of the effects of different pseudonymisation strategies on
   network properties, so as to allow users to find a suitable balance

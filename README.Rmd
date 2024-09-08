@@ -21,10 +21,10 @@ knitr::opts_chunk$set(
 
 The goal of movenet is to simplify the effective use of livestock movement data in veterinary 
 public health. It facilitates the dataflow from livestock movement data to social 
-network analysis and disease transmission models, while addressing common data issues 
+network analysis, while addressing common data issues 
 such as the diversity of data formats and privacy preservation.
 
-![Flow chart showing the workflows of the movenet package, as well as how movenet addresses some common data challenges.](man/figures/movenet_summary.png)
+![Flow chart showing the workflows of the movenet package, as well as how movenet addresses some common data challenges.](man/figures/movenet_summary_figure_20240908.png)
 
 movenet is being developed in the context of the [NordForsk Digitalisation of livestock data to improve veterinary public health (DigiVet) project](https://www.nordforsk.org/projects/digitalisation-livestock-data-improve-veterinary-public-health).
 
@@ -39,8 +39,6 @@ movenet includes a range of workflows for the processing and analysis of livesto
 
   -	generation of network representations, and **social network analysis**, of livestock movement data
 
-  -	integration of livestock movement and/or holding data into **transmission models**
-  
   -	exploration of the effects of different pseudonymisation strategies on network properties, so as to allow users to find a suitable balance between the identifiability of the data and the accuracy of these properties.
   
 For more detail on each of these workflows, including sample code, see the vignettes.
