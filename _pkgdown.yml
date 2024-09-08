@@ -21,15 +21,7 @@ reference:
   - movedata2networkDynamic
   - create_temporal_network_analysis_report
   - parallel_summarise_temporal_node_properties
-- title: Integration of movement data into disease models
-  desc: Functions for integrating movement and holding data into disease models
-  contents:
-  - data2contactmatrix
-  - siminf4movenet::SEIRcm()
-  - SEIRcm_ASF
-  - create_random_infected_vector
-  - create_specified_infected_vector
-  - get_cumulative_infected
+  - trace_contact_chains
 - title: Configurations
   desc: Functions for setting and changing movenet configurations
   contents:
@@ -42,6 +34,7 @@ reference:
 - title: Example data
   desc: Example data files and structures included in movenet
   contents:
+  - example_admin_areas
   - example_movement_data.csv
   - example_movement_data
   - example_holding_data.csv
@@ -55,6 +48,5 @@ articles:
   - movenet
   - pseudonymise
   - network-analysis
-  - transmission-models
   - configurations
 
