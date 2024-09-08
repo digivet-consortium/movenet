@@ -1,7 +1,7 @@
 Package: movenet
 Title: A Toolkit Facilitating the Use of Livestock Movement Data in Veterinary Public Health
-Version: 0.3.0-1
-Date: 2024-07-31
+Version: 0.4.0-1
+Date: 2024-09-09
 Authors@R:
     c(person(given = "Carlijn", family = "Bogaardt",
              email = "Carlijn.Bogaardt@glasgow.ac.uk", role = c("aut","cre"),
@@ -18,7 +18,7 @@ Authors@R:
       person(given = "Petter", family = "Hopp", role = "ctb"),
       person(given = "Thomas", family = "Rosendal", role = "ctb"))
 Description: A set of workflows facilitating the dataflow from livestock
-  movement data to social network analysis and disease transmission models. 
+  movement data to social network analysis. 
   'movenet' also addresses common data issues such as the diversity of data 
   formats and privacy preservation.
 License: GPL (>= 3)

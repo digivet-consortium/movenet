@@ -19,8 +19,7 @@ knitr::opts_chunk$set(
 
 The goal of movenet is to simplify the use of livestock movement data in
 veterinary public health. It does this by providing workflows for
-pseudonymisation, network analysis, and processing of movement and/or
-holding data ready for use in transmission models. A first step in any of these
+pseudonymisation and network analysis. A first step in any of these
 workflows is reading in the livestock movement data that you want to
 process or analyse.
 
@@ -94,7 +93,7 @@ the movement data, and standardise them to movenet format, by:
 -   checking that the `date` column can be parsed as dates (using the date format 
     indicated in the configurations), and that the `weight` column is numeric.
 
--   converting dates to R Date format, to improve inter-operability.
+-   converting dates to R Date format, to improve interoperability.
 
 
 To read in a movement data file, use `reformat_data(data, type = "movement")`:
