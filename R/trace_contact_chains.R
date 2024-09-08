@@ -422,7 +422,7 @@ ContactTrace2movedata <- function(contact_trace_object, original_movement_data){
                             by = setNames(c("source", "destination", "t", "n"),
                                           c(colname_from, colname_to, colname_date,
                                             colname_weight)),
-                            relationship = "many-to-many")}}
+                            relationship = "many-to-many")}}()
       }) %>% purrr::reduce(rbind) #this binds the tibbles together into one
     } else {
       contact_trace_object %>%
@@ -433,7 +433,7 @@ ContactTrace2movedata <- function(contact_trace_object, original_movement_data){
                           by = setNames(c("source", "destination", "t", "n"),
                                         c(colname_from, colname_to, colname_date,
                                           colname_weight)),
-                          relationship = "many-to-many")}}
+                          relationship = "many-to-many")}}()
     }
   }
 
@@ -599,14 +599,14 @@ contactchains2leaflet <- function(movement_data, holding_data,
     movement_data %>%
 
     # First add point coordinates and admin area coordinates for origin and destination holdings.
-    left_join(y = {holding_data %>% select(all_of("colname_id"), .data$coordinates, any_of("adm_area_coords")) %>% unique()},
+    left_join(y = {holding_data %>% select(all_of(colname_id), .data$coordinates, any_of("adm_area_coords")) %>% unique},
               by = setNames(colname_id, colname_from),
               relationship = "many-to-one") %>%
     rename(coords_from = .data$coordinates) %>%
     #if adm_area_coords exist, rename to adm_area_from
     { if("adm_area_coords" %in% names(.)){
       rename(., adm_area_from = .data$adm_area_coords) } else {.} } %>%
-    left_join(y = {holding_data %>% select(all_of("colname_id"), .data$coordinates, any_of("adm_area_coords")) %>% unique()},
+    left_join(y = {holding_data %>% select(all_of(colname_id), .data$coordinates, any_of("adm_area_coords")) %>% unique},
               by = setNames(colname_id, colname_to),
               relationship = "many-to-one") %>%
     rename(coords_to = .data$coordinates) %>%

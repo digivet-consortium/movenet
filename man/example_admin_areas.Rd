@@ -34,10 +34,10 @@ illustrate the use of \code{trace_contact_chains()} with a map of area boundarie
 }
 \seealso{
 Other example data files and structures: 
-\code{\link{example_holding_data.csv}},
 \code{\link{example_holding_data}},
-\code{\link{example_movement_data.csv}},
+\code{\link{example_holding_data.csv}},
 \code{\link{example_movement_data}},
+\code{\link{example_movement_data.csv}},
 \code{\link{local_spread_probabilities_ASF}}
 }
 \concept{example data files and structures}
