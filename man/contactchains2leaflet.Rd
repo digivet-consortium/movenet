@@ -76,7 +76,7 @@ from the data.}
 \item{colour_domain_moves_out}{A numeric vector representing the range (i.e.
 \code{c(min, max)}) of possible aggregate numbers of outgoing moves to colour
 administrative areas by. If \code{NULL} (default), the range will be determined
-from the data.
+from the data.}
 }
 \value{
 A Leaflet map (HTML widget object) with graphics layers for holdings

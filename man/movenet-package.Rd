@@ -6,7 +6,7 @@
 \alias{movenet-package}
 \title{movenet: A Toolkit Facilitating the Use of Livestock Movement Data in Veterinary Public Health}
 \description{
-A set of workflows facilitating the dataflow from livestock movement data to social network analysis and disease transmission models. 'movenet' also addresses common data issues such as the diversity of data formats and privacy preservation.
+A set of workflows facilitating the dataflow from livestock movement data to social network analysis. 'movenet' also addresses common data issues such as the diversity of data formats and privacy preservation.
 }
 \seealso{
 Useful links:

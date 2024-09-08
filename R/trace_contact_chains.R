@@ -422,7 +422,7 @@ ContactTrace2movedata <- function(contact_trace_object, original_movement_data){
                             by = setNames(c("source", "destination", "t", "n"),
                                           c(colname_from, colname_to, colname_date,
                                             colname_weight)),
-                            relationship = "many-to-many") 
+                            relationship = "many-to-many")}}
       }) %>% purrr::reduce(rbind) #this binds the tibbles together into one
     } else {
       contact_trace_object %>%
@@ -433,7 +433,7 @@ ContactTrace2movedata <- function(contact_trace_object, original_movement_data){
                           by = setNames(c("source", "destination", "t", "n"),
                                         c(colname_from, colname_to, colname_date,
                                           colname_weight)),
-                          relationship = "many-to-many") 
+                          relationship = "many-to-many")}}
     }
   }
 
