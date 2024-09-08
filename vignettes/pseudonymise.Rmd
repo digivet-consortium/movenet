@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-To address concerns around commercial sensitivity, movenet includes a range of 
+To help address concerns around commercial sensitivity, movenet includes a range of 
 functions to make livestock movement data and/or holding data non-identifiable. 
 This vignette shows you how to use these.
 
@@ -36,7 +36,7 @@ movement or holding data tibbles, by replacing these identifiers with a number
 and an optional prefix (e.g. "FARM").
 
 It returns a pseudonymised data tibble and the applied pseudonymisation key. This 
-key can be saved for "de-pseudonymisation" of data at a later stage, or for 
+key can optionally be saved to recover the original identifiers at a later date, or for 
 application to an overlapping dataset.
 ```{R}
 # Pseudonymise movement_data by changing identifiers to FARM1-N:
@@ -50,6 +50,7 @@ head(pseudonymisation_key) # Inspect pseudonymisation key
 
 `anonymise()` also takes an optional `key` argument, with which you can apply an existing
 pseudonymisation key to the data tibble:
+
 ```{R}
 # Use the same key from above to substitute holding identifiers in holding_data:
 pseudonymised_holding <- anonymise(example_holding_data, key = pseudonymisation_key) 
@@ -59,6 +60,9 @@ pseudonymisation_key <- pseudonymised_holding$key
 
 head(pseudonymised_holding_data) # Inspect pseudonymised holding data
 ```
+
+This allows multiple datasets to be pseudonymised in a consistent way, so that
+it is possible to subsequently merge the datasets by pseudonymised identifier.
 
 ## Modifying dates, weights, and optional numeric data columns
 
@@ -110,4 +114,4 @@ head(movedata_ref10) # Inspect rounded movement reference numbers
 ## Modifying holding coordinates
 
 A function to resample holding coordinates in a density-dependent manner is under 
-development and will be added shortly.
+development within the [hexscape package](https://github.com/ku-awdc/hexscape/).

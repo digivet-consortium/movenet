@@ -87,7 +87,7 @@
 #'
 #' @seealso
 #' * [asciify()] for the underlying ASCIIfication process.
-#' * [`vignette("movenet")`] for getting started with movenet.
+#' * `vignette("movenet")` for getting started with movenet.
 #' @family functions for initial data processing
 #'
 #' @importFrom dplyr mutate rename_with

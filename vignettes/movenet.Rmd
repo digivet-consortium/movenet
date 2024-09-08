@@ -19,8 +19,7 @@ knitr::opts_chunk$set(
 
 The goal of movenet is to simplify the use of livestock movement data in
 veterinary public health. It does this by providing workflows for
-pseudonymisation, network analysis, and integration of movement and/or
-holding data into transmission models. A first step in any of these
+pseudonymisation and network analysis. A first step in any of these
 workflows is reading in the livestock movement data that you want to
 process or analyse.
 
@@ -106,8 +105,8 @@ movement_data <-
 head(movement_data) # Inspect the resulting movement_data tibble
 ```
 
-The movement data are now in the right format (movenet-format movement data tibble) 
-to be plugged into pseudonymisation, network analysis, and transmission modelling workflows.
+The movement data are now in a suitable format (movenet-format movement data tibble) 
+to be plugged into pseudonymisation and network analysis workflows.
 
 ## Reshaping holding data to movenet format
 
@@ -139,6 +138,13 @@ performs the following data checks and standardisations on holding data:
 -   If the loaded configurations include a header/index for a column `herd_size`, this 
     column is checked to contain numeric data.
     
-The holding data are now in the right format (movenet-format holding data tibble) 
-to be plugged into pseudonymisation, network analysis, and transmission modelling 
-workflows.
+The holding data are now in a suitable format (movenet-format holding data tibble) 
+to be plugged into pseudonymisation and network analysis workflows.
+
+## Further reading
+
+The movenet package contains additional vignettes as follows:
+
+- [More details on configurations](configurations.html)
+- [Network analysis of livestock movement data](network-analysis.html)
+- [Pseudonymising livestock movement and holding data](pseudonymise.html)

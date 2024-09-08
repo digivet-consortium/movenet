@@ -45,17 +45,20 @@ create_temporal_network_analysis_report <- function(network, output_file,
   report_source <- system.file("reports/temporal_network_analysis.Rmd",
                                package = "movenet")
   #Have this vary according to an arg report_type?
+  if(length(report_source)!=1L || report_source=="") stop("Internal error:  temporal_network_analysis.Rmd file not found")
 
   old_defaults <- set_flextable_defaults(font.size = 10)
 
   #Knit report
-  render(input = report_source,
+  fn <- render(input = report_source,
          output_format = "html_document",
          output_file = output_file,
          envir = net_env,
          params = list(incl_reachability_analysis = incl_reachability_analysis))
 
   do.call(set_flextable_defaults, old_defaults)
+
+  invisible(fn)
 
 }
 
@@ -443,8 +446,8 @@ static_network_snapshots_analysis <- function(network, dates, time_unit,
         edge_count[[combinations[x,1]]]
     })
   combinations <- mutate(combinations,
-                         m1 = dates[m1],
-                         m2 = dates[m2])
+                         m1 = dates[.data$m1],
+                         m2 = dates[.data$m2])
 
   #Plotting heatmap with fractions of common directed links
   net_env[["common_links_heatmap"]] <-
@@ -535,7 +538,7 @@ snapshots_diffperiods_dotplot1 <- function(data_daily, data_7days, data_14days,
   names(data_28days) <- c("x","y")
   names(data_84days) <- c("x","y")
 
-  ggplot(data_daily, aes(x, y)) +
+  ggplot(data_daily, aes(.data$x, .data$y)) +
     labs(title = title) +
     xlab("Time") +
     ylab(ylab) +
@@ -581,7 +584,7 @@ snapshot_summary_stats_linechart <- function(periodic_data, title, ylab){
   names(periodic_data) <- c("x", "min", "Q1", "median", "mean", "Q3", "max")
 
   ggplot(periodic_data) +
-    aes(x) +
+    aes(x=.data$x) +
     labs(title = title) +
     xlab("Time") +
     ylab(ylab) +
@@ -594,9 +597,9 @@ snapshot_summary_stats_linechart <- function(periodic_data, title, ylab){
           plot.title = element_text(size = 16, face = "bold"),
           axis.text = element_text(size = 12),
           axis.title = element_text(size = 14)) +
-    geom_ribbon(aes(ymin = Q1, ymax = Q3), colour = "grey", alpha=0.5) +
-    geom_line(aes(y = median), linetype = 1) +
-    geom_line(aes(y = mean), linetype = 2)
+    geom_ribbon(aes(ymin = .data$Q1, ymax = .data$Q3), colour = "grey", alpha=0.5) +
+    geom_line(aes(y = .data$median), linetype = 1) +
+    geom_line(aes(y = .data$mean), linetype = 2)
 }
 
 #' Create snapshot summary barchart (e.g. component analyses) for temporal network analysis and app
@@ -607,7 +610,7 @@ snapshot_barchart <- function(periodic_data, title, ylab){
   names(periodic_data) <- c("x","y")
 
   ggplot(data = periodic_data,
-         aes(x, y)) +
+         aes(.data$x, .data$y)) +
     labs(title = title) +
     xlab("Time") +
     ylab(ylab) +
@@ -627,7 +630,7 @@ monthxmonth_heatmap <- function(month_combinations, title){
   names(month_combinations)[3] <- "z"
 
   ggplot(data = month_combinations,
-         aes(m1, m2, fill = z)) +
+         aes(.data$m1, .data$m2, fill = .data$z)) +
     labs(title = title) +
     xlab(NULL) +
     ylab(NULL) +
@@ -652,7 +655,7 @@ snapshot_boxplot <- function(periodic_data, title, ylab) {
   names(periodic_data) <- c("x","y")
 
   ggplot(data = periodic_data,
-         aes(x, y, group = x)) +
+         aes(.data$x, .data$y, group = .data$x)) +
     labs(title = title) +
     xlab("Time") +
     ylab(ylab) +

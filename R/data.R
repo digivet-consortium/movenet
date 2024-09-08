@@ -121,7 +121,7 @@ NULL
 #' tibble was obtained by calling `reformat_data()` on this csv file.
 #'
 #' @family example data files and structures
-#' @seealso [`vignette("movenet")`] for a detailed illustration of how this tibble
+#' @seealso `vignette("movenet")` for a detailed illustration of how this tibble
 #' was obtained from `example_movement_data.csv`.
 "example_movement_data"
 
@@ -160,7 +160,7 @@ NULL
 #' tibble was obtained by calling `reformat_data()` on this csv file.
 #'
 #' @family example data files and structures
-#' @seealso [`vignette("movenet")`] for a detailed illustration of how this tibble
+#' @seealso `vignette("movenet")` for a detailed illustration of how this tibble
 #' was obtained from `example_holding_data.csv`.
 "example_holding_data"
 

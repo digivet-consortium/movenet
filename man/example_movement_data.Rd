@@ -43,13 +43,13 @@ A fully synthetic livestock movement dataset, created to illustrate the
 structure of movenet-format movement data tibbles.
 }
 \seealso{
-\code{\link{vignette("movenet")}} for a detailed illustration of how this tibble
+\code{vignette("movenet")} for a detailed illustration of how this tibble
 was obtained from \code{example_movement_data.csv}.
 
 Other example data files and structures: 
 \code{\link{example_admin_areas}},
-\code{\link{example_holding_data.csv}},
 \code{\link{example_holding_data}},
+\code{\link{example_holding_data.csv}},
 \code{\link{example_movement_data.csv}},
 \code{\link{local_spread_probabilities_ASF}}
 }
