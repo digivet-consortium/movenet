@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">movenet</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0-1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0-1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,7 +46,6 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/pseudonymise.html">Pseudonymising livestock movement and holding data</a>
     <a class="dropdown-item" href="../articles/network-analysis.html">Network analysis of livestock movement data</a>
-    <a class="dropdown-item" href="../articles/transmission-models.html">Integrating livestock movement data into transmission models</a>
     <a class="dropdown-item" href="../articles/configurations.html">Configurations</a>
   </div>
 </li>
@@ -78,8 +77,7 @@
     
 <p>The goal of movenet is to simplify the use of livestock movement data
 in veterinary public health. It does this by providing workflows for
-pseudonymisation, network analysis, and integration of movement and/or
-holding data into transmission models. A first step in any of these
+pseudonymisation and network analysis. A first step in any of these
 workflows is reading in the livestock movement data that you want to
 process or analyse.</p>
 <p>This vignette describes how to get started with movenet, by reading
@@ -118,7 +116,7 @@ config files and an empty template can be found in the package’s
 <span><span class="co">#&gt;   separator: ","   #Separator (delimiter) character used in movement datafile</span></span>
 <span><span class="co">#&gt;   encoding: "UTF-8"    #Encoding used in movement datafile</span></span>
 <span><span class="co">#&gt;   decimal: "."  #Decimal mark used in movement datafile</span></span>
-<span><span class="co">#&gt;   date_format: "%Y%m%d" #Date format specification used in movement datafile (see ?readr::parse_date for guidance)</span></span>
+<span><span class="co">#&gt;   date_format: "%Y%m%d" #Date format specification used in movement datafile (empty string "" for "%AD" flexible YMD parser, or see ?readr::parse_date for guidance)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; movedata_cols:</span></span>
 <span><span class="co">#&gt;   from: "departure_cph" #Column name or number for Identifier of origin holding</span></span>
@@ -129,7 +127,7 @@ config files and an empty template can be found in the package’s
 movenet environment with the function <code><a href="../reference/load_config.html">load_config()</a></code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/load_config.html">load_config</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"configurations"</span>, <span class="st">"ScotEID.yml"</span>, package<span class="op">=</span><span class="st">"movenet"</span><span class="op">)</span><span class="op">)</span> <span class="co"># Load ScotEID.yml</span></span>
-<span><span class="co">#&gt; Successfully loaded config file: C:/Users/cboga/AppData/Local/Temp/RtmpO4w9Xd/temp_libpath4b1861ad6208/movenet/configurations/ScotEID.yml</span></span>
+<span><span class="co">#&gt; Successfully loaded config file: C:/Users/cboga/OneDrive - University of Glasgow/Documents/R/win-library/4.1/movenet/configurations/ScotEID.yml</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/get_config.html">get_config</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># Inspect the configurations in the movenet environment</span></span>
 <span><span class="co">#&gt; $movedata_fileopts.separator</span></span>
@@ -229,9 +227,9 @@ interoperability.</p></li>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 39/103/5541   13/282/1763 2019-10-26          125</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 41/788/6464   57/418/6011 2019-10-17          109</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 69/393/9398   39/947/2201 2019-10-06           72</span></span></code></pre></div>
-<p>The movement data are now in the right format (movenet-format
-movement data tibble) to be plugged into pseudonymisation, network
-analysis, and transmission modelling workflows.</p>
+<p>The movement data are now in a suitable format (movenet-format
+movement data tibble) to be plugged into pseudonymisation and network
+analysis workflows.</p>
 </div>
 </div>
 <div class="section level2">
@@ -243,7 +241,7 @@ be followed for holding config and data files:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load a holding config file:</span></span>
 <span><span class="fu"><a href="../reference/load_config.html">load_config</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"configurations"</span>, <span class="st">"fakeScotEID_holding.yml"</span>, package<span class="op">=</span><span class="st">"movenet"</span><span class="op">)</span><span class="op">)</span> </span>
-<span><span class="co">#&gt; Successfully loaded config file: C:/Users/cboga/AppData/Local/Temp/RtmpO4w9Xd/temp_libpath4b1861ad6208/movenet/configurations/fakeScotEID_holding.yml</span></span>
+<span><span class="co">#&gt; Successfully loaded config file: C:/Users/cboga/OneDrive - University of Glasgow/Documents/R/win-library/4.1/movenet/configurations/fakeScotEID_holding.yml</span></span>
 <span><span class="co"># Read in and reformat a holding data file:</span></span>
 <span><span class="va">holding_data</span> <span class="op">&lt;-</span> </span>
 <span>  <span class="fu"><a href="../reference/reformat_data.html">reformat_data</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_holding_data.csv"</span>, package<span class="op">=</span><span class="st">"movenet"</span><span class="op">)</span>,</span>
@@ -267,9 +265,22 @@ list-column using the ETRS89 coordinate reference system.</p></li>
 <code>herd_size</code>, this column is checked to contain numeric
 data.</p></li>
 </ul>
-<p>The holding data are now in the right format (movenet-format holding
-data tibble) to be plugged into pseudonymisation, network analysis, and
-transmission modelling workflows.</p>
+<p>The holding data are now in a suitable format (movenet-format holding
+data tibble) to be plugged into pseudonymisation and network analysis
+workflows.</p>
+</div>
+<div class="section level2">
+<h2 id="further-reading">Further reading<a class="anchor" aria-label="anchor" href="#further-reading"></a>
+</h2>
+<p>The movenet package contains additional vignettes as follows:</p>
+<ul>
+<li><a href="configurations.html">More details on
+configurations</a></li>
+<li><a href="network-analysis.html">Network analysis of livestock
+movement data</a></li>
+<li><a href="pseudonymise.html">Pseudonymising livestock movement and
+holding data</a></li>
+</ul>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>

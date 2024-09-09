@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">movenet</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0-1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0-1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,7 +29,6 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/pseudonymise.html">Pseudonymising livestock movement and holding data</a>
     <a class="dropdown-item" href="../articles/network-analysis.html">Network analysis of livestock movement data</a>
-    <a class="dropdown-item" href="../articles/transmission-models.html">Integrating livestock movement data into transmission models</a>
     <a class="dropdown-item" href="../articles/configurations.html">Configurations</a>
   </div>
 </li>
@@ -136,49 +135,11 @@ combinations</dd>
           <code><a href="parallel_summarise_temporal_node_properties.html">parallel_summarise_temporal_node_properties()</a></code> 
         </dt>
         <dd>Extract summary stats for temporal network node properties, in parallel</dd>
-      </dl></div><div class="section level2">
-      <h2 id="integration-of-movement-data-into-disease-models">Integration of movement data into disease models<a class="anchor" aria-label="anchor" href="#integration-of-movement-data-into-disease-models"></a></h2>
-      
-      <p class="section-desc"></p><p>Functions for integrating movement and holding data into disease models</p>
-
-      
-    </div><div id="" class="section level2">
-      
-      
-      
-
-      <dl><dt>
-          
-          <code><a href="data2contactmatrix.html">data2contactmatrix()</a></code> 
-        </dt>
-        <dd>Create transmission probability matrix for SEIRcm model from movement and holding data</dd>
       </dl><dl><dt>
           
-          <code><a href="https://rdrr.io/pkg/siminf4movenet/man/SEIRcm.html" class="external-link">SEIRcm()</a></code> 
+          <code><a href="trace_contact_chains.html">trace_contact_chains()</a></code> 
         </dt>
-        <dd>Create an SEIR model with contact matrix (from siminf4movenet)</dd>
-      </dl><dl><dt>
-          
-          <code><a href="SEIRcm_ASF.html">SEIRcm_ASF()</a></code> 
-        </dt>
-        <dd>Create an SEIR model with contact matrix and ASF-inspired parameters</dd>
-      </dl><dl><dt>
-          
-          <code><a href="create_random_infected_vector.html">create_random_infected_vector()</a></code> 
-        </dt>
-        <dd>Create a vector of holdings infected at t=0 to plug into SimInf models, by
-randomly selecting a specified number of holdings</dd>
-      </dl><dl><dt>
-          
-          <code><a href="create_specified_infected_vector.html">create_specified_infected_vector()</a></code> 
-        </dt>
-        <dd>Create a vector of holdings infected at t=0 to plug into SimInf models, using
-holding identifiers</dd>
-      </dl><dl><dt>
-          
-          <code><a href="get_cumulative_infected.html">get_cumulative_infected()</a></code> 
-        </dt>
-        <dd>Get the cumulative infected (I+R components) from SimInf model trajectories</dd>
+        <dd>Trace ingoing and outgoing contact chains and visualise data on a Leaflet map</dd>
       </dl></div><div class="section level2">
       <h2 id="configurations">Configurations<a class="anchor" aria-label="anchor" href="#configurations"></a></h2>
       
@@ -232,6 +193,11 @@ holding identifiers</dd>
       
 
       <dl><dt>
+          
+          <code><a href="example_admin_areas.html">example_admin_areas</a></code> 
+        </dt>
+        <dd>Example administrative area boundaries</dd>
+      </dl><dl><dt>
           
           <code><a href="example_movement_data.csv.html">example_movement_data.csv</a></code> 
         </dt>

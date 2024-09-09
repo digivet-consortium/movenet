@@ -20,15 +20,15 @@
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
-
+    
 
     <nav class="navbar fixed-top navbar-light navbar-expand-lg bg-light"><div class="container">
-
+    
     <a class="navbar-brand me-2" href="../index.html">movenet</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0-1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0-1</small>
 
-
+    
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -46,7 +46,6 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/pseudonymise.html">Pseudonymising livestock movement and holding data</a>
     <a class="dropdown-item" href="../articles/network-analysis.html">Network analysis of livestock movement data</a>
-    <a class="dropdown-item" href="../articles/transmission-models.html">Integrating livestock movement data into transmission models</a>
     <a class="dropdown-item" href="../articles/configurations.html">Configurations</a>
   </div>
 </li>
@@ -58,7 +57,7 @@
       <ul class="navbar-nav"></ul>
 </div>
 
-
+    
   </div>
 </nav><div class="container template-article">
 
@@ -68,14 +67,14 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="" class="logo" alt=""><h1>Network analysis of livestock movement data</h1>
-
-
-
+            
+      
+      
       <div class="d-none name"><code>network-analysis.Rmd</code></div>
     </div>
 
-
-
+    
+    
 <p>movenet uses the <a href="https://statnet.org/packages/" class="external-link">Statnet
 suite of packages</a> (e.g. networkDynamic and tsna) for (temporal)
 social network analysis. We are currently working on the functions in
@@ -90,9 +89,8 @@ particular relevance to disease transmission.</p>
 <div class="section level2">
 <h2 id="generating-a-temporal-network-representation">Generating a temporal network representation<a class="anchor" aria-label="anchor" href="#generating-a-temporal-network-representation"></a>
 </h2>
-<p>Currently it is possible to generate a temporal network
-(networkDynamic) representation of movement data and optional holding
-data, as follows:</p>
+<p>We can generate a temporal network (networkDynamic) representation of
+movement data and optional holding data, as follows:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create a networkDynamic from our data</span></span>
 <span><span class="va">network</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/movedata2networkDynamic.html">movedata2networkDynamic</a></span><span class="op">(</span><span class="va">movement_data</span>, <span class="va">holding_data</span>,</span>
@@ -138,34 +136,36 @@ data, as follows:</p>
 <h2 id="calculate-summary-statistics-for-selected-temporal-network-measures">Calculate summary statistics for selected temporal network
 measures<a class="anchor" aria-label="anchor" href="#calculate-summary-statistics-for-selected-temporal-network-measures"></a>
 </h2>
+<p>This networkDynamic representation can then be used to calculate
+various network summary measures, such as finding the maximum
+reachability in the network:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Find the maximum reachability in the network, and which nodes have this property.</span></span>
-<span><span class="fu"><a href="../reference/parallel_summarise_temporal_node_properties.html">parallel_summarise_temporal_node_properties</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">network</span><span class="op">)</span>, n_threads <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>                                            node_property <span class="op">=</span> <span class="st">"forward reachability"</span>,</span>
-<span>                                            statistics <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>max <span class="op">=</span> <span class="va">max</span><span class="op">)</span>,</span>
-<span>                                            identify_nodes <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [[1]]</span></span>
-<span><span class="co">#&gt; [[1]]$summary_statistics</span></span>
-<span><span class="co">#&gt; [[1]]$summary_statistics$max</span></span>
-<span><span class="co">#&gt; [1] 5</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; [[1]]$node_pid_with_max_value</span></span>
-<span><span class="co">#&gt; [1] "29/530/4214"</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">max_reachability</span> <span class="op">&lt;-</span> </span>
+<span>  <span class="fu"><a href="../reference/parallel_summarise_temporal_node_properties.html">parallel_summarise_temporal_node_properties</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">network</span><span class="op">)</span>, </span>
+<span>                                              n_threads <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>                                              node_property <span class="op">=</span> <span class="st">"forward reachability"</span>,</span>
+<span>                                              statistics <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>max <span class="op">=</span> <span class="va">max</span><span class="op">)</span>,</span>
+<span>                                              identify_nodes <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">max_reachability</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  summary_statistics.max node_pid_with_max_value </span></span>
+<span><span class="co">#&gt;                     "5"           "29/530/4214"</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="create-a-temporal-social-network-analysis-report">Create a temporal social network analysis report<a class="anchor" aria-label="anchor" href="#create-a-temporal-social-network-analysis-report"></a>
 </h2>
+<p>The movenet package provides a function to create a network analysis
+report, with analyses of monthly network snapshots:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Create a network analysis report, with analyses of monthly network snapshots</span></span>
-<span><span class="fu"><a href="../reference/create_temporal_network_analysis_report.html">create_temporal_network_analysis_report</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/create_temporal_network_analysis_report.html">create_temporal_network_analysis_report</a></span><span class="op">(</span></span>
 <span>  <span class="va">network</span>,</span>
-<span>  output_file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>,<span class="st">"\\network_report.yml"</span><span class="op">)</span>,</span>
+<span>  output_file <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>,<span class="st">"network_report.html"</span><span class="op">)</span>,</span>
 <span>  incl_reachability_analysis <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  n_threads <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  whole_months <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  time_unit <span class="op">=</span> <span class="st">"month"</span><span class="op">)</span></span>
-<span>  </span></code></pre></div>
+<span>  time_unit <span class="op">=</span> <span class="st">"month"</span><span class="op">)</span></span></code></pre></div>
+<p>This creates an html document that can be opened in a browser, and
+contains a full report as shown below:</p>
+<iframe title="report" src="C:/Users/cboga/OneDrive%20-%20University%20of%20Glasgow/Documents/R/win-library/4.1/movenet/reports/network_report.html" width="100%" height="800"></iframe>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
@@ -186,9 +186,9 @@ measures<a class="anchor" aria-label="anchor" href="#calculate-summary-statistic
     </footer>
 </div>
 
+  
 
-
-
+  
 
   </body>
 </html>

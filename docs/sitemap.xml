@@ -25,9 +25,6 @@
     <loc>https://digivet-consortium.github.io/movenet/authors.html</loc>
   </url>
   <url>
-    <loc>https://digivet-consortium.github.io/movenet/fast-perch_reprex.html</loc>
-  </url>
-  <url>
     <loc>https://digivet-consortium.github.io/movenet/index.html</loc>
   </url>
   <url>
@@ -58,6 +55,18 @@
     <loc>https://digivet-consortium.github.io/movenet/reference/colindex2name.html</loc>
   </url>
   <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/contactchains2leaflet.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/ContactTrace2holdingdata.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/ContactTrace2movedata.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/create_anonymisation_effect_analysis_report.html</loc>
+  </url>
+  <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/create_edge_spells.html</loc>
   </url>
   <url>
@@ -77,6 +86,21 @@
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/data2contactmatrix.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/example_admin_areas.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/example_holding_data.csv.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/example_holding_data.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/example_movement_data.csv.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/example_movement_data.html</loc>
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/extract_dates.html</loc>
@@ -121,7 +145,13 @@
     <loc>https://digivet-consortium.github.io/movenet/reference/load_config.html</loc>
   </url>
   <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/local_spread_probabilities_ASF.html</loc>
+  </url>
+  <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/monthxmonth_heatmap.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/movedata2EpiContactTrace.html</loc>
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/movedata2networkDynamic.html</loc>
@@ -140,6 +170,9 @@
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/plot_measure_over_anonymisation_gradient.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/plot_measure_over_anonymisation_gradient2.html</loc>
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/reachability_analysis.html</loc>
@@ -175,6 +208,9 @@
     <loc>https://digivet-consortium.github.io/movenet/reference/select_cols.html</loc>
   </url>
   <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/series_5_10_50_100_up_to_oom.html</loc>
+  </url>
+  <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/snapshots_diffperiods_dotplot1.html</loc>
   </url>
   <url>
@@ -188,6 +224,9 @@
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/static_network_snapshots_analysis.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/trace_contact_chains.html</loc>
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/validate_config.html</loc>

@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">movenet</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0-1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0-1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,7 +46,6 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/pseudonymise.html">Pseudonymising livestock movement and holding data</a>
     <a class="dropdown-item" href="../articles/network-analysis.html">Network analysis of livestock movement data</a>
-    <a class="dropdown-item" href="../articles/transmission-models.html">Integrating livestock movement data into transmission models</a>
     <a class="dropdown-item" href="../articles/configurations.html">Configurations</a>
   </div>
 </li>
@@ -120,7 +119,7 @@ the subsections below.</p>
 <span><span class="co">#&gt;   separator: ","   #Separator (delimiter) character used in movement datafile</span></span>
 <span><span class="co">#&gt;   encoding: "UTF-8"    #Encoding used in movement datafile</span></span>
 <span><span class="co">#&gt;   decimal: "."  #Decimal mark used in movement datafile</span></span>
-<span><span class="co">#&gt;   date_format: "%Y%m%d" #Date format specification used in movement datafile (see ?readr::parse_date for guidance)</span></span>
+<span><span class="co">#&gt;   date_format: "%Y%m%d" #Date format specification used in movement datafile (empty string "" for "%AD" flexible YMD parser, or see ?readr::parse_date for guidance)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; movedata_cols:</span></span>
 <span><span class="co">#&gt;   from: "departure_cph" #Column name or number for Identifier of origin holding</span></span>
@@ -229,7 +228,7 @@ or the name (minus extension) of a pre-installed config file.</p>
 <span><span class="co">#&gt; Successfully loaded config file: ScotEID</span></span>
 <span><span class="co"># Alternatively, provide the path to any configurations file:</span></span>
 <span><span class="fu"><a href="../reference/load_config.html">load_config</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"configurations"</span>, <span class="st">"fakeScotEID_holding.yml"</span>, package<span class="op">=</span><span class="st">"movenet"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Successfully loaded config file: C:/Users/cboga/AppData/Local/Temp/RtmpO4w9Xd/temp_libpath4b1861ad6208/movenet/configurations/fakeScotEID_holding.yml</span></span></code></pre></div>
+<span><span class="co">#&gt; Successfully loaded config file: C:/Users/cboga/OneDrive - University of Glasgow/Documents/R/win-library/4.1/movenet/configurations/fakeScotEID_holding.yml</span></span></code></pre></div>
 <p>The movenet environment can hold one set of movement configurations
 and one set of holding configurations at the same time.</p>
 </div>

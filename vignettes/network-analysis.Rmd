@@ -41,10 +41,12 @@ This networkDynamic representation can then be used to calculate various network
 summary measures, such as finding the maximum reachability in the network:
 
 ```{R}
-max_reachability <- parallel_summarise_temporal_node_properties(list(network), n_threads = 1,
-                                            node_property = "forward reachability",
-                                            statistics = list(max = max),
-                                            identify_nodes = TRUE)
+max_reachability <- 
+  parallel_summarise_temporal_node_properties(list(network), 
+                                              n_threads = 1,
+                                              node_property = "forward reachability",
+                                              statistics = list(max = max),
+                                              identify_nodes = TRUE)
 unlist(max_reachability)
 ```
 
@@ -54,7 +56,7 @@ unlist(max_reachability)
 The movenet package provides a function to create a network analysis report,
 with analyses of monthly network snapshots:
 
-```{R eval=TRUE, echo=TRUE, message=FALSE, warning=FALSE, results='hide'}
+```{R eval=FALSE, echo=TRUE, message=FALSE, warning=FALSE, results='hide'}
 create_temporal_network_analysis_report(
   network,
   output_file = file.path(tempdir(),"network_report.html"),
@@ -67,5 +69,7 @@ This creates an html document that can be opened in a browser, and contains a
 full report as shown below:
 
 ```{R, echo = FALSE}
-suppressWarnings(htmltools::includeHTML(file.path(tempdir(),"network_report.html")))
+htmltools::tags$iframe(title = "report",
+                       src = system.file("reports/network_report.html", package = "movenet"),
+                       width = "100%", height = 800)
 ```
