@@ -60,7 +60,7 @@ split_movement_data <- function(movement_data, period){
 #' month, n months, year or n years is used as starting date. (OR make
 #' starting date an argument?)
 #'
-#' @import igraph
+#' @importFrom igraph delete_edges edge_attr delete_vertices E degree
 #' @importFrom lubridate as_date
 #'
 #' @keywords internal
