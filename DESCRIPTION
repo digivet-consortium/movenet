@@ -46,6 +46,7 @@ Imports:
     ggplot2,
     htmltools,
     htmlwidgets,
+    igraph,
     leaflegend,
     leaflet,
     lubridate (>= 1.9.0),
