@@ -141,4 +141,11 @@ admin_areas_map = example_admin_areas)
 \item \code{\link[EpiContactTrace:Trace]{EpiContactTrace::Trace()}} for the underlying contact chain tracing functionality.
 \item \code{\link[leaflet:leaflet]{leaflet::leaflet()}} for the underlying mapping functionality.
 }
+
+Other network-related functions: 
+\code{\link{create_temporal_network_analysis_report}()},
+\code{\link{movedata2igraph}()},
+\code{\link{movedata2networkDynamic}()},
+\code{\link{parallel_summarise_temporal_node_properties}()}
 }
+\concept{network-related functions}

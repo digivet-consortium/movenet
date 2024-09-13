@@ -37,3 +37,11 @@ An html report is created with network analyses.
 \description{
 Create a temporal network analysis report from a movement network
 }
+\seealso{
+Other network-related functions: 
+\code{\link{movedata2igraph}()},
+\code{\link{movedata2networkDynamic}()},
+\code{\link{parallel_summarise_temporal_node_properties}()},
+\code{\link{trace_contact_chains}()}
+}
+\concept{network-related functions}

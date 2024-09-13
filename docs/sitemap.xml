@@ -154,6 +154,9 @@
     <loc>https://digivet-consortium.github.io/movenet/reference/movedata2EpiContactTrace.html</loc>
   </url>
   <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/movedata2igraph.html</loc>
+  </url>
+  <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/movedata2networkDynamic.html</loc>
   </url>
   <url>
@@ -221,6 +224,12 @@
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/snapshot_summary_stats_linechart.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/split_igraph.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/reference/split_movement_data.html</loc>
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/static_network_snapshots_analysis.html</loc>

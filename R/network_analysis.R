@@ -31,6 +31,8 @@
 #' @importFrom pbapply pblapply
 #' @importFrom tsna tReach tDegree
 #'
+#' @family network-related functions
+#'
 #' @export
 parallel_summarise_temporal_node_properties <-
   function(networks, n_threads, node_property, statistics,

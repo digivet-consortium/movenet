@@ -45,3 +45,11 @@ of the nodes with maximum values of the selected node property can also be
 returned. This function uses a socket cluster with \code{n_threads} threads to
 run calculations in parallel.
 }
+\seealso{
+Other network-related functions: 
+\code{\link{create_temporal_network_analysis_report}()},
+\code{\link{movedata2igraph}()},
+\code{\link{movedata2networkDynamic}()},
+\code{\link{trace_contact_chains}()}
+}
+\concept{network-related functions}

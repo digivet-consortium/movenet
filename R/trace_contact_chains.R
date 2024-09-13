@@ -122,6 +122,7 @@ globalVariables(c(".","total_weight"))
 #' @seealso
 #' * [EpiContactTrace::Trace()] for the underlying contact chain tracing functionality.
 #' * [leaflet::leaflet()] for the underlying mapping functionality.
+#' @family network-related functions
 #'
 trace_contact_chains <- function(movement_data, holding_data,
                                  root,

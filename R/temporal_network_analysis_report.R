@@ -15,6 +15,8 @@
 #' @importFrom rmarkdown render
 #' @importFrom flextable qflextable set_flextable_defaults
 #'
+#' @family network-related functions
+#'
 #' @return An html report is created with network analyses.
 #'
 #' @export

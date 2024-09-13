@@ -66,6 +66,9 @@ rm(movement_data, holding_data)
 }
 
 Other network-related functions: 
-\code{\link{movedata2networkDynamic}()}
+\code{\link{create_temporal_network_analysis_report}()},
+\code{\link{movedata2networkDynamic}()},
+\code{\link{parallel_summarise_temporal_node_properties}()},
+\code{\link{trace_contact_chains}()}
 }
 \concept{network-related functions}
