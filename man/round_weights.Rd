@@ -35,6 +35,37 @@ becomes the minimum possible value in the column. This is to capture that any
 livestock movement, no matter how small, has an inherent risk that is
 conceptually closer to that of \code{unit}, than that of no movement at all.
 }
+\examples{
+# Set-up: Save movenet environment with current configurations
+movenetenv <- movenet:::movenetenv
+old_config <- movenetenv$options
+
+# Load a movement config file
+load_config(system.file("configurations", "ScotEID.yml",
+                        package = "movenet"))
+
+# Round movement weights to multiples of 5 (and set 5 as minimum value)
+moves_w_rounded_weights <- round_weights(example_movement_data, 5)
+head(moves_w_rounded_weights)
+
+# Round movement reference numbers to multiples of 10 (and set 10 as minimum
+# value)
+moves_w_rounded_refs <-
+  round_weights(example_movement_data, 10, column = "movement_reference")
+head(moves_w_rounded_refs)
+
+# Clean-up: Reinstate previous configurations
+movenetenv$options <- old_config
+rm("old_config", "movenetenv", "moves_w_rounded_weights",
+   "moves_w_rounded_refs")
+}
 \seealso{
 \code{\link[plyr:round_any]{plyr::round_any()}}, which this function wraps.
+
+Other Privacy-enhancing functions: 
+\code{\link{anonymise}()},
+\code{\link{jitter_dates}()},
+\code{\link{jitter_weights}()},
+\code{\link{round_dates}()}
 }
+\concept{Privacy-enhancing functions}

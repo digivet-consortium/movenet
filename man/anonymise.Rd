@@ -53,3 +53,43 @@ name in \code{key}. Otherwise, if \code{data} contains holding identifiers that 
 present in \code{key}, the \code{key} is expanded by adding additional \code{prefix}-integer
 combinations.
 }
+\examples{
+# Set-up: Save movenet environment with current configurations
+movenetenv <- movenet:::movenetenv
+old_config <- movenetenv$options
+
+# Load a combined config file
+load_config(system.file("configurations", "fakeScotEID_combined_config.yml",
+                        package = "movenet"))
+
+# Pseudonymise holding data by replacing identifiers with random consecutive
+# integers from 1-N
+pseudonymised_holdings <- anonymise(example_holding_data)
+head(pseudonymised_holdings$data)
+
+# Pseudonymise holding data by replacing identifiers with FARM_1 to FARM_N
+pseudonymised_holdings <- anonymise(example_holding_data, prefix = "FARM_")
+head(pseudonymised_holdings$data)
+head(pseudonymised_holdings$key)
+# Save the pseudonymisation key for later use
+pseudonymisation_key <- pseudonymised_holdings$key
+
+# Pseudonymise movement data using the previously generated key
+pseudonymised_movements <-
+  anonymise(example_movement_data, key = pseudonymisation_key)
+head(pseudonymised_movements$data)
+
+# Clean-up: Reinstate previous configurations
+movenetenv$options <- old_config
+rm("old_config", "movenetenv", "pseudonymised_holdings",
+   "pseudonymisation_key", "pseudonymised_movements")
+
+}
+\seealso{
+Other Privacy-enhancing functions: 
+\code{\link{jitter_dates}()},
+\code{\link{jitter_weights}()},
+\code{\link{round_dates}()},
+\code{\link{round_weights}()}
+}
+\concept{Privacy-enhancing functions}

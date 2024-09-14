@@ -84,7 +84,48 @@ this can affect subsequent operations referring to this name.
 Columns for which a summary function is not provided, are dropped from
 the resulting tibble.
 }
+\examples{
+# Set-up: Save movenet environment with current configurations
+movenetenv <- movenet:::movenetenv
+old_config <- movenetenv$options
+
+# Load a movement config file
+load_config(system.file("configurations", "ScotEID.yml",
+                        package = "movenet"))
+
+# Round dates down to the first day of the month, aggregate by summing up
+# weights. This silently drops the optional movement_reference column.
+monthly_data <- round_dates(example_movement_data, "month")
+head(monthly_data)
+
+# Round dates down to the first day of the month, and aggregate by summing
+# up weights and listing movement reference numbers together
+monthly_data_w_refs <- round_dates(example_movement_data, "month",
+                                   movement_refs = list(movement_reference))
+head(monthly_data_w_refs)
+
+
+# Round dates down to the first day of the week (Monday) without aggregating
+weekly_data <- round_dates(example_movement_data,
+                           unit = "week",
+                           week_start = "Monday",
+                           sum_weight = FALSE)
+head(weekly_data)
+
+# Clean-up: Reinstate previous configurations
+movenetenv$options <- old_config
+rm("old_config", "movenetenv", "monthly_data", "monthly_data_w_refs",
+  "weekly_data")
+
+}
 \seealso{
 \code{\link[lubridate:round_date]{lubridate::floor_date()}}, \code{\link[dplyr:summarise]{dplyr::summarise()}} which this function
 wraps.
+
+Other Privacy-enhancing functions: 
+\code{\link{anonymise}()},
+\code{\link{jitter_dates}()},
+\code{\link{jitter_weights}()},
+\code{\link{round_weights}()}
 }
+\concept{Privacy-enhancing functions}

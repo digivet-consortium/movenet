@@ -35,6 +35,39 @@ for this data point is resampled, until the resulting data point becomes
 positive. This is to capture that any movement in a livestock movement
 database is assumed to have a positive weight (quantity of animals moved).
 }
+\examples{
+# Set-up: Save movenet environment with current configurations
+movenetenv <- movenet:::movenetenv
+old_config <- movenetenv$options
+
+# Load a movement config file
+load_config(system.file("configurations", "ScotEID.yml",
+                        package = "movenet"))
+
+# Add random noise from -3 to +3 to movement weights
+head(example_movement_data)
+moves_w_jittered_weights <- jitter_weights(example_movement_data, 3)
+head(moves_w_jittered_weights)
+
+# Add random noise from -3 to +3 to movement reference numbers
+moves_w_jittered_refs <- jitter_weights(example_movement_data,
+                                        range = 3,
+                                        column = "movement_reference")
+head(moves_w_jittered_refs)
+
+# Clean-up: Reinstate previous configurations
+movenetenv$options <- old_config
+rm("old_config", "movenetenv", "moves_w_jittered_weights",
+   "moves_w_jittered_refs")
+
+}
 \seealso{
 \code{\link[base:jitter]{base::jitter()}}, which this function is based on.
+
+Other Privacy-enhancing functions: 
+\code{\link{anonymise}()},
+\code{\link{jitter_dates}()},
+\code{\link{round_dates}()},
+\code{\link{round_weights}()}
 }
+\concept{Privacy-enhancing functions}

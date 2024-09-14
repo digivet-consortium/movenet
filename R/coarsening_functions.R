@@ -23,7 +23,28 @@
 #' @import checkmate
 #' @importFrom purrr has_element
 #'
+#' @family Privacy-enhancing functions
+#'
 #' @export
+#'
+#' @examples
+#' # Set-up: Save movenet environment with current configurations
+#' movenetenv <- movenet:::movenetenv
+#' old_config <- movenetenv$options
+#'
+#' # Load a movement config file
+#' load_config(system.file("configurations", "ScotEID.yml",
+#'                         package = "movenet"))
+#'
+#' # Add -3 to +3 days of jitter to movement dates
+#' head(example_movement_data)
+#' moves_w_jittered_dates <- jitter_dates(example_movement_data, 3)
+#' head(moves_w_jittered_dates)
+#'
+#' # Clean-up: Reinstate previous configurations
+#' movenetenv$options <- old_config
+#' rm("old_config", "movenetenv", "moves_w_jittered_dates")
+#'
 jitter_dates <- function(data, range){
 
   #########################
@@ -150,6 +171,7 @@ jitter_dates <- function(data, range){
 #'
 #' @seealso [lubridate::floor_date()], [dplyr::summarise()] which this function
 #' wraps.
+#' @family Privacy-enhancing functions
 #'
 #' @import checkmate
 #' @importFrom dplyr group_by mutate rename summarise ungroup row_number
@@ -158,6 +180,40 @@ jitter_dates <- function(data, range){
 #' @importFrom rlang := .data
 #'
 #' @export
+#'
+#' @examples
+#' # Set-up: Save movenet environment with current configurations
+#' movenetenv <- movenet:::movenetenv
+#' old_config <- movenetenv$options
+#'
+#' # Load a movement config file
+#' load_config(system.file("configurations", "ScotEID.yml",
+#'                         package = "movenet"))
+#'
+#' # Round dates down to the first day of the month, aggregate by summing up
+#' # weights. This silently drops the optional movement_reference column.
+#' monthly_data <- round_dates(example_movement_data, "month")
+#' head(monthly_data)
+#'
+#' # Round dates down to the first day of the month, and aggregate by summing
+#' # up weights and listing movement reference numbers together
+#' monthly_data_w_refs <- round_dates(example_movement_data, "month",
+#'                                    movement_refs = list(movement_reference))
+#' head(monthly_data_w_refs)
+#'
+#'
+#' # Round dates down to the first day of the week (Monday) without aggregating
+#' weekly_data <- round_dates(example_movement_data,
+#'                            unit = "week",
+#'                            week_start = "Monday",
+#'                            sum_weight = FALSE)
+#' head(weekly_data)
+#'
+#' # Clean-up: Reinstate previous configurations
+#' movenetenv$options <- old_config
+#' rm("old_config", "movenetenv", "monthly_data", "monthly_data_w_refs",
+#'   "weekly_data")
+#'
 round_dates <- function(data, unit,
                         week_start = getOption("lubridate.week.start", 7),
                         sum_weight = TRUE, ...){
@@ -278,12 +334,39 @@ round_dates <- function(data, unit,
 #' numeric column.
 #'
 #' @seealso [base::jitter()], which this function is based on.
+#' @family Privacy-enhancing functions
 #'
 #' @import checkmate
 #' @importFrom purrr has_element
 #' @importFrom stats runif
 #'
 #' @export
+#'
+#' @examples
+#' # Set-up: Save movenet environment with current configurations
+#' movenetenv <- movenet:::movenetenv
+#' old_config <- movenetenv$options
+#'
+#' # Load a movement config file
+#' load_config(system.file("configurations", "ScotEID.yml",
+#'                         package = "movenet"))
+#'
+#' # Add random noise from -3 to +3 to movement weights
+#' head(example_movement_data)
+#' moves_w_jittered_weights <- jitter_weights(example_movement_data, 3)
+#' head(moves_w_jittered_weights)
+#'
+#' # Add random noise from -3 to +3 to movement reference numbers
+#' moves_w_jittered_refs <- jitter_weights(example_movement_data,
+#'                                         range = 3,
+#'                                         column = "movement_reference")
+#' head(moves_w_jittered_refs)
+#'
+#' # Clean-up: Reinstate previous configurations
+#' movenetenv$options <- old_config
+#' rm("old_config", "movenetenv", "moves_w_jittered_weights",
+#'    "moves_w_jittered_refs")
+#'
 jitter_weights <- function(data, range,
                            column = movenetenv$options$movedata_cols$weight){
 
@@ -358,12 +441,37 @@ jitter_weights <- function(data, range,
 #' numeric column.
 #'
 #' @seealso [plyr::round_any()], which this function wraps.
+#' @family Privacy-enhancing functions
 #'
 #' @import checkmate
 #' @importFrom plyr round_any
 #' @importFrom purrr has_element
 #'
 #' @export
+#'
+#' @examples
+#' # Set-up: Save movenet environment with current configurations
+#' movenetenv <- movenet:::movenetenv
+#' old_config <- movenetenv$options
+#'
+#' # Load a movement config file
+#' load_config(system.file("configurations", "ScotEID.yml",
+#'                         package = "movenet"))
+#'
+#' # Round movement weights to multiples of 5 (and set 5 as minimum value)
+#' moves_w_rounded_weights <- round_weights(example_movement_data, 5)
+#' head(moves_w_rounded_weights)
+#'
+#' # Round movement reference numbers to multiples of 10 (and set 10 as minimum
+#' # value)
+#' moves_w_rounded_refs <-
+#'   round_weights(example_movement_data, 10, column = "movement_reference")
+#' head(moves_w_rounded_refs)
+#'
+#' # Clean-up: Reinstate previous configurations
+#' movenetenv$options <- old_config
+#' rm("old_config", "movenetenv", "moves_w_rounded_weights",
+#'    "moves_w_rounded_refs")
 round_weights <- function(data, unit,
                           column = movenetenv$options$movedata_cols$weight){
 
@@ -449,7 +557,41 @@ round_weights <- function(data, unit,
 #' @import checkmate
 #' @importFrom purrr has_element
 #'
+#' @family Privacy-enhancing functions
+#'
 #' @export
+#'
+#' @examples
+#' # Set-up: Save movenet environment with current configurations
+#' movenetenv <- movenet:::movenetenv
+#' old_config <- movenetenv$options
+#'
+#' # Load a combined config file
+#' load_config(system.file("configurations", "fakeScotEID_combined_config.yml",
+#'                         package = "movenet"))
+#'
+#' # Pseudonymise holding data by replacing identifiers with random consecutive
+#' # integers from 1-N
+#' pseudonymised_holdings <- anonymise(example_holding_data)
+#' head(pseudonymised_holdings$data)
+#'
+#' # Pseudonymise holding data by replacing identifiers with FARM_1 to FARM_N
+#' pseudonymised_holdings <- anonymise(example_holding_data, prefix = "FARM_")
+#' head(pseudonymised_holdings$data)
+#' head(pseudonymised_holdings$key)
+#' # Save the pseudonymisation key for later use
+#' pseudonymisation_key <- pseudonymised_holdings$key
+#'
+#' # Pseudonymise movement data using the previously generated key
+#' pseudonymised_movements <-
+#'   anonymise(example_movement_data, key = pseudonymisation_key)
+#' head(pseudonymised_movements$data)
+#'
+#' # Clean-up: Reinstate previous configurations
+#' movenetenv$options <- old_config
+#' rm("old_config", "movenetenv", "pseudonymised_holdings",
+#'    "pseudonymisation_key", "pseudonymised_movements")
+#'
 anonymise <- function(data, prefix = NULL, key = NULL){
 
   #######################

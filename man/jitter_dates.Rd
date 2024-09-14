@@ -29,3 +29,30 @@ result in a date being moved beyond the original date range, the amount of
 jitter for this date is resampled, until the resulting date is within the
 original date range.
 }
+\examples{
+# Set-up: Save movenet environment with current configurations
+movenetenv <- movenet:::movenetenv
+old_config <- movenetenv$options
+
+# Load a movement config file
+load_config(system.file("configurations", "ScotEID.yml",
+                        package = "movenet"))
+
+# Add -3 to +3 days of jitter to movement dates
+head(example_movement_data)
+moves_w_jittered_dates <- jitter_dates(example_movement_data, 3)
+head(moves_w_jittered_dates)
+
+# Clean-up: Reinstate previous configurations
+movenetenv$options <- old_config
+rm("old_config", "movenetenv", "moves_w_jittered_dates")
+
+}
+\seealso{
+Other Privacy-enhancing functions: 
+\code{\link{anonymise}()},
+\code{\link{jitter_weights}()},
+\code{\link{round_dates}()},
+\code{\link{round_weights}()}
+}
+\concept{Privacy-enhancing functions}
