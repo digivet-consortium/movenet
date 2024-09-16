@@ -180,7 +180,8 @@ create_anonymisation_effect_analysis_report <- function(movement_data,
   # deal well with loops).
   if(verbose){cat("Processing movement data...\n")}
 
-  movement_data %<>%
+  movement_data <-
+    movement_data %>%
     round_dates("day") %>% # Do this both before modifications and at temporal network creation? need to do the latter anyway to sort out any arising from date jitter.
                            # Should not matter for "true" networks, but will result in slight differences when jittering either weights and/or dates.
     filter(.data[[weight_col_name]] > 0) %>%
@@ -280,11 +281,11 @@ create_anonymisation_effect_analysis_report <- function(movement_data,
 
     mean_distance_jitter <-
       weight_mod_subnetwork_properties %>%
-      filter(modification_treatment %in% c("true", "jittered")) %>%
+      filter(.data$modification_treatment %in% c("true", "jittered")) %>%
       # for each period, calculate the average across 3 jitter simulations
-      group_by(unit_or_range, period) %>%
+      group_by(.data$unit_or_range, period) %>%
       summarise(mean_distance = mean(mean_distance)) %>%
-      select(unit_or_range, mean_distance)
+      select(.data$unit_or_range, mean_distance)
 
     trend_mean_distance_jitter <-
       determine_trend(mean_distance_jitter$unit_or_range,
@@ -292,8 +293,8 @@ create_anonymisation_effect_analysis_report <- function(movement_data,
 
     mean_distance_round <-
       weight_mod_subnetwork_properties %>%
-      filter(modification_treatment %in% c("true", "rounded")) %>%
-      select(unit_or_range, mean_distance)
+      filter(.data$modification_treatment %in% c("true", "rounded")) %>%
+      select(.data$unit_or_range, mean_distance)
 
     trend_mean_distance_round <-
       determine_trend(mean_distance_round$unit_or_range,
@@ -322,11 +323,11 @@ create_anonymisation_effect_analysis_report <- function(movement_data,
 
     strength_assortativity_jitter <-
       weight_mod_subnetwork_properties %>%
-      filter(modification_treatment %in% c("true", "jittered")) %>%
+      filter(.data$modification_treatment %in% c("true", "jittered")) %>%
       # for each period, calculate the average across 3 jitter simulations
-      group_by(unit_or_range, period) %>%
-      summarise(strength_assortativity = mean(strength_assortativity)) %>%
-      select(unit_or_range, strength_assortativity)
+      group_by(.data$unit_or_range, period) %>%
+      summarise(strength_assortativity = mean(.data$strength_assortativity)) %>%
+      select(.data$unit_or_range, .data$strength_assortativity)
 
     trend_strength_assortativity_jitter <-
       determine_trend(strength_assortativity_jitter$unit_or_range,
@@ -334,8 +335,8 @@ create_anonymisation_effect_analysis_report <- function(movement_data,
 
     strength_assortativity_round <-
       weight_mod_subnetwork_properties %>%
-      filter(modification_treatment %in% c("true", "rounded")) %>%
-      select(unit_or_range, strength_assortativity)
+      filter(.data$modification_treatment %in% c("true", "rounded")) %>%
+      select(.data$unit_or_range, .data$strength_assortativity)
 
     trend_strength_assortativity_round <-
       determine_trend(strength_assortativity_round$unit_or_range,
@@ -380,23 +381,23 @@ create_anonymisation_effect_analysis_report <- function(movement_data,
         t <- row$period
         true_equiv <- weight_mod_subnetwork_properties[which(
           weight_mod_subnetwork_properties$modification_treatment == "true" &  weight_mod_subnetwork_properties$period == t),]
-        cor(x = row[["strength_gm"]]$ranking,
-            y = true_equiv[["strength_gm"]][[1]]$ranking,
-            method = "kendall")
+        stats::cor(x = row[["strength_gm"]]$ranking,
+                   y = true_equiv[["strength_gm"]][[1]]$ranking,
+                   method = "kendall")
       })
 
     strength_jitter <-
       weight_mod_subnetwork_properties %>%
-      filter(modification_treatment == "jittered") %>%
+      filter(.data$modification_treatment == "jittered") %>%
       # for each period, calculate the average across 3 jitter simulations
-      group_by(unit_or_range, period) %>%
-      summarise(strength_cor = mean(strength_cor)) %>%
-      select(unit_or_range, strength_cor)
+      group_by(.data$unit_or_range, period) %>%
+      summarise(strength_cor = mean(.data$strength_cor)) %>%
+      select(.data$unit_or_range, .data$strength_cor)
 
     strength_round <-
       weight_mod_subnetwork_properties %>%
-      filter(modification_treatment == "rounded") %>%
-      select(unit_or_range, strength_cor)
+      filter(.data$modification_treatment == "rounded") %>%
+      select(.data$unit_or_range, .data$strength_cor)
 
     if(verbose){cat("Calculating rank differences with true data...\n")}
     weight_mod_subnetwork_properties$strength_rank_diff <-
@@ -413,16 +414,16 @@ create_anonymisation_effect_analysis_report <- function(movement_data,
 
     strength_rd_jitter <-
       weight_mod_subnetwork_properties %>%
-      filter(modification_treatment == "jittered") %>%
+      filter(.data$modification_treatment == "jittered") %>%
       # for each period, calculate the average across 3 jitter simulations
-      group_by(unit_or_range, period) %>%
-      summarise(strength_rank_diff = mean(strength_rank_diff)) %>%
-      select(unit_or_range, strength_rank_diff)
+      group_by(.data$unit_or_range, period) %>%
+      summarise(strength_rank_diff = mean(.data$strength_rank_diff)) %>%
+      select(.data$unit_or_range, .data$strength_rank_diff)
 
     strength_rd_round <-
       weight_mod_subnetwork_properties %>%
-      filter(modification_treatment == "rounded") %>%
-      select(unit_or_range, strength_rank_diff)
+      filter(.data$modification_treatment == "rounded") %>%
+      select(.data$unit_or_range, .data$strength_rank_diff)
 
 
     if(verbose){cat("Plotting correlation coefficients for strength...\n")}
@@ -461,23 +462,23 @@ create_anonymisation_effect_analysis_report <- function(movement_data,
         t <- row$period
         true_equiv <- weight_mod_subnetwork_properties[which(
           weight_mod_subnetwork_properties$modification_treatment == "true" &  weight_mod_subnetwork_properties$period == t),]
-        cor(x = row[["pagerank"]]$ranking,
-            y = true_equiv[["pagerank"]][[1]]$ranking,
-            method = "kendall")
+        stats::cor(x = row[["pagerank"]]$ranking,
+                   y = true_equiv[["pagerank"]][[1]]$ranking,
+                   method = "kendall")
       })
 
     pagerank_jitter <-
       weight_mod_subnetwork_properties %>%
-      filter(modification_treatment == "jittered") %>%
+      filter(.data$modification_treatment == "jittered") %>%
       # for each period, calculate the average across 3 jitter simulations
-      group_by(unit_or_range, period) %>%
-      summarise(pagerank_cor = mean(pagerank_cor)) %>%
-      select(unit_or_range, pagerank_cor)
+      group_by(.data$unit_or_range, period) %>%
+      summarise(pagerank_cor = mean(.data$pagerank_cor)) %>%
+      select(.data$unit_or_range, .data$pagerank_cor)
 
     pagerank_round <-
       weight_mod_subnetwork_properties %>%
-      filter(modification_treatment == "rounded") %>%
-      select(unit_or_range, pagerank_cor)
+      filter(.data$modification_treatment == "rounded") %>%
+      select(.data$unit_or_range, .data$pagerank_cor)
 
 
     if(verbose){cat("Calculating rank differences with true data...\n")}
@@ -495,16 +496,16 @@ create_anonymisation_effect_analysis_report <- function(movement_data,
 
     pagerank_rd_jitter <-
       weight_mod_subnetwork_properties %>%
-      filter(modification_treatment == "jittered") %>%
+      filter(.data$modification_treatment == "jittered") %>%
       # for each period, calculate the average across 3 jitter simulations
-      group_by(unit_or_range, period) %>%
-      summarise(pagerank_rank_diff = mean(pagerank_rank_diff)) %>%
-      select(unit_or_range, pagerank_rank_diff)
+      group_by(.data$unit_or_range, period) %>%
+      summarise(pagerank_rank_diff = mean(.data$pagerank_rank_diff)) %>%
+      select(.data$unit_or_range, .data$pagerank_rank_diff)
 
     pagerank_rd_round <-
       weight_mod_subnetwork_properties %>%
-      filter(modification_treatment == "rounded") %>%
-      select(unit_or_range, pagerank_rank_diff)
+      filter(.data$modification_treatment == "rounded") %>%
+      select(.data$unit_or_range, .data$pagerank_rank_diff)
 
 
     if(verbose){cat("Plotting correlation coefficients for PageRank...\n")}
@@ -543,23 +544,23 @@ create_anonymisation_effect_analysis_report <- function(movement_data,
         t <- row$period
         true_equiv <- weight_mod_subnetwork_properties[which(
           weight_mod_subnetwork_properties$modification_treatment == "true" &  weight_mod_subnetwork_properties$period == t),]
-        cor(x = row[["betweenness"]]$ranking,
-            y = true_equiv[["betweenness"]][[1]]$ranking,
-            method = "kendall")
+        stats::cor(x = row[["betweenness"]]$ranking,
+                   y = true_equiv[["betweenness"]][[1]]$ranking,
+                   method = "kendall")
       })
 
     betweenness_jitter <-
       weight_mod_subnetwork_properties %>%
-      filter(modification_treatment == "jittered") %>%
+      filter(.data$modification_treatment == "jittered") %>%
       # for each period, calculate the average across 3 jitter simulations
-      group_by(unit_or_range, period) %>%
-      summarise(betweenness_cor = mean(betweenness_cor)) %>%
-      select(unit_or_range, betweenness_cor)
+      group_by(.data$unit_or_range, period) %>%
+      summarise(betweenness_cor = mean(.data$betweenness_cor)) %>%
+      select(.data$unit_or_range, .data$betweenness_cor)
 
     betweenness_round <-
       weight_mod_subnetwork_properties %>%
-      filter(modification_treatment == "rounded") %>%
-      select(unit_or_range, betweenness_cor)
+      filter(.data$modification_treatment == "rounded") %>%
+      select(.data$unit_or_range, .data$betweenness_cor)
 
     if(verbose){cat("Calculating rank differences with true data...\n")}
     weight_mod_subnetwork_properties$betweenness_rank_diff <-
@@ -576,16 +577,16 @@ create_anonymisation_effect_analysis_report <- function(movement_data,
 
     betweenness_rd_jitter <-
       weight_mod_subnetwork_properties %>%
-      filter(modification_treatment == "jittered") %>%
+      filter(.data$modification_treatment == "jittered") %>%
       # for each period, calculate the average across 3 jitter simulations
-      group_by(unit_or_range, period) %>%
-      summarise(betweenness_rank_diff = mean(betweenness_rank_diff)) %>%
-      select(unit_or_range, betweenness_rank_diff)
+      group_by(.data$unit_or_range, period) %>%
+      summarise(betweenness_rank_diff = mean(.data$betweenness_rank_diff)) %>%
+      select(.data$unit_or_range, .data$betweenness_rank_diff)
 
     betweenness_rd_round <-
       weight_mod_subnetwork_properties %>%
-      filter(modification_treatment == "rounded") %>%
-      select(unit_or_range, betweenness_rank_diff)
+      filter(.data$modification_treatment == "rounded") %>%
+      select(.data$unit_or_range, .data$betweenness_rank_diff)
 
     if(verbose){cat("Plotting correlation coefficients for betweenness...\n")}
     plot_betweenness_jitter <-
@@ -691,10 +692,10 @@ plot_measure_over_anonymisation_gradient2 <-
       p_values <-
         sapply(non_zero_ranges_or_units,
                function(x) {
-                 wilcox.test(data[data[[anon_amount]] == x,][[measure]], # compare the modified data
-                             data[data[[anon_amount]] == 0,][[measure]], # to the true data
-                             paired = TRUE, # paired test because comparing values for the same period across different treatments
-                             ...)$p.value  # ... allows for passing on of alternative hypotheses (e.g. for one-sided tests)
+                 stats::wilcox.test(data[data[[anon_amount]] == x,][[measure]], # compare the modified data
+                                    data[data[[anon_amount]] == 0,][[measure]], # to the true data
+                                    paired = TRUE, # paired test because comparing values for the same period across different treatments
+                                    ...)$p.value  # ... allows for passing on of alternative hypotheses (e.g. for one-sided tests)
                })
 
       # convert to stars and stick into tibble for geom_text
@@ -709,7 +710,7 @@ plot_measure_over_anonymisation_gradient2 <-
       # Create boxplot and add significance stars
       p <- p +
         geom_boxplot(aes(group = .data[[anon_amount]])) +
-        geom_text(aes(x = x, y = y, label = signif), data = signif_stars) +
+        geom_text(aes(x = .data$x, y = .data$y, label = .data$signif), data = signif_stars) +
 
       # Add ("True") to the first tick label to make figure more informative
         scale_x_continuous(
@@ -749,7 +750,7 @@ plot_measure_over_anonymisation_gradient2 <-
   }
 
 determine_trend <- function(x, y, alpha = 0.05){
-  lm.out <- lm(y ~ x)
+  lm.out <- stats::lm(y ~ x)
   slope <- summary(lm.out)$coefficients['x', 'Estimate'] # estimated slope
   slope.p <- summary(lm.out)$coefficients['x', 'Pr(>|t|)'] # p-value for H0: slope = 0
   if(slope.p > alpha || is.nan(slope.p)){trend <- 'no significant trend'}
