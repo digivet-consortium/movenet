@@ -66,6 +66,7 @@ rm("old_config", "movenetenv", "moves_w_jittered_weights",
 
 Other Privacy-enhancing functions: 
 \code{\link{anonymise}()},
+\code{\link{create_anonymisation_effect_analysis_report}()},
 \code{\link{jitter_dates}()},
 \code{\link{round_dates}()},
 \code{\link{round_weights}()}
