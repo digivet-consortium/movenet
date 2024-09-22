@@ -287,18 +287,10 @@ create_anonymisation_effect_analysis_report <- function(movement_data,
       summarise(mean_distance = mean(mean_distance)) %>%
       select(.data$unit_or_range, mean_distance)
 
-    trend_mean_distance_jitter <-
-      determine_trend(mean_distance_jitter$unit_or_range,
-                      mean_distance_jitter$mean_distance)
-
     mean_distance_round <-
       weight_mod_subnetwork_properties %>%
       filter(.data$modification_treatment %in% c("true", "rounded")) %>%
       select(.data$unit_or_range, mean_distance)
-
-    trend_mean_distance_round <-
-      determine_trend(mean_distance_round$unit_or_range,
-                      mean_distance_round$mean_distance)
 
     plot_mean_distance_jitter <-
       mean_distance_jitter %>%
@@ -328,18 +320,10 @@ create_anonymisation_effect_analysis_report <- function(movement_data,
       summarise(strength_assortativity = mean(.data$strength_assortativity)) %>%
       select(.data$unit_or_range, .data$strength_assortativity)
 
-    trend_strength_assortativity_jitter <-
-      determine_trend(strength_assortativity_jitter$unit_or_range,
-                      strength_assortativity_jitter$strength_assortativity)
-
     strength_assortativity_round <-
       weight_mod_subnetwork_properties %>%
       filter(.data$modification_treatment %in% c("true", "rounded")) %>%
       select(.data$unit_or_range, .data$strength_assortativity)
-
-    trend_strength_assortativity_round <-
-      determine_trend(strength_assortativity_round$unit_or_range,
-                      strength_assortativity_round$strength_assortativity)
 
     plot_strength_assortativity_jitter <-
       strength_assortativity_jitter %>%
@@ -630,13 +614,3 @@ plot_measure_over_anonymisation_gradient2 <-
 
     plot(p)
   }
-
-determine_trend <- function(x, y, alpha = 0.05){
-  lm.out <- stats::lm(y ~ x)
-  slope <- summary(lm.out)$coefficients['x', 'Estimate'] # estimated slope
-  slope.p <- summary(lm.out)$coefficients['x', 'Pr(>|t|)'] # p-value for H0: slope = 0
-  if(slope.p > alpha || is.nan(slope.p)){trend <- 'no significant trend'}
-   else if(slope > 0){trend <- 'a positive trend'}
-   else if(slope < 0){trend <- 'a negative trend'}
-  return(trend)
-}

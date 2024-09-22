@@ -93,7 +93,6 @@ plot_mean_distance_jitter
 plot_mean_distance_round
 ```
 
-**Option 1 (generic interpretive guidance):** 
 Where batch size modifications result in average shortest path lengths
 that are higher than in the true data, this indicates that using these particular
 modifications would lead to overestimating the real average shortest path length 
@@ -103,23 +102,6 @@ using these particular modifications would lead to underestimating the real aver
 shortest path length and overestimating the transmission potential of the network.
 If the variability in average shortest path lengths is higher in the privacy-enhanced
 datasets than in the true data, this indicates that ... *Add something about variability of the data?*
-
-**Option 2 (guidance based on linear regression trend):**
-The analysed data in Figure \@ref(fig:mean-distance) show `r trend_mean_distance_jitter`
-for increasing amounts of jitter, suggesting that, in general, using larger jitter 
-ranges would result in an 
-`r switch(trend_mean_distance_jitter, "a positive trend" = "overestimation", "a negative trend" = "underestimation", "no significant trend" = "approximately accurate estimation")`
-of the real average shortest path length and an
-`r switch(trend_mean_distance_jitter, "a positive trend" = "underestimation", "a negative trend" = "overestimation", "no significant trend" = "approximately accurate estimation")`
-of the transmission potential of the network.
-Additionally, the data show `r trend_mean_distance_round` for increasing
-rounding units, suggesting that, in general, using greater rounding units would result in an 
-`r switch(trend_mean_distance_round, "a positive trend" = "overestimation", "a negative trend" = "underestimation", "no significant trend" = "approximately accurate estimation")`
-of the real average shortest path length and an
-`r switch(trend_mean_distance_round, "a positive trend" = "underestimation", "a negative trend" = "overestimation", "no significant trend" = "approximately accurate estimation")` 
-of the transmission potential of the network.
-*Add something about variability of the data?*
-
 
 #### Strength assortativity
 
@@ -147,7 +129,7 @@ plot_strength_assortativity_jitter
 plot_strength_assortativity_round
 ```
 
-**Option 1 (generic interpretive guidance):** 
+
 Where batch size modifications result in strength assortativities that are 
 higher than in the true data, this indicates that using these particular
 modifications would lead to overestimating the real strength assortativities 
@@ -156,18 +138,6 @@ the true data, this indicates that using these particular modifications would
 lead to underestimating the real strength assortativities in the network.
 If the variability in strength assortativities is higher in the privacy-enhanced
 datasets than in the true data, this indicates that ... 
-*Add something about relevance to disease spread, or variability of the data?*
-
-**Option 2 (guidance based on linear regression trend):**
-The analysed data in Figure \@ref(fig:strength-assortativity) show `r trend_strength_assortativity_jitter`
-for increasing amounts of jitter, suggesting that, in general, using larger jitter 
-ranges would result in an 
-`r switch(trend_strength_assortativity_jitter, "a positive trend" = "overestimation", "a negative trend" = "underestimation", "no significant trend" = "approximately accurate estimation")`
-of the real strength assortativity.
-Additionally, the data show `r trend_strength_assortativity_round` for increasing
-rounding units, suggesting that, in general, using greater rounding units would result in an 
-`r switch(trend_strength_assortativity_round, "a positive trend" = "overestimation", "a negative trend" = "underestimation", "no significant trend" = "approximately accurate estimation")`
-of the real strength assortativity. 
 *Add something about relevance to disease spread, or variability of the data?*
 
 ### Ranking of holdings according to local network properties
