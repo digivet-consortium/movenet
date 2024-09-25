@@ -84,7 +84,7 @@ trace_contact_chains(example_movement_data, example_holding_data,
                      outBegin = "2019-04-01", outEnd = "2019-07-01")
 ```
 
-## Summarising and visualising data by administrative area
+## Summarising and visualising contact chain data by administrative area
 
 In addition to visualising contact chains, `trace_contact_chains()` can also aggregate the contact chain 
 data geographically, adding several chloropleth layers to the map. The aim here is to provide an indication of which administrative areas may be at higher (or lower) risk of infection through the identified contact chains. 
@@ -92,6 +92,9 @@ data geographically, adding several chloropleth layers to the map. The aim here 
 To perform geographical aggregation, you need to provide `trace_contact_chains()` with an `sf` dataframe with administrative area boundaries via the `admin_areas_map` argument:
 
 ```{r}
+head(example_admin_areas) # Example administrative areas boundary data
+
+# Pass the administrative area data to trace_contact_chains()
 trace_contact_chains(example_movement_data, example_holding_data,
                      root = "95/216/1100",
                      tEnd = "2019-07-01", days = 90,

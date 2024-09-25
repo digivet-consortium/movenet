@@ -8,8 +8,8 @@ reference:
   - load_config
   - reformat_data
   - asciify
-- title: Pseudonymising movement or holding data
-  desc: Functions for making data non-identifiable
+- title: Enhancing the privacy of movement or holding data
+  desc: Functions for making data less identifiable
   contents:
   - anonymise
   - starts_with("jitter")
@@ -51,4 +51,5 @@ articles:
   - pseudonymise
   - network-analysis
   - trace-contact-chains
+
 

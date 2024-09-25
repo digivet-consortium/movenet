@@ -29,9 +29,10 @@ movenet-format movement tibble."><!-- mathjax --><script src="https://cdnjs.clou
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/pseudonymise.html">Pseudonymising livestock movement and holding data</a>
-    <a class="dropdown-item" href="../articles/network-analysis.html">Network analysis of livestock movement data</a>
     <a class="dropdown-item" href="../articles/configurations.html">Configurations</a>
+    <a class="dropdown-item" href="../articles/pseudonymise.html">Enhancing the privacy of livestock movement and holding data</a>
+    <a class="dropdown-item" href="../articles/network-analysis.html">Network analysis of livestock movement data</a>
+    <a class="dropdown-item" href="../articles/trace-contact-chains.html">Analysing and visualising contact chains on a Leaflet map</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -86,7 +87,55 @@ result in a date being moved beyond the original date range, the amount of
 jitter for this date is resampled, until the resulting date is within the
 original date range.</p>
     </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p>Other Privacy-enhancing functions: 
+<code><a href="anonymise.html">anonymise</a>()</code>,
+<code><a href="jitter_weights.html">jitter_weights</a>()</code>,
+<code><a href="round_dates.html">round_dates</a>()</code>,
+<code><a href="round_weights.html">round_weights</a>()</code></p></div>
+    </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Set-up: Save movenet environment with current configurations</span></span></span>
+<span class="r-in"><span><span class="va">movenetenv</span> <span class="op">&lt;-</span> <span class="fu">movenet</span><span class="fu">:::</span><span class="va">movenetenv</span></span></span>
+<span class="r-in"><span><span class="va">old_config</span> <span class="op">&lt;-</span> <span class="va">movenetenv</span><span class="op">$</span><span class="va">options</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Load a movement config file</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="load_config.html">load_config</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"configurations"</span>, <span class="st">"ScotEID.yml"</span>,</span></span>
+<span class="r-in"><span>                        package <span class="op">=</span> <span class="st">"movenet"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Successfully loaded config file: C:/Users/cboga/AppData/Local/Temp/Rtmpys3Nme/temp_libpath4b984589692b/movenet/configurations/ScotEID.yml</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Add -3 to +3 days of jitter to movement dates</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">example_movement_data</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 x 5</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   departure_cph dest_cph    departure_date qty_pigs movement_reference</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 95/216/1100   19/818/9098 2019-02-08           97             <span style="text-decoration: underline;">304</span>781</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 69/196/5890   71/939/3228 2019-08-15          167             <span style="text-decoration: underline;">229</span>759</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 52/577/5349   82/501/8178 2019-09-15          115              <span style="text-decoration: underline;">36</span>413</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 39/103/5541   13/282/1763 2019-10-26          125             <span style="text-decoration: underline;">488</span>616</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 41/788/6464   57/418/6011 2019-10-17          109             <span style="text-decoration: underline;">581</span>785</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 69/393/9398   39/947/2201 2019-10-06           72             <span style="text-decoration: underline;">564</span>911</span>
+<span class="r-in"><span><span class="va">moves_w_jittered_dates</span> <span class="op">&lt;-</span> <span class="fu">jitter_dates</span><span class="op">(</span><span class="va">example_movement_data</span>, <span class="fl">3</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">moves_w_jittered_dates</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 x 5</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   departure_cph dest_cph    departure_date qty_pigs movement_reference</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 95/216/1100   19/818/9098 2019-02-11           97             <span style="text-decoration: underline;">304</span>781</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 69/196/5890   71/939/3228 2019-08-14          167             <span style="text-decoration: underline;">229</span>759</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 52/577/5349   82/501/8178 2019-09-13          115              <span style="text-decoration: underline;">36</span>413</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 39/103/5541   13/282/1763 2019-10-24          125             <span style="text-decoration: underline;">488</span>616</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 41/788/6464   57/418/6011 2019-10-17          109             <span style="text-decoration: underline;">581</span>785</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 69/393/9398   39/947/2201 2019-10-04           72             <span style="text-decoration: underline;">564</span>911</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Clean-up: Reinstate previous configurations</span></span></span>
+<span class="r-in"><span><span class="va">movenetenv</span><span class="op">$</span><span class="va">options</span> <span class="op">&lt;-</span> <span class="va">old_config</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/rm.html" class="external-link">rm</a></span><span class="op">(</span><span class="st">"old_config"</span>, <span class="st">"movenetenv"</span>, <span class="st">"moves_w_jittered_dates"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>
 
