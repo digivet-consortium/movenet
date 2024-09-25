@@ -537,6 +537,11 @@ plot_measure_over_anonymisation_gradient2 <-
     anon_amount <- colnames(data)[1]
     measure <- colnames(data)[2]
 
+    # Helper function to make first letter of a string lowercase
+    to_lower_first <- function(x) {
+      paste0(tolower(substr(x, 1, 1)), substring(x, 2))
+    }
+
     p <-
       ggplot(data = data,
              aes(x = .data[[anon_amount]], y = .data[[measure]])) +
@@ -544,7 +549,14 @@ plot_measure_over_anonymisation_gradient2 <-
                   "Rounding unit")) +
       ylab(measure_name) +
       #ylim(0, NA) +
-      theme_bw()
+      theme_bw() +
+      ggtitle(ifelse(anonymisation == "jitter",
+                     paste("A. Effects of different jitter ranges on",
+                           gsub("correlation coefficient for ", "holding ",
+                                to_lower_first(measure_name), fixed = TRUE)),
+                     paste("B. Effects of different rounding units on",
+                           gsub("correlation coefficient for ", "holding ",
+                                to_lower_first(measure_name), fixed = TRUE))))
 
     ### To compare global measures between true data and anonymised data ###
 
