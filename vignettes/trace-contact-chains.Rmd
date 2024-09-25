@@ -1,0 +1,107 @@
+---
+title: "Analysing and visualising contact chains on a Leaflet map"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{trace-contact-chains}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+In the event of an outbreak of infectious disease in livestock, it is important to be able to trace the contact chains associated with infected holdings: tracing ingoing contact chains may determine where an infection could have originated from, whereas tracing outgoing contact chains may identify other holdings that the infection could have spread to.
+
+This vignette demonstrates how to use the `trace_contact_chains()` function to perform this tracing and visualise the identified contact chains on an interactive Leaflet map. It also shows you how to aggregate the contact tracing data geographically, resulting in administrative areas being coloured according to the number or total weight of contact chains that pass through them.
+
+## Setting up
+
+To get started, first load the movenet package.
+
+```{r setup}
+library(movenet)
+```
+
+## Tracing and visualising contact chains
+
+The function `trace_contact_chains()` first traces ingoing and outgoing contact chains associated with infected holdings, and then visualises them on an interactive Leaflet map. It builds on the contact tracing functionality provided by the `Trace()` function from the [`EpiContactTrace`](https://github.com/stewid/EpiContactTrace) R package, and uses some of its argument structure.
+
+`trace_contact_chains()` requires the following arguments:
+
+- `movement_data`: A movenet-format movement data tibble, with movement data for 
+  the period over which you want to trace contact chains. Here we use the example 
+  movement data provided with movenet.
+- `holding_data`: A movenet-format holding data tibble, with information about
+  the livestock holdings. Coordinates are required for all holdings, to allow 
+  for the placing of holdings on the map. Here we use the example holding data 
+  provided with movenet.
+- `root`: The identifiers of one or more (presumably infected) root holdings 
+  from which to trace contact chains.
+
+Additionally, you need to provide some arguments that specify the time period 
+over which to trace contact chains. This can be done in two different ways, illustrated
+by the following two examples.
+
+### Tracing ingoing and outgoing contact chains over the same time period
+
+In our first example, we want to trace both ingoing and outgoing contact chains
+over the same time period: the 90 days up to and including 2019-07-01.  
+
+To do this, we specify the end date of the period (2019-07-01) using the `tEnd` 
+argument, and the number of days to trace back from this date (90) using the `days`
+argument:
+
+```{r echo=TRUE}
+trace_contact_chains(example_movement_data, example_holding_data,
+                     root = "95/216/1100", 
+                     tEnd = "2019-07-01", days = 90)
+```
+
+In the resulting interactive map, the presumably infected root holding (95/216/1100) is shown as a black circle.
+
+Ingoing and outgoing contact chains are shown in blue and red respectively: the coloured circles are the holdings that are part of these contact chains, the arrows the movements between them. You can click on these circles and arrows for more information about the holdings and movements they represent. You can also remove the layers for each of these elements from the map, or add them back on to the map, at the control panel in the top right corner.
+
+Dates for each tracing period are also displayed in the control panel.  
+
+### Tracing ingoing and outgoing contact chains over different time periods
+
+In our second example, we want to trace ingoing and outgoing contact chains over
+different time periods: we are interested in ingoing contact chains for the period
+from 2019-01-01 to 2019-04-01, and outgoing contact chains for the period from
+2019-04-01 to 2019-07-01.
+
+We specify the start and end dates for the ingoing chains
+using the `inBegin` and `inEnd` arguments, and the start and end dates for the
+outgoing chains using the `outBegin` and `outEnd` arguments:
+
+```{r echo=TRUE}
+trace_contact_chains(example_movement_data, example_holding_data,
+                     root = "95/216/1100", 
+                     inBegin = "2019-01-01", inEnd = "2019-04-01",
+                     outBegin = "2019-04-01", outEnd = "2019-07-01")
+```
+
+## Summarising and visualising data by administrative area
+
+In addition to visualising contact chains, `trace_contact_chains()` can also aggregate the contact chain 
+data geographically, adding several chloropleth layers to the map. The aim here is to provide an indication of which administrative areas may be at higher (or lower) risk of infection through the identified contact chains. 
+
+To perform geographical aggregation, you need to provide `trace_contact_chains()` with an `sf` dataframe with administrative area boundaries via the `admin_areas_map` argument:
+
+```{r}
+trace_contact_chains(example_movement_data, example_holding_data,
+                     root = "95/216/1100",
+                     tEnd = "2019-07-01", days = 90,
+                     admin_areas_map = example_admin_areas)
+```
+
+The resulting map now includes several administrative area-related layers, listed at the bottom of the map's control panel. By default, a layer with just the area boundaries is activated, but any of four chloropleth layers can be selected as an alternative background to the map:
+
+- Administrative areas coloured by the total number of ingoing movements from the area. The darker the colour, the more ingoing movements originate from the area.
+- Administrative areas coloured by the total weight (summed up batch sizes) of ingoing movements from the area. The darker the colour, the more livestock are involved in ingoing movements originating from the area. Note that, for movements indirectly connected to the root holding, it does not necessarily mean that the same animals are moved all the way along the contact chain from the coloured area to the root holding, i.e. the colour does *not* indicate the "number of animals moved from this area to the root holding".
+- Administrative areas coloured by the total number of outgoing movements to the area. The darker the colour, the more outgoing movements have a destination in the area.
+- Administrative areas coloured by the total weight (summed up batch sizes) of outgoing movements to the area. The darker the colour, the more livestock are involved in outgoing movements with a destination in the area. Note that, for movements indirectly connected to the root holding, it does not necessarily mean that the same animals are moved all the way along the contact chain from the root holding to the coloured area, i.e. the colour does *not* indicate the "number of animals moved to this area from the root holding".
+

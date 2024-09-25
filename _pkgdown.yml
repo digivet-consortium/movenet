@@ -47,7 +47,8 @@ articles:
   navbar: ~
   contents:
   - movenet
+  - configurations
   - pseudonymise
   - network-analysis
-  - configurations
+  - trace-contact-chains
 
