@@ -123,10 +123,10 @@ attributes.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Create a network using only movement_data</span></span></span>
 <span class="r-in"><span><span class="fu">movedata2igraph</span><span class="op">(</span><span class="va">movement_data</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH afeb91a DN-- 40 20 -- </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH 205294e DN-- 40 20 -- </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> + attr: name (v/c), departure_date (e/n), qty_pigs (e/n),</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> | movement_reference (e/n)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> + edges from afeb91a (vertex names):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> + edges from 205294e (vertex names):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 95/216/1100-&gt;19/818/9098 69/196/5890-&gt;71/939/3228 52/577/5349-&gt;82/501/8178</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [4] 39/103/5541-&gt;13/282/1763 41/788/6464-&gt;57/418/6011 69/393/9398-&gt;39/947/2201</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [7] 17/219/5051-&gt;56/606/9225 10/610/5301-&gt;44/417/1954 44/560/4357-&gt;23/365/6095</span>
@@ -139,10 +139,10 @@ attributes.</p>
 <span class="r-in"><span><span class="co"># active holdings</span></span></span>
 <span class="r-in"><span><span class="fu">movedata2igraph</span><span class="op">(</span><span class="va">movement_data</span>, <span class="va">holding_data</span>,</span></span>
 <span class="r-in"><span>                incl_nonactive_holdings <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH aff2182 DN-- 40 20 -- </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH 2059bc8 DN-- 40 20 -- </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> + attr: name (v/c), holding_type (v/c), herd_size (v/n), coordinates</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> | (v/x), departure_date (e/n), qty_pigs (e/n), movement_reference (e/n)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> + edges from aff2182 (vertex names):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> + edges from 2059bc8 (vertex names):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 95/216/1100-&gt;19/818/9098 69/196/5890-&gt;71/939/3228 52/577/5349-&gt;82/501/8178</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [4] 39/103/5541-&gt;13/282/1763 41/788/6464-&gt;57/418/6011 69/393/9398-&gt;39/947/2201</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [7] 17/219/5051-&gt;56/606/9225 10/610/5301-&gt;44/417/1954 44/560/4357-&gt;23/365/6095</span>
@@ -155,10 +155,10 @@ attributes.</p>
 <span class="r-in"><span><span class="co"># active and non-active holdings</span></span></span>
 <span class="r-in"><span><span class="fu">movedata2igraph</span><span class="op">(</span><span class="va">movement_data</span>, <span class="va">holding_data</span>,</span></span>
 <span class="r-in"><span>                incl_nonactive_holdings <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH aff2c8b DN-- 57 20 -- </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> IGRAPH 2059bc8 DN-- 57 20 -- </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> + attr: name (v/c), holding_type (v/c), herd_size (v/n), coordinates</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> | (v/x), departure_date (e/n), qty_pigs (e/n), movement_reference (e/n)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> + edges from aff2c8b (vertex names):</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> + edges from 2059bc8 (vertex names):</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [1] 95/216/1100-&gt;19/818/9098 69/196/5890-&gt;71/939/3228 52/577/5349-&gt;82/501/8178</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [4] 39/103/5541-&gt;13/282/1763 41/788/6464-&gt;57/418/6011 69/393/9398-&gt;39/947/2201</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [7] 17/219/5051-&gt;56/606/9225 10/610/5301-&gt;44/417/1954 44/560/4357-&gt;23/365/6095</span>
