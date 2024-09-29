@@ -128,7 +128,7 @@ config files and an empty template can be found in the package’s
 movenet environment with the function <code><a href="../reference/load_config.html">load_config()</a></code>:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/load_config.html">load_config</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"configurations"</span>, <span class="st">"ScotEID.yml"</span>, package<span class="op">=</span><span class="st">"movenet"</span><span class="op">)</span><span class="op">)</span> <span class="co"># Load ScotEID.yml</span></span>
-<span><span class="co">#&gt; Successfully loaded config file: C:/Users/cboga/AppData/Local/Temp/Rtmpgljbtd/temp_libpath6c5c2dd82274/movenet/configurations/ScotEID.yml</span></span>
+<span><span class="co">#&gt; Successfully loaded config file: C:/Users/cboga/AppData/Local/Temp/Rtmpgljbtd/temp_libpath6c5c6ad674fb/movenet/configurations/ScotEID.yml</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/get_config.html">get_config</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># Inspect the configurations in the movenet environment</span></span>
 <span><span class="co">#&gt; $movedata_fileopts.separator</span></span>
@@ -242,7 +242,7 @@ be followed for holding config and data files:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load a holding config file:</span></span>
 <span><span class="fu"><a href="../reference/load_config.html">load_config</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"configurations"</span>, <span class="st">"fakeScotEID_holding.yml"</span>, package<span class="op">=</span><span class="st">"movenet"</span><span class="op">)</span><span class="op">)</span> </span>
-<span><span class="co">#&gt; Successfully loaded config file: C:/Users/cboga/AppData/Local/Temp/Rtmpgljbtd/temp_libpath6c5c2dd82274/movenet/configurations/fakeScotEID_holding.yml</span></span>
+<span><span class="co">#&gt; Successfully loaded config file: C:/Users/cboga/AppData/Local/Temp/Rtmpgljbtd/temp_libpath6c5c6ad674fb/movenet/configurations/fakeScotEID_holding.yml</span></span>
 <span><span class="co"># Read in and reformat a holding data file:</span></span>
 <span><span class="va">holding_data</span> <span class="op">&lt;-</span> </span>
 <span>  <span class="fu"><a href="../reference/reformat_data.html">reformat_data</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"example_holding_data.csv"</span>, package<span class="op">=</span><span class="st">"movenet"</span><span class="op">)</span>,</span>
