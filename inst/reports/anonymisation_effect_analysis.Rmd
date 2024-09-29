@@ -21,6 +21,8 @@ weighted_and_or_temporal <- switch(sum(which(c(modify_weights, modify_dates))),
                                "weighted", "temporal", "weighted and temporal")
 static_and_or_temporal <- switch(sum(which(c(modify_weights, modify_dates))),
                                "static", "temporal", "static and temporal")
+# Turn time_unit "28 days" into "28-day period"
+time_period <- gsub("s?$", " period", str_replace_all(time_unit, " ", "-"))
 ```
 
 ---
@@ -31,34 +33,48 @@ subtitle: `r if(!is.null(data_reference)){data_reference}`
 
 ## Aims and objectives of this report
 
-This report provides livestock movement data owners and data managers
+This report provides custodians of livestock movement data
 with information about how enhancing the privacy of these data affects
 epidemiologically relevant network properties. The aim is to facilitate
 finding an appropriate balance between privacy for the livestock
-industry, and utility for veterinary public health practitioners and
-modellers.
+industry, and utility for veterinary public health practitioners, epidemiologists and
+mathematical modellers.
 
-To generate this report, a movenet-format movement data tibble was
-provided by the user, movement `r weights_and_or_dates` were modified
+To generate this report, a movenet-format movement dataframe was
+provided by the user, movement `r gsub('weights', 'weights (defined as the number of animals moved between two holdings on a movement date)', weights_and_or_dates)` were modified
 using various functions and parameters, and the effects of these
 modifications were analysed on a selection of
 `r weighted_and_or_temporal` network measures. These analyses were
-carried out for each `r time_unit` within the data (as set via the
+carried out for each `r time_period` within the data (as set via the
 `time_unit` argument). The report presents the results of these analyses
 in the form of figures with some interpretive guidance.
 
 ## Static network analyses
 
-### Basic network summaries
+### Basic network summary statistics
 
-*Add figures for average batch sizes? (post project end)*
+This section provides a brief overview of thenetwork properties of the
+
+```{r include=FALSE}
+mean_weights_caption <- 
+  paste("***Effects of modifying movement batch sizes on mean movement weights.", 
+        "A.*** *Effects of jittering batch sizes, with the jitter range increasing along the x-axis.* ***B.*** *Effects of rounding batch sizes to the nearest multiple of a specified unit, with the rounding unit increasing along the x-axis. Each individual box represents the distribution of mean movement weights in the network for the ",
+        max(weight_mod_subnetwork_properties$period),
+        " time periods, calculated for either the true data (left-most box in each plot) or data with batch sizes modified according to a certain treatment. In the true and rounded datasets, each data point represents the mean movement weight for a single periodic sub-network; in the jittered datasets, each data point is an average across ", n_jitter_sim, 
+        " sub-networks for the same period, as obtained by ", n_jitter_sim,
+        " simulations of `jitter_weight()`. Statistics performed by two-tailed paired Wilcoxon signed rank sum tests, comparing each modified dataset to the true data, \\*\\*\\* \\( p \\leq 0.001 \\), \\*\\* \\( p \\leq 0.01 \\), \\* \\( p \\leq 0.05 \\), ns \\( p \\gt 0.05 \\).*")
+```
+```{r movement-weights, echo=FALSE, fig.show = "hold", out.width = "50%", fig.cap = mean_weights_caption}
+plot_movement_weight_jitter
+plot_movement_weight_round
+```
 
 ### Global network properties
 
 This section describes the effects of movement weight modifications on two global network
-properties, average shortest path length and strength assortativity, calculated for each `r time_unit` within the data.
+properties: (i) the mean shortest path length and (ii) the strength assortativity. These are both calculated for each `r time_period` within the data.
 
-#### Average shortest path length
+#### i. Mean shortest path length
 
 The shortest path length or geodesic distance between a pair of nodes (holdings) 
 in the network is the smallest number of edges (movements) needed to reach one 
@@ -66,44 +82,34 @@ holding from the other. The most common weighted version of this algorithm
 interprets edge weight as the distance (or cost) associated with an edge, and 
 compares path lengths based on their total weighted distance [@Dijkstra1959]. 
 Considering that movement batch size is a measure of the strength of a 
-connection, rather than a distance or cost, here edges were weighted by the 
-reciprocal of the movement batch size ($1/{batch\_size}$) [@Newman2001].
+connection, rather than a distance or cost, here edges were weighted by the reciprocal of movement batch size, normalised by the mean batch size in the network (${mean\_batch\_size}/{batch\_size}$). Use of this weighting metric is suggested by Opsahl et al., as the resulting unit of distance can be easily interpreted (as "one step with the average weight in the network") and makes distances comparable across networks with different ranges of batch sizes [@Opsahl2010; @Opsahl2011].
 The smaller the mean weighted shortest path length is, the faster you can 
 expect a disease to transmit between holdings, due to shorter paths and/or 
 greater movement batch sizes.
 
-**Alternative:** Weighting of edges according to the reciprocal of movement batch size, normalised by the average batch size in the network (${mean\_batch\_size}/{batch\_size}$).
-*Use of this metric is suggested by Opsahl et al., as the resulting unit of distance can be easily interpreted (as "one step with the average weight in the network") and makes distances comparable across networks with different ranges of batch sizes [@Opsahl2010; @Opsahl2011].*
-
-*What from here should I move to methods and what to keep? I know these bits are mostly methods but I need some intro here too...*
 
 ```{r include=FALSE}
-new_line <- if (knitr::is_html_output()) { "<br>" } else { "\n" }
 mean_distance_caption <- 
-  paste("Effects of modifying movement batch sizes on average weighted shortest path lengths.", 
-        new_line, 
-        "Each individual box represents the distribution of average shortest path lengths in the network for the ",
+  paste("***Effects of modifying movement batch sizes on mean weighted shortest path lengths.", 
+        "A.*** *Effects of jittering batch sizes, with the jitter range increasing along the x-axis.* ***B.*** *Effects of rounding batch sizes to the nearest multiple of a specified unit, with the rounding unit increasing along the x-axis. Each individual box represents the distribution of mean shortest path lengths in the network for the ",
         max(weight_mod_subnetwork_properties$period),
-        " time periods, calculated for either the true data (left-most box in both figures) or data with batch sizes modified according to a certain treatment. In the figure on the left, batch sizes have been jittered, with the jitter range increasing from left to right along the x-axis. In the figure on the right, batch sizes have been rounded to the nearest multiple of a specified unit, with this rounding unit increasing from left to right. In the true and rounded datasets, each data point represents the average shortest path length for a single periodic sub-network; in the jittered datasets, each data point is an average across ", n_jitter_sim, 
+        " time periods, calculated for either the true data (left-most box in each plot) or data with batch sizes modified according to a certain treatment. In the true and rounded datasets, each data point represents the mean shortest path length for a single periodic sub-network; in the jittered datasets, each data point is an average across ", n_jitter_sim, 
         " sub-networks for the same period, as obtained by ", n_jitter_sim,
-        " simulations of `jitter_weight()`. Statistics performed by two-tailed paired Wilcoxon signed rank sum tests, comparing each modified dataset to the true data, *** \\( p \\leq 0.001 \\), ** \\( p \\leq 0.01 \\), * \\( p \\leq 0.05 \\), ns \\( p \\gt 0.05 \\).")
+        " simulations of `jitter_weight()`. Statistics performed by two-tailed paired Wilcoxon signed rank sum tests, comparing each modified dataset to the true data, \\*\\*\\* \\( p \\leq 0.001 \\), \\*\\* \\( p \\leq 0.01 \\), \\* \\( p \\leq 0.05 \\), ns \\( p \\gt 0.05 \\).*")
 ```
 ```{r mean-distance, echo=FALSE, fig.show = "hold", out.width = "50%", fig.cap = mean_distance_caption}
 plot_mean_distance_jitter
 plot_mean_distance_round
 ```
-
-Where batch size modifications result in average shortest path lengths
+Where batch size modifications result in mean shortest path lengths
 that are higher than in the true data, this indicates that using these particular
-modifications would lead to overestimating the real average shortest path length 
+modifications would lead to overestimating the real mean shortest path length 
 and underestimating the transmission potential of the network. Conversely, where
-average shortest path lengths are lower than in the true data, this indicates that
-using these particular modifications would lead to underestimating the real average
+mean shortest path lengths are lower than in the true data, this indicates that
+using these particular modifications would lead to underestimating the real mean
 shortest path length and overestimating the transmission potential of the network.
-If the variability in average shortest path lengths is higher in the privacy-enhanced
-datasets than in the true data, this indicates that ... *Add something about variability of the data?*
 
-#### Strength assortativity
+#### ii. Strength assortativity
 
 The strength of a node (holding) in a network is the sum of the weights
 of its edges. Here, this is taken to mean the sum of all movement batch sizes. 
@@ -111,18 +117,16 @@ Strength assortativity is a measure of the tendency of holdings with similar
 strength to be connected to each other. Here, assortativity is considered 
 in a directed manner: the tendency of holdings with a particular total number of
 outgoing animals (out-strength) to be connected to holdings with a similar 
-number of incoming animals (in-strength).
-*Jess: any particular note to add here on relevance to disease spread?*
+number of incoming animals (in-strength). From an epidemiological point of view, the strength assortativity can provide information on which type of holdings may be infected early in a potential outbreak: if the assortativity is high, the tendency will be for the infection to first reach holdings that exchange a large number of animals. 
 
 ```{r include=FALSE}
 strength_assortativity_caption <- 
-  paste("Effects of modifying movement batch sizes on strength assortativity.", 
-        new_line, 
-        "Each individual box represents the distribution of strength assortativities in the network for the ",
+    paste("***Effects of modifying movement batch sizes on strength assortativity.", 
+        "A.*** *Effects of jittering batch sizes, with the jitter range increasing along the x-axis.* ***B.*** *Effects of rounding batch sizes to the nearest multiple of a specified unit, with the rounding unit increasing along the x-axis. Each individual box represents the distribution of strength assortativities in the network for the ",
         max(weight_mod_subnetwork_properties$period),
-        " time periods, calculated for either the true data (left-most box in both figures) or data with batch sizes modified according to a certain treatment. In the figure on the left, batch sizes have been jittered, with the jitter range increasing from left to right along the x-axis. In the figure on the right, batch sizes have been rounded to the nearest multiple of a specified unit, with this rounding unit increasing from left to right. In the true and rounded datasets, each data point represents the strength assortativity for a single periodic sub-network; in the jittered datasets, each data point is an average across ", n_jitter_sim, 
+        " time periods, calculated for either the true data (left-most box in each plot) or data with batch sizes modified according to a certain treatment. In the true and rounded datasets, each data point represents the strength assortativity for a single periodic sub-network; in the jittered datasets, each data point is an average across ", n_jitter_sim, 
         " sub-networks for the same period, as obtained by ", n_jitter_sim,
-        " simulations of `jitter_weight()`. Statistics performed by two-tailed paired Wilcoxon signed rank sum tests, comparing each modified dataset to the true data, *** \\( p \\leq 0.001 \\), ** \\( p \\leq 0.01 \\), * \\( p \\leq 0.05 \\), ns \\( p \\gt 0.05 \\).")
+        " simulations of `jitter_weight()`. Statistics performed by two-tailed paired Wilcoxon signed rank sum tests, comparing each modified dataset to the true data, \\*\\*\\* \\( p \\leq 0.001 \\), \\*\\* \\( p \\leq 0.01 \\), \\* \\( p \\leq 0.05 \\), ns \\( p \\gt 0.05 \\).*")
 ```
 ```{r strength-assortativity, echo=FALSE, fig.cap = strength_assortativity_caption, fig.show = "hold", out.width="50%"}
 plot_strength_assortativity_jitter
@@ -136,9 +140,7 @@ modifications would lead to overestimating the real strength assortativities
 in the network. Conversely, where strength assortativities are lower than in
 the true data, this indicates that using these particular modifications would
 lead to underestimating the real strength assortativities in the network.
-If the variability in strength assortativities is higher in the privacy-enhanced
-datasets than in the true data, this indicates that ... 
-*Add something about relevance to disease spread, or variability of the data?*
+
 
 ### Ranking of holdings according to local network properties
 
@@ -146,9 +148,9 @@ This section describes the effects of movement weight modifications on the
 ranking of holdings according to three local centrality measures, providing 
 information about the importance of holdings in the network in terms of their 
 connections with other holdings. Rankings are calculated and compared for each
-`r time_unit` within the data.
+`r time_period` within the data.
 
-#### Strength centrality
+#### i. Strength centrality
 
 The strength of a node (holding) in a network is the sum of the weights
 of its edges. Here, this is taken to mean the sum of all movement batch sizes.
@@ -156,39 +158,19 @@ Holdings were ranked according to the geometric mean of their
 total number of incoming animals (in-strength) and outgoing animals 
 (out-strength), in decreasing order. The ranking in each privacy-enhanced 
 dataset was then compared to the ranking in the true dataset.
-*Jess: any particular note to add here on relevance to disease spread?*
 
 ```{r include=FALSE}
 strength_corr_caption <- 
-  paste("Effects of modifying movement batch sizes on the ranking of holdings according to strength.", 
-        new_line, 
-        "Each individual box represents the distribution of Kendall's tau correlation coefficients, comparing the ranking according to strength of holdings in a dataset with modified batch sizes to the ranking in the true data, for the ",
+  paste("***Effects of modifying movement batch sizes on the ranking of holdings according to strength.",
+        "A.*** *Effects of jittering batch sizes, with the jitter range increasing along the x-axis.* ***B.*** *Effects of rounding batch sizes to the nearest multiple of a specified unit, with the rounding unit increasing along the x-axis. Each individual box represents the distribution of Kendall's tau correlation coefficients, comparing the ranking according to strength of holdings in a dataset with modified batch sizes to the ranking in the true data, for the ",
         max(weight_mod_subnetwork_properties$period),
-        "periodic sub-networks created from a single modified dataset. In the figure on the left, batch sizes have been jittered, with the jitter range increasing from left to right along the x-axis. In the figure on the right, batch sizes have been rounded to the nearest multiple of a specified unit, with this rounding unit increasing from left to right. In the rounded datasets, each data point represents the correlation coefficient for a single periodic sub-network; in the jittered datasets, each data point is an average across correlation coefficients for ", n_jitter_sim, 
+        "periodic sub-networks created from a single modified dataset. In the rounded datasets, each data point represents the correlation coefficient for a single periodic sub-network; in the jittered datasets, each data point is an average across correlation coefficients for ", n_jitter_sim, 
         " sub-networks for the same period, as obtained by ", n_jitter_sim,
-        " simulations of `jitter_weight()`. The dotted line at y = 1 represents perfect agreement between the ranking in the true data and the ranking in the modified data.")
+        " simulations of `jitter_weight()`. The dotted line at y = 1 represents perfect agreement between the ranking in the true data and the ranking in the modified data.*")
 ```
 ```{r strength, echo=FALSE, fig.cap = strength_corr_caption, fig.show = "hold", out.width="50%"}
 plot_strength_jitter
 plot_strength_round
-```
-*Theo: would these rank-comparison figures be improved by significance testing? if so, what kind?*
-
-*Theo: you previously suggested using (mean) rank differences, but the mean rank difference for each periodic subnetwork is always 0 so there's no point comparing across modifications by doing this. Any suggestions as to how this could still be useful, if the aim is to compare how rankings are affected by different amounts of jitter/rounding?*
-
-```{r include=FALSE}
-strength_rd_caption <- 
-  paste("Effects of modifying movement batch sizes on the ranking of holdings according to strength (mean rank differences).", 
-        new_line, 
-        "Each individual box represents the distribution of mean rank differences between the strength ranking in a dataset with modified batch sizes and the strength ranking in the true data, for the ",
-        max(weight_mod_subnetwork_properties$period),
-        "periodic sub-networks created from a single modified dataset. In the figure on the left, batch sizes have been jittered, with the jitter range increasing from left to right along the x-axis. In the figure on the right, batch sizes have been rounded to the nearest multiple of a specified unit, with this rounding unit increasing from left to right. In the rounded datasets, each data point represents the mean rank difference for a single periodic sub-network; in the jittered datasets, each data point is an average across mean rank differences for ", n_jitter_sim, 
-        " sub-networks for the same period, as obtained by ", n_jitter_sim,
-        " simulations of `jitter_weight()`.")
-```
-```{r strength_rankdiff, echo=FALSE, fig.cap = strength_rd_caption, fig.show = "hold", out.width="50%"}
-#plot_strength_rd_jitter
-#plot_strength_rd_round
 ```
 
 Where batch size modifications result in correlation coefficients that are much 
@@ -197,25 +179,24 @@ is very different than in the true data. Using these particular modifications
 could lead to inaccurate identification of the most (and least) important holdings 
 in the network based on their strength.
 
-#### Betweenness centrality
+#### ii. Betweenness centrality
 
 The betweenness of a node (holding) in a network is the number of shortest paths 
 between all pairs of holdings that pass through that holding. Here, the shortest 
-paths were determined by weighting edges according to the reciprocal of movement 
-batch size ($1/{batch\_size}$). Holdings were ranked according to their 
+paths were determined by weighting edges according to the reciprocal of the movement batch size, normalised by the mean batch size in the network (${mean\_batch\_size}/{batch\_size}$). Holdings were ranked according to their 
 betweenness, in decreasing order. The ranking in each privacy-enhanced dataset 
 was then compared to the ranking in the true dataset.
-*Jess: any particular note to add here on relevance to disease spread?*
+
+Holdings with a high betweenness centrality may be relevant as they increase the connectivity of the network, and they could make it easier for an infection to reach sections of the network that would be distant otherwise. 
 
 ```{r include=FALSE}
 betweenness_corr_caption <- 
-  paste("Effects of modifying movement batch sizes on the ranking of holdings according to betweenness.", 
-        new_line, 
-        "Each individual box represents the distribution of Kendall's tau correlation coefficients, comparing the ranking according to betweenness of holdings in a dataset with modified batch sizes to the ranking in the true data, for the ",
+  paste("***Effects of modifying movement batch sizes on the ranking of holdings according to betweenness.", 
+        "A.*** *Effects of jittering batch sizes, with the jitter range increasing along the x-axis.* ***B.*** *Effects of rounding batch sizes to the nearest multiple of a specified unit, with the rounding unit increasing along the x-axis. Each individual box represents the distribution of Kendall's tau correlation coefficients, comparing the ranking according to betweenness of holdings in a dataset with modified batch sizes to the ranking in the true data, for the ",
         max(weight_mod_subnetwork_properties$period),
-        "periodic sub-networks created from a single modified dataset. In the figure on the left, batch sizes have been jittered, with the jitter range increasing from left to right along the x-axis. In the figure on the right, batch sizes have been rounded to the nearest multiple of a specified unit, with this rounding unit increasing from left to right. In the rounded datasets, each data point represents the correlation coefficient for a single periodic sub-network; in the jittered datasets, each data point is an average across correlation coefficients for ", n_jitter_sim, 
+        "periodic sub-networks created from a single modified dataset. In the rounded datasets, each data point represents the correlation coefficient for a single periodic sub-network; in the jittered datasets, each data point is an average across correlation coefficients for ", n_jitter_sim, 
         " sub-networks for the same period, as obtained by ", n_jitter_sim,
-        " simulations of `jitter_weight()`. The dotted line at y = 1 represents perfect agreement between the ranking in the true data and the ranking in the modified data.")
+        " simulations of `jitter_weight()`. The dotted line at y = 1 represents perfect agreement between the ranking in the true data and the ranking in the modified data.*")
 ```
 ```{r betweenness, echo=FALSE, fig.cap = betweenness_corr_caption, fig.show = "hold", out.width="50%"}
 plot_betweenness_jitter
@@ -227,7 +208,7 @@ betweenness is very different than in the true data. Using these particular
 modifications could lead to inaccurate identification of the most (and least) 
 important holdings in the network based on their betweenness.
 
-#### PageRank
+#### iii. PageRank
 
 The PageRank of a node (holding) in a network is a measure of its importance 
 based on the importance of the nodes that link to it [@Brin1998]. To determine
@@ -235,17 +216,15 @@ this, edges were weighted according to their batch sizes. Holdings were ranked
 according to their PageRank, in decreasing order. The ranking in each 
 privacy-enhanced dataset was then compared to the ranking in the true dataset 
 using Kendall's tau rank correlation coefficient.
-*Jess: any particular note to add here on relevance to disease spread?*
 
 ```{r include=FALSE}
 pagerank_corr_caption <- 
-  paste("Effects of modifying movement batch sizes on the ranking of holdings according to PageRank.", 
-        new_line, 
-        "Each individual box represents the distribution of Kendall's tau correlation coefficients, comparing the ranking according to PageRank of holdings in a dataset with modified batch sizes to the ranking in the true data, for the ",
+  paste("***Effects of modifying movement batch sizes on the ranking of holdings according to PageRank.",
+        "A.*** *Effects of jittering batch sizes, with the jitter range increasing along the x-axis.* ***B.*** *Effects of rounding batch sizes to the nearest multiple of a specified unit, with the rounding unit increasing along the x-axis. Each individual box represents the distribution of Kendall's tau correlation coefficients, comparing the ranking according to PageRank of holdings in a dataset with modified batch sizes to the ranking in the true data, for the ",
         max(weight_mod_subnetwork_properties$period),
-        "periodic sub-networks created from a single modified dataset. In the figure on the left, batch sizes have been jittered, with the jitter range increasing from left to right along the x-axis. In the figure on the right, batch sizes have been rounded to the nearest multiple of a specified unit, with this rounding unit increasing from left to right. In the rounded datasets, each data point represents the correlation coefficient for a single periodic sub-network; in the jittered datasets, each data point is an average across correlation coefficients for ", n_jitter_sim, 
+        "periodic sub-networks created from a single modified dataset. In the rounded datasets, each data point represents the correlation coefficient for a single periodic sub-network; in the jittered datasets, each data point is an average across correlation coefficients for ", n_jitter_sim, 
         " sub-networks for the same period, as obtained by ", n_jitter_sim,
-        " simulations of `jitter_weight()`. The dotted line at y = 1 represents perfect agreement between the ranking in the true data and the ranking in the modified data.")
+        " simulations of `jitter_weight()`. The dotted line at y = 1 represents perfect agreement between the ranking in the true data and the ranking in the modified data.*")
 ```
 ```{r page-rank, echo=FALSE, fig.cap = pagerank_corr_caption, fig.show = "hold", out.width="50%"}
 plot_pagerank_jitter
@@ -288,24 +267,20 @@ cat(
 
 ### Creation of network representations
 
-`r str_to_sentence(static_and_or_temporal)` networks were created from
-true and privacy-enhanced datasets, for each subsequent `r time_unit` in
-the data.
-
-During the creation of static network representations (snapshots), all
-repeated moves from and to the same holdings were aggregated into a
-single network edge per snapshot, with batch sizes summed up.
-
-```{r temporal-network-methods-1, eval = modify_dates, results = 'asis', echo = FALSE}
+```{r static-networks, eval = modify_weight, results = 'asis', echo = FALSE}
 cat(
-"\nDuring the creation of temporal network representations, all repeated moves from 
-and to the same holdings on the same day were aggregated into a single network 
+"\nStatic network representations (snapshots) were created from true and privacy-enhanced datasets, for each subsequent `r time_period` in the data, using the `igraph` package [@Csardi2006]. During snapshot generation, all repeated moves from and to the same holdings were aggregated into a single network edge per snapshot, with batch sizes summed up.")
+)
+```
+```{r temporal-networks1, eval = modify_dates, results = 'asis', echo = FALSE}
+cat(
+"\nTemporal network representations were created from true and privacy-enhanced datasets, for each subsequent `r time_period` in the data, using the `networkDynamic` package [@Carter2023]. During the creation of temporal network representations, all repeated moves from and to the same holdings on the same day were aggregated into a single network 
 edge activity period per day, with batch sizes summed up. (This aggregation
 process was repeated from that in initial data processing, to take into account 
 the effect of potential date modifications.)\n")
 ```
 
-```{r static-network-methods, eval = modify_dates, results = 'asis', echo = FALSE}
+```{r static-network-methods-1, eval = modify_dates, results = 'asis', echo = FALSE}
 cat(
 "### Static network analyses (unweighted)\n
 \n")
@@ -314,15 +289,15 @@ cat(
 ```{r weighted-network-methods-2, eval = modify_weights, results = 'asis', echo = FALSE}
 cat(
 "### Static network analyses (weighted)\n
-*How much to move here from the individual result sections? I know they're mostly methods but I need some intro there too...*\n\n
-Average shortest path length, weighting 1/batch_size
+Static network properties for each `time_period` were calculated using the `igraph` package [@Csardi2006]. 
+Mean shortest path length weighting 1/batch_size
 Assortativity between in-strength and out-strength, weighting batch_size
 
 Ranking of holdings according to local network properties:
 Betweenness, weighting 1/batch_size
 Strength and PageRank, weighting batch_size
 For strength used geometric mean between in-strength and out-strength.
-Holdings were ranked according to their centrality, in decreasing order. 
+Holdings were ranked according to their centrality, in decreasing order, with ties . 
 The ranking in each privacy-enhanced dataset is compared to the ranking in the 
 true dataset using Kendall's tau rank correlation coefficient.
 

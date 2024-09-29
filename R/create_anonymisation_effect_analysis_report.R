@@ -272,12 +272,41 @@ create_anonymisation_effect_analysis_report <- function(movement_data,
 
   if(isTRUE(modify_weights)){
 
+    browser()
+    if(verbose){cat("Calculating and plotting: mean movement weights...\n")}
+    weight_mod_subnetwork_properties$movement_weight <-
+      sapply(weight_mod_subnetwork_properties$static_subnetworks,
+             function(periodic_subnetwork){
+               mean(edge_attr(periodic_subnetwork, weight_col_name))})
+
+    movement_weight_jitter <-
+      weight_mod_subnetwork_properties %>%
+      filter(.data$modification_treatment %in% c("true", "jittered")) %>%
+      # for each period, calculate the average across 3 jitter simulations
+      group_by(.data$unit_or_range, period) %>%
+      summarise(movement_weight = mean(movement_weight)) %>%
+      select(.data$unit_or_range, movement_weight)
+
+    movement_weight_round <-
+      weight_mod_subnetwork_properties %>%
+      filter(.data$modification_treatment %in% c("true", "rounded")) %>%
+      select(.data$unit_or_range, movement_weight)
+
+    plot_movement_weight_jitter <-
+      movement_weight_jitter %>%
+      plot_measure_over_anonymisation_gradient2("Mean movement weight (batch size)", "jitter", "boxplot")
+
+    plot_movement_weight_round <-
+      movement_weight_round %>%
+      plot_measure_over_anonymisation_gradient2("Mean movement weight (batch size)", "round", "boxplot")
+
     if(verbose){cat("Calculating and plotting: mean distances...\n")}
     weight_mod_subnetwork_properties$mean_distance <-
       sapply(weight_mod_subnetwork_properties$static_subnetworks,
              function(periodic_subnetwork){
+               movement_weights <- edge_attr(periodic_subnetwork, weight_col_name)
                mean_distance(periodic_subnetwork,
-                             weights = 1/edge_attr(periodic_subnetwork, weight_col_name))})
+                             weights = mean(movement_weights)/movement_weights)})
 
     mean_distance_jitter <-
       weight_mod_subnetwork_properties %>%
@@ -433,8 +462,9 @@ create_anonymisation_effect_analysis_report <- function(movement_data,
     weight_mod_subnetwork_properties$betweenness <-
       lapply(weight_mod_subnetwork_properties$static_subnetworks,
              function(periodic_subnetwork){
+                 movement_weights <- edge_attr(periodic_subnetwork, weight_col_name)
                  betweenness <- betweenness(periodic_subnetwork,
-                                            weights = 1/edge_attr(periodic_subnetwork, weight_col_name))
+                                            weights = mean(movement_weights)/movement_weights)
                  # Ranking on -(betweenness) to get decreasing order
                  betweenness_rank <- rank(-betweenness, ties.method = "average")
                  return(tibble(betweenness = betweenness, ranking = betweenness_rank))
