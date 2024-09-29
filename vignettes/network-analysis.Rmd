@@ -69,7 +69,6 @@ This creates an html document that can be opened in a browser, and contains a
 full report as shown below:
 
 ```{R, echo = FALSE}
-getwd()
 htmltools::tags$iframe(title = "report",
                        src = ifelse(exists("network_report.html"), 
                                     "network_report.html",
