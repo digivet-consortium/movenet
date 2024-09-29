@@ -70,8 +70,6 @@ full report as shown below:
 
 ```{R, echo = FALSE}
 htmltools::tags$iframe(title = "report",
-                       src = ifelse(file.exists("../network_report.html"),
-                                    "../network_report.html",
-                                    system.file("reports/network_report.html", package = "movenet")),
+                       src = "../vignettes/network_report.html",
                        width = "100%", height = 800)
 ```
