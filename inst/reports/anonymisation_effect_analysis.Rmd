@@ -1,0 +1,322 @@
+---
+output: 
+  bookdown::html_document2:
+    number_sections: false
+bibliography: anonymisation_effect_analysis.bib 
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r set-up, include=FALSE}
+library(stringr)
+```
+
+```{r weights-and-or-dates, include=FALSE}
+#to facilitate modifying text
+
+weights_and_or_dates <- switch(sum(which(c(modify_weights, modify_dates))),
+                               "weights", "dates", "weights and dates")
+weighted_and_or_temporal <- switch(sum(which(c(modify_weights, modify_dates))),
+                               "weighted", "temporal", "weighted and temporal")
+static_and_or_temporal <- switch(sum(which(c(modify_weights, modify_dates))),
+                               "static", "temporal", "static and temporal")
+# Turn time_unit "28 days" into "28-day period"
+time_period <- gsub("s?$", " period", str_replace_all(time_unit, " ", "-"))
+```
+
+---
+title: "Effects of modifying `r weights_and_or_dates` on epidemiologically relevant network properties"
+date: `r Sys.Date()`
+subtitle: `r if(!is.null(data_reference)){data_reference}`
+---
+
+## Aims and objectives of this report
+
+This report provides custodians of livestock movement data
+with information about how enhancing the privacy of these data affects
+epidemiologically relevant network properties. The aim is to facilitate
+finding an appropriate balance between privacy for the livestock
+industry, and utility for veterinary public health practitioners, epidemiologists and
+mathematical modellers.
+
+To generate this report, a movenet-format movement dataframe was
+provided by the user, movement `r gsub('weights', 'weights (defined as the number of animals moved between two holdings on a movement date)', weights_and_or_dates)` were modified
+using various functions and parameters, and the effects of these
+modifications were analysed on a selection of
+`r weighted_and_or_temporal` network measures. These analyses were
+carried out for each `r time_period` within the data (as set via the
+`time_unit` argument). The report presents the results of these analyses
+in the form of figures with some interpretive guidance.
+
+## Static network analyses
+
+### Movement weights
+
+Figure \@ref(fig:movement-weights) shows how the mean movement weights of all `r time_period`ic sub-networks in the data are affected by jittering or rounding movement weights to different extents. 
+
+Where movement weight modifications result in mean movement weights that are higher than in the true data, this is the result of the boundary conditions of the privacy-enhancing functions. When jittering, movements weights are required to be positive, and a jitter resampling procedure is in place to avoid values of 0 or below; as a result, replacement values (jittered movement weights) can on average be somewhat higher than the original values, particularly where the jitter range is of a similar or larger magnitude than the observed movement weights. Similarly, when rounding, the rounding unit is set as the minimum value for the modified datasets, resulting in relatively more rounding up (rather than down) where the rounding unit is of a similar or larger magnitude than the observed movement weights.
+
+```{r include=FALSE}
+mean_weights_caption <- 
+  paste("***Effects of modifying movement weights on mean movement weights.", 
+        "A.*** *Effects of jittering weights, with the jitter range increasing along the x-axis.* ***B.*** *Effects of rounding weights to the nearest multiple of a specified unit, with the rounding unit increasing along the x-axis. Each individual box represents the distribution of mean movement weights in the network for the ",
+        max(weight_mod_subnetwork_properties$period),
+        " time periods, calculated for either the true data (left-most box in each plot) or data with weights modified according to a certain treatment. In the true and rounded datasets, each data point represents the mean movement weight for a single periodic sub-network; in the jittered datasets, each data point is an average across ", n_jitter_sim, 
+        " sub-networks for the same period, as obtained by ", n_jitter_sim,
+        " simulations of `jitter_weight()`. Statistics performed by two-tailed paired Wilcoxon signed rank sum tests, comparing each modified dataset to the true data, \\*\\*\\* \\( p \\leq 0.001 \\), \\*\\* \\( p \\leq 0.01 \\), \\* \\( p \\leq 0.05 \\), ns \\( p \\gt 0.05 \\).*")
+```
+```{r movement-weights, echo=FALSE, fig.show = "hold", out.width = "50%", fig.cap = mean_weights_caption}
+plot_movement_weight_jitter
+plot_movement_weight_round
+```
+
+### Global network properties
+
+This section describes the effects of movement weight modifications on two global network
+properties: (i) the mean shortest path length and (ii) the strength assortativity. These are both calculated for each `r time_period` within the data.
+
+
+#### i. Mean shortest path length
+
+The shortest path length or geodesic distance between a pair of nodes (holdings) 
+in the network is the smallest number of edges (movements) needed to reach one 
+holding from the other. The most common weighted version of this algorithm 
+interprets edge weight as the distance (or cost) associated with an edge, and 
+compares path lengths based on their total weighted distance [@Dijkstra1959]. 
+Considering that movement weight is a measure of the strength of a 
+connection, rather than a distance or cost, here edges were weighted by the reciprocal of movement weight, normalised by the mean weight in the network (${mean\_movement\_weight}/{movement\_weight}$). Use of this weighting metric is suggested by Opsahl et al., as the resulting unit of distance can be easily interpreted (as "one step with the average weight in the network") and makes distances comparable across networks with different ranges of movement weights [@Opsahl2010; @Opsahl2011].
+The smaller the mean weighted shortest path length is, the faster you can 
+expect a disease to spread between holdings, due to shorter paths and/or 
+greater movement weights.
+
+Figure \@ref(fig:mean-distance) shows how the mean weighted shortest path lengths of all `r time_period`ic sub-networks in the data are affected by jittering or rounding movement weights to different extents.
+
+Where movement weight modifications result in mean shortest path lengths
+that are higher than in the true data, this indicates that using these particular
+modifications would lead to overestimating the real mean shortest path length 
+and underestimating the transmission potential of the network. Conversely, where
+mean shortest path lengths are lower than in the true data, this indicates that
+using these particular modifications would lead to underestimating the real mean
+shortest path length and overestimating the transmission potential of the network.
+
+```{r include=FALSE}
+mean_distance_caption <- 
+  paste("***Effects of modifying movement weights on mean weighted shortest path lengths.", 
+        "A.*** *Effects of jittering weights, with the jitter range increasing along the x-axis.* ***B.*** *Effects of rounding weights to the nearest multiple of a specified unit, with the rounding unit increasing along the x-axis. Each individual box represents the distribution of mean shortest path lengths in the network for the ",
+        max(weight_mod_subnetwork_properties$period),
+        " time periods, calculated for either the true data (left-most box in each plot) or data with weights modified according to a certain treatment. In the true and rounded datasets, each data point represents the mean shortest path length for a single periodic sub-network; in the jittered datasets, each data point is an average across ", n_jitter_sim, 
+        " sub-networks for the same period, as obtained by ", n_jitter_sim,
+        " simulations of `jitter_weight()`. Statistics performed by two-tailed paired Wilcoxon signed rank sum tests, comparing each modified dataset to the true data, \\*\\*\\* \\( p \\leq 0.001 \\), \\*\\* \\( p \\leq 0.01 \\), \\* \\( p \\leq 0.05 \\), ns \\( p \\gt 0.05 \\).*")
+```
+```{r mean-distance, echo=FALSE, fig.show = "hold", out.width = "50%", fig.cap = mean_distance_caption}
+plot_mean_distance_jitter
+plot_mean_distance_round
+```
+
+
+#### ii. Strength assortativity
+
+The strength of a node (holding) in a network is the sum of the weights
+of its edges. Here, this is taken to mean the sum of all movement weights. 
+Strength assortativity is a measure of the tendency of holdings with similar
+strength to be connected to each other. Here, assortativity is considered 
+in a directed manner: the tendency of holdings with a particular total number of
+outgoing animals (out-strength) to be connected to holdings with a similar 
+number of incoming animals (in-strength). From an epidemiological point of view, the strength assortativity can provide information on which type of holdings may be infected early in a potential outbreak: if the assortativity is high, the tendency will be for the infection to first reach holdings that exchange a large number of animals. 
+
+Figure \@ref(fig:strength-assortativity) shows how the strength assortativities of all `r time_period`ic sub-networks in the data are affected by jittering or rounding movement weights to different extents.
+
+Where movement weight modifications result in strength assortativities that are 
+higher than in the true data, this indicates that using these particular
+modifications would lead to overestimating the real strength assortativities 
+in the network. Conversely, where strength assortativities are lower than in
+the true data, this indicates that using these particular modifications would
+lead to underestimating the real strength assortativities in the network.
+```{r include=FALSE}
+strength_assortativity_caption <- 
+    paste("***Effects of modifying movement weights on strength assortativity.", 
+        "A.*** *Effects of jittering weights, with the jitter range increasing along the x-axis.* ***B.*** *Effects of rounding weights to the nearest multiple of a specified unit, with the rounding unit increasing along the x-axis. Each individual box represents the distribution of strength assortativities in the network for the ",
+        max(weight_mod_subnetwork_properties$period),
+        " time periods, calculated for either the true data (left-most box in each plot) or data with weights modified according to a certain treatment. In the true and rounded datasets, each data point represents the strength assortativity for a single periodic sub-network; in the jittered datasets, each data point is an average across ", n_jitter_sim, 
+        " sub-networks for the same period, as obtained by ", n_jitter_sim,
+        " simulations of `jitter_weight()`. Statistics performed by two-tailed paired Wilcoxon signed rank sum tests, comparing each modified dataset to the true data, \\*\\*\\* \\( p \\leq 0.001 \\), \\*\\* \\( p \\leq 0.01 \\), \\* \\( p \\leq 0.05 \\), ns \\( p \\gt 0.05 \\).*")
+```
+```{r strength-assortativity, echo=FALSE, fig.cap = strength_assortativity_caption, fig.show = "hold", out.width="50%"}
+plot_strength_assortativity_jitter
+plot_strength_assortativity_round
+```
+
+### Ranking of holdings according to local network properties
+
+This section describes the effects of movement weight modifications on the 
+ranking of holdings according to three local centrality measures, providing 
+information about the importance of holdings in the network in terms of their 
+connections with other holdings. Rankings are calculated and compared for each
+`r time_period` within the data.
+
+
+#### i. Strength centrality
+
+The strength of a node (holding) in a network is the sum of the weights
+of its edges. Here, this is taken to mean the sum of all movement weights.
+Holdings were ranked according to the geometric mean of their 
+total number of incoming animals (in-strength) and outgoing animals 
+(out-strength), in decreasing order. The ranking in each privacy-enhanced 
+dataset was then compared to the ranking in the true dataset.
+
+Figure \@ref(fig:strength) shows how the ranking of holdings according to strength 
+is affected by jittering or rounding movement weights to different extents. 
+
+Where movement weight modifications result in correlation coefficients that are much 
+lower than 1, this indicates that the ranking of holdings according to strength
+is very different than in the true data. Using these particular modifications 
+could lead to inaccurate identification of the most (and least) important holdings 
+in the network based on their strength.
+
+```{r include=FALSE}
+strength_corr_caption <- 
+  paste("***Effects of modifying movement weights on the ranking of holdings according to strength.",
+        "A.*** *Effects of jittering weights, with the jitter range increasing along the x-axis.* ***B.*** *Effects of rounding weights to the nearest multiple of a specified unit, with the rounding unit increasing along the x-axis. Each individual box represents the distribution of Kendall's tau correlation coefficients, comparing the ranking according to strength of holdings in a dataset with modified weights to the ranking in the true data, for the ",
+        max(weight_mod_subnetwork_properties$period),
+        "periodic sub-networks created from a single modified dataset. In the rounded datasets, each data point represents the correlation coefficient for a single periodic sub-network; in the jittered datasets, each data point is an average across correlation coefficients for ", n_jitter_sim, 
+        " sub-networks for the same period, as obtained by ", n_jitter_sim,
+        " simulations of `jitter_weight()`. The dotted line at y = 1 represents perfect agreement between the ranking in the true data and the ranking in the modified data.*")
+```
+```{r strength, echo=FALSE, fig.cap = strength_corr_caption, fig.show = "hold", out.width="50%"}
+plot_strength_jitter
+plot_strength_round
+```
+
+
+#### ii. Betweenness centrality
+
+The betweenness of a node (holding) in a network is the number of shortest paths 
+between all pairs of holdings that pass through that holding. Here, the shortest 
+paths were determined by weighting edges according to the reciprocal of the movement weight, normalised by the mean weight in the network (${mean\_movement\_weight}/{movement\_weight}$). Holdings were ranked according to their 
+betweenness, in decreasing order. The ranking in each privacy-enhanced dataset 
+was then compared to the ranking in the true dataset.
+
+Holdings with a high betweenness centrality may be of particular epidemiological relevance as they increase the connectivity of the network, and they could make it easier for an infection to reach sections of the network that would otherwise be distant. 
+
+Figure \@ref(fig:betweenness) shows how the ranking of holdings according to betweenness 
+is affected by jittering or rounding movement weights to different extents. 
+
+Where movement weight modifications result in correlation coefficients that are much 
+lower than 1, this indicates that the ranking of holdings according to 
+betweenness is very different than in the true data. Using these particular 
+modifications could lead to inaccurate identification of the most (and least) 
+important holdings in the network based on their betweenness.
+
+```{r include=FALSE}
+betweenness_corr_caption <- 
+  paste("***Effects of modifying movement weights on the ranking of holdings according to betweenness.", 
+        "A.*** *Effects of jittering weights, with the jitter range increasing along the x-axis.* ***B.*** *Effects of rounding weights to the nearest multiple of a specified unit, with the rounding unit increasing along the x-axis. Each individual box represents the distribution of Kendall's tau correlation coefficients, comparing the ranking according to betweenness of holdings in a dataset with modified weights to the ranking in the true data, for the ",
+        max(weight_mod_subnetwork_properties$period),
+        "periodic sub-networks created from a single modified dataset. In the rounded datasets, each data point represents the correlation coefficient for a single periodic sub-network; in the jittered datasets, each data point is an average across correlation coefficients for ", n_jitter_sim, 
+        " sub-networks for the same period, as obtained by ", n_jitter_sim,
+        " simulations of `jitter_weight()`. The dotted line at y = 1 represents perfect agreement between the ranking in the true data and the ranking in the modified data.*")
+```
+```{r betweenness, echo=FALSE, fig.cap = betweenness_corr_caption, fig.show = "hold", out.width="50%"}
+plot_betweenness_jitter
+plot_betweenness_round
+```
+
+
+#### iii. PageRank
+
+The PageRank of a node (holding) in a network is a measure of its importance 
+based on the number of nodes it links to, and the number of links these connections make in turn [@Brin1998]. 
+Here, edges were weighted according to their movement weights. Holdings were ranked 
+according to their PageRank, in decreasing order. The ranking in each 
+privacy-enhanced dataset was then compared to the ranking in the true dataset 
+using Kendall's tau rank correlation coefficient.
+
+PageRank has been suggested as a useful measure for the importance and influence of a holding in a network and a proxy for the probability of a random spreading process occurring when the holding becomes infected. PageRank has been used as a proxy for transmission risk in various studies investigating the spread of infectious diseases of livestock such as bovine viral diarrhoea [@Hirose2021] and foot-and-mouth disease [@Gonzalez-Gordon2023].
+
+Figure \@ref(fig:page-rank) shows how the ranking of holdings according to PageRank 
+is affected by jittering or rounding movement weights to different extents.
+
+Where movement weight modifications result in correlation coefficients that are much 
+lower than 1, this indicates that the ranking of holdings according to 
+PageRank is very different than in the true data. Using these particular 
+modifications could lead to inaccurate identification of the most (and least) 
+important holdings in the network based on their PageRank.
+
+```{r include=FALSE}
+pagerank_corr_caption <- 
+  paste("***Effects of modifying movement weights on the ranking of holdings according to PageRank.",
+        "A.*** *Effects of jittering weights, with the jitter range increasing along the x-axis.* ***B.*** *Effects of rounding weights to the nearest multiple of a specified unit, with the rounding unit increasing along the x-axis. Each individual box represents the distribution of Kendall's tau correlation coefficients, comparing the ranking according to PageRank of holdings in a dataset with modified weights to the ranking in the true data, for the ",
+        max(weight_mod_subnetwork_properties$period),
+        "periodic sub-networks created from a single modified dataset. In the rounded datasets, each data point represents the correlation coefficient for a single periodic sub-network; in the jittered datasets, each data point is an average across correlation coefficients for ", n_jitter_sim, 
+        " sub-networks for the same period, as obtained by ", n_jitter_sim,
+        " simulations of `jitter_weight()`. The dotted line at y = 1 represents perfect agreement between the ranking in the true data and the ranking in the modified data.*")
+```
+```{r page-rank, echo=FALSE, fig.cap = pagerank_corr_caption, fig.show = "hold", out.width="50%"}
+plot_pagerank_jitter
+plot_pagerank_round
+```
+
+## Methods
+
+### Initial data processing
+
+Entries with movement weight 0 or representing moves from a holding
+to itself ("loops") were removed, as they were considered irrelevant for
+disease transmission and as potentially complicating the
+interpretability of analyses. Additionally, all repeated moves from and
+to the same holdings on the same day were aggregated into a single entry
+per day, with movement weights summed up.
+
+### Modification of `r weights_and_or_dates` for privacy enhancement
+
+Movement `r weights_and_or_dates` were modified with the following
+functions:
+
+```{r weight-modifications, eval = modify_weights, results = 'asis', echo = FALSE}
+cat(
+"\n- [`movenet::jitter_weights()`](https://digivet-consortium.github.io/movenet/reference/jitter_weights.html): This adds random noise between `-range` and `range` to movement weights, while ensuring that resulting weights remain greater than 0. `jitter_weights()` was applied with various `range` arguments: ", paste(w_jitter_ranges, collapse = ", "), "(until the order of magnitude of the mean weight in the data). To take into account the effects of random sampling, ", n_jitter_sim, " simulations were run with each `range` argument.\n
+- [`movenet::round_weights()`](https://digivet-consortium.github.io/movenet/reference/round_weights.html): This rounds movement weights to multiples of `unit`, and also sets `unit` as the minimum possible value for the resulting weights. `round_weights()` was applied with various `unit` arguments: ", paste(w_round_set, collapse = ", "), "(until the order of magnitude of the largest weight in the data).\n")
+```
+
+```{r date-modifications, eval = modify_dates, results = 'asis', echo = FALSE}
+cat(
+"\n- [`movenet::jitter_dates()`](https://digivet-consortium.github.io/movenet/reference/jitter_dates.html): This adds random noise between `-range` and `range` days to movement dates, while ensuring that resulting dates remain within the timeframe of the original data. `jitter_dates()` was applied with various `range` arguments: ", paste(d_jitter_ranges, collapse = ", "),"(until ... in the data). To take into account the effects of random sampling, ", n_jitter_sim, " simulations were run with each `range` argument.\n
+- [`movenet::round_dates()`](https://digivet-consortium.github.io/movenet/reference/round_dates.html): This rounds movement dates down to the first day of a specified time `unit`. `round_dates()` was applied with various `unit` arguments: ", paste(d_round_set, collapse = ", "), "(until ... in the data).\n")
+```
+
+### Creation of network representations
+
+```{r static-networks, eval = modify_weights, results = 'asis', echo = FALSE}
+cat(
+"\nStatic network representations (snapshots) were created from true and privacy-enhanced datasets, for each subsequent", time_period, "in the data, using the `igraph` package [@Csardi2006]. During snapshot generation, all repeated moves from and to the same holdings were aggregated into a single network edge per snapshot, with movement weights summed up.")
+```
+```{r temporal-networks1, eval = modify_dates, results = 'asis', echo = FALSE}
+cat(
+"\nTemporal network representations were created from true and privacy-enhanced datasets, for each subsequent", time_period, "in the data, using the `networkDynamic` package [@Carter2023]. During the creation of temporal network representations, all repeated moves from and to the same holdings on the same day were aggregated into a single network 
+edge activity period per day, with movement weights summed up. (This aggregation
+process was repeated from that in initial data processing, to take into account 
+the effect of potential date modifications.)\n")
+```
+
+```{r static-network-methods-1, eval = modify_dates, results = 'asis', echo = FALSE}
+cat(
+"### Static network analyses (unweighted)\n
+\n")
+```
+
+```{r weighted-network-methods-2, eval = modify_weights, results = 'asis', echo = FALSE}
+cat(
+"### Static network analyses (weighted)\n
+Static network properties for each", time_period, "were determined using the `igraph` package [@Csardi2006]. Strength assortativity, strength centrality and PageRank centrality were calculated by weighting edges according to their movement weights. Mean shortest path length and betweenness centrality were calculated by weighting edges according to the reciprocal of their movement weights, normalised by the mean movement weight in the network (${mean\\_movement\\_weight}/{movement\\_weight}$). For global measures, the significance of differences between the true data and each privacy-enhanced dataset was assessed using two-tailed paired Wilcoxon signed rank sum tests.
+For rankings according to local network properties, holdings were ranked according to the respective centrality measure, in decreasing order, with ties being replaced by their mean value. The ranking in each privacy-enhanced periodic subnetwork was compared to the ranking in the respective true subnetwork using Kendall's tau rank correlation coefficient.
+\n")
+```
+
+```{r temporal-network-methods-2, eval = modify_dates, results = 'asis', echo = FALSE}
+cat(
+"### Temporal network analyses\n
+\n")
+```
+
+## Bibliography

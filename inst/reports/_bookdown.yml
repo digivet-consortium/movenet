@@ -1,0 +1,3 @@
+language:
+  label:
+    fig: !expr function(i) paste0('<b><i>Figure ', i, ':</i></b> ')
