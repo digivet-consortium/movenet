@@ -1,0 +1,114 @@
+---
+title: "IAA EPIC pigs 2017-2019 max reachability"
+output: html_notebook
+---
+
+```{r set-up}
+library(lubridate) #wday
+library(tidyverse) #tibble,str_split,str_c
+library(pbapply)
+library(RPostgres)
+library(tsna)  #tPath
+library(networkDynamic)  #get.vertex.id
+library(parallel)
+library(pbapply)
+library(movenet) #cluster parallelisation of round_dates only works with an installed version
+
+n_threads <- detectCores()-1
+```
+
+```{r get-movement-data}
+source("epic_creds.R")
+con <- RPostgres::dbConnect(RPostgres::Postgres(),
+                dbname = dbname,
+                host = host,
+                port = port,
+                user = username,
+                password = password,
+                sslmode = 'require')
+
+movements_query <- "SELECT  *
+                    FROM scoteid201706.pigs
+                    WHERE arrival_date >= '2017-01-01' and arrival_date <= '2019-12-31'"
+
+all_movement_data <- dbGetQuery(con, movements_query)
+```
+
+```{r load-movement-data}
+config_file <- "ScotEID_movement.yml"
+load_config(config_file)
+movement_data <- reformat_data(all_movement_data, "movement")
+```
+```{r modify-data}
+jitter_dates_set <- c(3, 7, 15) #corresponding to half rounding units
+jitter_dates_n_sim <- 5 #How many simulations to do for each jitter value?
+round_dates_set <- c("week", "month", "bimonth")
+
+create_jittered_dates_networks <- function(movement_data, movement_configfile, 
+                                           jitter_set, n_sim, n_threads,
+                                           holding_data = NULL, 
+                                           incl_nonactive_holdings = FALSE){
+
+  cl <- makeCluster(n_threads)
+  on.exit(stopCluster(cl))
+  clusterExport(cl, c("movement_data", "holding_data", "movement_configfile", 
+                      "incl_nonactive_holdings"), envir = environment())
+  clusterExport(cl, c("has_element", "floor_date", "select", "networkDynamic"))
+  clusterEvalQ(cl, {
+    library(movenet)
+    library(checkmate)
+    library(dplyr)
+    load_config(movement_configfile)
+  })
+  jitter_networks <-
+    pblapply(rep(jitter_set, n_sim),
+             function(x){jitter_dates(movement_data, range = x) |>
+                         movedata2networkDynamic(holding_data = holding_data,
+                                                 incl_nonactive_holdings = incl_nonactive_holdings)},
+             cl = cl)
+  names(jitter_networks) <- paste0("jitter (",rep(jitter_set, n_sim)," days)")
+  return(jitter_networks)
+}
+
+create_rounded_dates_networks <- function(movement_data, movement_configfile, 
+                                          round_set, n_threads, holding_data = NULL, 
+                                          incl_nonactive_holdings = FALSE,
+                                     week_start = getOption("lubridate.week.start", 7),
+                                     sum_weight = TRUE, ...){
+  cl <- makeCluster(n_threads)
+  on.exit(stopCluster(cl))
+  clusterExport(cl, c( "week_start", "has_element", "floor_date", "select", "networkDynamic"))
+  clusterExport(cl, c("movement_data", "holding_data", "movement_configfile", 
+                      "incl_nonactive_holdings"), envir = environment())
+  clusterEvalQ(cl, {
+    library(movenet)
+    library(checkmate)
+    library(dplyr)
+    load_config(movement_configfile)
+  })
+  rounding_networks <-
+    pblapply(round_set,
+             function(x){round_dates(movement_data, unit = x,
+                                     week_start = week_start,
+                                     sum_weight = sum_weight, ...) |>
+                         movedata2networkDynamic(holding_data = holding_data,
+                                                 incl_nonactive_holdings =
+                                                   incl_nonactive_holdings)},
+             cl = cl)
+  names(rounding_networks) <- paste0(round_set,"ly")
+  return(rounding_networks)
+}
+
+jittered_dates_networks <- 
+  create_jittered_dates_networks(movement_data, config_file, jitter_dates_set, 
+                                 jitter_dates_n_sim, n_threads, holding_data = NULL, 
+                                 incl_nonactive_holdings = FALSE)
+week_start <- wday(min(movement_data[[movenet:::movenetenv$options$movedata_cols$date]]))
+rounded_dates_networks <- 
+  create_rounded_dates_networks(movement_data, config_file, round_dates_set, 
+                                n_threads, holding_data = NULL, 
+                                incl_nonactive_holdings = FALSE, 
+                                week_start = week_start, sum_weight = TRUE)
+
+```
+
