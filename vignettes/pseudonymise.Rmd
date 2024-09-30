@@ -1,5 +1,5 @@
 ---
-title: "Pseudonymising livestock movement and holding data"
+title: "Enhancing the privacy of livestock movement and holding data"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Pseudonymising livestock movement and holding data}
@@ -18,15 +18,34 @@ To help address concerns around commercial sensitivity, movenet includes a range
 functions to make livestock movement data and/or holding data non-identifiable. 
 This vignette shows you how to use these.
 
+## Setting up
+
+To get started, first load the movenet package.
+
 ```{r setup}
 library(movenet)
+```
 
+The example datasets that we will use in this vignette are `example_movement_data` and
+`example_holding_data`, provided with the package. These are tibbles in movenet format, 
+containing movement and holding data, respectively. Inspect these datasets to get a 
+feel for them.
+
+```{r example-data}
+# Inspect the first lines of the example movenet-format movement and holding tibbles:
+head(example_movement_data)
+head(example_holding_data)
+```
+
+Then, load a configuration file that can be used with these example datasets. This 
+configuration file tells movenet which columns contain which data types, so that 
+the correct columns get modified when using the privacy-enhancing functions. For 
+more details on configuration files see `vignette("movenet")` and 
+`vignette("configurations")`.
+
+```{r load-config}
 # Load a combined movement and holding config file:
 load_config(system.file("configurations", "fakeScotEID_combined_config.yml", package="movenet"))
-
-# Load example movenet-format movement and holding tibbles into the global environment:
-data(example_movement_data, package = "movenet")
-data(example_holding_data, package = "movenet")
 ```
 
 ## Pseudonymising holding identifiers

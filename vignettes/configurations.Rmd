@@ -63,7 +63,7 @@ loaded if these configurations are absent:
 - `decimal`: decimal mark used in the data file
 - `date_format`: date format specification used in the data file (required for movement config files only)
 
-Additionally, holding config files may contain several file and data options that are required if you wish to extract and process columns with geographical coordinates:
+Additionally, holding config files may contain several file and data options that are required if you wish to extract and process columns with geographical coordinates. Keys for these options are included within the template holding config file, but they must be removed if you do not wish to use them.
 
 - `coord_EPSG_code`: numeric part of the EPSG code for the Coordinate Reference System used in the data file
 - `country_code`: two-letter country code for the data in the data file
@@ -83,7 +83,7 @@ For holding config files, there is only one required column header/index, and mo
 
 - `id`: header/index of the column containing holding identifiers, matching to `from`/`to` in movement data
 
-Additionally, holding config files may contain several optional column headers/indices relating to holding properties that are commonly relevant for analyses:
+Additionally, holding config files may contain several optional column headers/indices relating to holding properties that are commonly relevant for analyses. Keys for these properties are included within the template holding config file, but they must be removed if you do not wish to extract them. These optional configurations are as follows:
 
 - `coord_x`: header/index of the column containing longitudinal geographical coordinates (x/longitude) of holdings
 - `coord_y`: header/index of the column containing latitudinal geographical coordinates (y/latitude) of holdings 
@@ -156,6 +156,8 @@ like to copy: accepted values are `"movement"`, `"holding"`, or `c("movement", "
 # Copy the movement config file template to your working directory:  
 new_config(config_type = "movement")
 ```
+
+Note that the template config files include keys for several optional configurations (e.g. `herd_size`). These keys must be removed if you do not wish to use these optional configurations.
 
 ## Changing configurations
 The function `change_config()` can be used to change individual configurations in the 

@@ -35,9 +35,10 @@ additional summary functions can be provided through ...."><!-- mathjax --><scri
 <li class="nav-item dropdown">
   <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/pseudonymise.html">Pseudonymising livestock movement and holding data</a>
-    <a class="dropdown-item" href="../articles/network-analysis.html">Network analysis of livestock movement data</a>
     <a class="dropdown-item" href="../articles/configurations.html">Configurations</a>
+    <a class="dropdown-item" href="../articles/pseudonymise.html">Enhancing the privacy of livestock movement and holding data</a>
+    <a class="dropdown-item" href="../articles/network-analysis.html">Network analysis of livestock movement data</a>
+    <a class="dropdown-item" href="../articles/trace-contact-chains.html">Analysing and visualising contact chains on a Leaflet map</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -153,9 +154,78 @@ the resulting tibble.</p>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="https://lubridate.tidyverse.org/reference/round_date.html" class="external-link">lubridate::floor_date()</a></code>, <code><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">dplyr::summarise()</a></code> which this function
-wraps.</p></div>
+wraps.</p>
+<p>Other Privacy-enhancing functions: 
+<code><a href="anonymise.html">anonymise</a>()</code>,
+<code><a href="jitter_dates.html">jitter_dates</a>()</code>,
+<code><a href="jitter_weights.html">jitter_weights</a>()</code>,
+<code><a href="round_weights.html">round_weights</a>()</code></p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Set-up: Save movenet environment with current configurations</span></span></span>
+<span class="r-in"><span><span class="va">movenetenv</span> <span class="op">&lt;-</span> <span class="fu">movenet</span><span class="fu">:::</span><span class="va">movenetenv</span></span></span>
+<span class="r-in"><span><span class="va">old_config</span> <span class="op">&lt;-</span> <span class="va">movenetenv</span><span class="op">$</span><span class="va">options</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Load a movement config file</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="load_config.html">load_config</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"configurations"</span>, <span class="st">"ScotEID.yml"</span>,</span></span>
+<span class="r-in"><span>                        package <span class="op">=</span> <span class="st">"movenet"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Successfully loaded config file: C:/Users/cboga/Documents/R/win-library/4.1/movenet/configurations/ScotEID.yml</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Round dates down to the first day of the month, aggregate by summing up</span></span></span>
+<span class="r-in"><span><span class="co"># weights. This silently drops the optional movement_reference column.</span></span></span>
+<span class="r-in"><span><span class="va">monthly_data</span> <span class="op">&lt;-</span> <span class="fu">round_dates</span><span class="op">(</span><span class="va">example_movement_data</span>, <span class="st">"month"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">monthly_data</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 x 4</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   departure_cph dest_cph    departure_date qty_pigs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 10/161/7572   17/138/4106 2019-02-01          169</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 10/161/7572   26/750/9771 2019-05-01          113</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 10/161/7572   27/468/2072 2019-05-01           59</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 10/161/7572   31/473/4857 2019-05-01           86</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 10/161/7572   45/864/8651 2019-08-01           72</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 10/161/7572   47/232/6124 2019-11-01          148</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Round dates down to the first day of the month, and aggregate by summing</span></span></span>
+<span class="r-in"><span><span class="co"># up weights and listing movement reference numbers together</span></span></span>
+<span class="r-in"><span><span class="va">monthly_data_w_refs</span> <span class="op">&lt;-</span> <span class="fu">round_dates</span><span class="op">(</span><span class="va">example_movement_data</span>, <span class="st">"month"</span>,</span></span>
+<span class="r-in"><span>                                   movement_refs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">movement_reference</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">monthly_data_w_refs</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 x 5</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   departure_cph dest_cph    departure_date qty_pigs movement_refs</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 10/161/7572   17/138/4106 2019-02-01          169 <span style="color: #949494;">&lt;dbl [1]&gt;</span>    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 10/161/7572   26/750/9771 2019-05-01          113 <span style="color: #949494;">&lt;dbl [1]&gt;</span>    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 10/161/7572   27/468/2072 2019-05-01           59 <span style="color: #949494;">&lt;dbl [1]&gt;</span>    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 10/161/7572   31/473/4857 2019-05-01           86 <span style="color: #949494;">&lt;dbl [1]&gt;</span>    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 10/161/7572   45/864/8651 2019-08-01           72 <span style="color: #949494;">&lt;dbl [1]&gt;</span>    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 10/161/7572   47/232/6124 2019-11-01          148 <span style="color: #949494;">&lt;dbl [1]&gt;</span>    </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Round dates down to the first day of the week (Monday) without aggregating</span></span></span>
+<span class="r-in"><span><span class="va">weekly_data</span> <span class="op">&lt;-</span> <span class="fu">round_dates</span><span class="op">(</span><span class="va">example_movement_data</span>,</span></span>
+<span class="r-in"><span>                           unit <span class="op">=</span> <span class="st">"week"</span>,</span></span>
+<span class="r-in"><span>                           week_start <span class="op">=</span> <span class="st">"Monday"</span>,</span></span>
+<span class="r-in"><span>                           sum_weight <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">weekly_data</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 x 5</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   departure_cph dest_cph    departure_date qty_pigs movement_reference</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 95/216/1100   19/818/9098 2019-02-04           97             <span style="text-decoration: underline;">304</span>781</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 69/196/5890   71/939/3228 2019-08-12          167             <span style="text-decoration: underline;">229</span>759</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 52/577/5349   82/501/8178 2019-09-09          115              <span style="text-decoration: underline;">36</span>413</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 39/103/5541   13/282/1763 2019-10-21          125             <span style="text-decoration: underline;">488</span>616</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 41/788/6464   57/418/6011 2019-10-14          109             <span style="text-decoration: underline;">581</span>785</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 69/393/9398   39/947/2201 2019-09-30           72             <span style="text-decoration: underline;">564</span>911</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Clean-up: Reinstate previous configurations</span></span></span>
+<span class="r-in"><span><span class="va">movenetenv</span><span class="op">$</span><span class="va">options</span> <span class="op">&lt;-</span> <span class="va">old_config</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/rm.html" class="external-link">rm</a></span><span class="op">(</span><span class="st">"old_config"</span>, <span class="st">"movenetenv"</span>, <span class="st">"monthly_data"</span>, <span class="st">"monthly_data_w_refs"</span>,</span></span>
+<span class="r-in"><span>  <span class="st">"weekly_data"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside></div>
 

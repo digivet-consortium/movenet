@@ -7,7 +7,7 @@ output: html_document
 ```{r setup, include=FALSE}
 ```
 
-This page follows analyses and recreates some plots from [Schulz J et
+This report follows analyses and recreates some plots from [Schulz J et
 al. (2017) PLOS ONE 12(6):
 e0179915](https://doi.org/10.1371/journal.pone.0179915).
 
@@ -163,8 +163,8 @@ plot(common_links_heatmap)
 <br>
 This is a measure of consistency in the network between different points
 in time. Darker colours indicate a larger proportion of trades that are
-in common between two months. The black diagonal indicates that each
-month's movements are identical to themselves.
+in common between two time periods. The black diagonal indicates that each
+time period's movements are identical to themselves.
 </div>
 </div>
 
