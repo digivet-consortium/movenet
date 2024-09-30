@@ -1,0 +1,140 @@
+---
+title: "IAA EPIC pigs dataflow"
+output: html_notebook
+---
+```{r set-up, results = "hide"}
+#library(movenet)
+load_all()
+library(parallel)
+n_threads <- detectCores()-1
+library(lubridate)
+library(networkDynamic)
+library(tidyverse)
+```
+
+## Loading in data 
+
+### Questions
+
+* <mark>Approximate timing on obtaining data access?</mark>
+* Which additional movement data columns are useful for important network analyses? (e.g. purpose of movement?)
+* Which holding data columns are useful for important network analyses? (e.g. holding size, production, purpose)
+* What data checking/cleaning steps are needed for the pig movement and holding data before creating a network?
+* (From how much time to )
+
+```{r load-data}
+#config_file <- "fakeScotEID_combined_config.yml"
+config_file <- "ScotEID_movement.yml"
+load_config(config_file)
+#movement_data <- reformat_data(movement_data_file_or_connection, type = "movement") #movement data
+movement_data <- example_movement_data 
+#holding_data <- reformat_data(holding_data_file_or_connection, type = "holding") #holding data
+#holding_data <- example_holding_data
+```
+### To do
+
+* Extract holding data from ScotEID
+* Create holding "ScotEID_holding.yml" or make combined config
+* Create data cleaning script
+  * Check duplicates
+  * Check missing data for from, to, date, weight, holding id, holding production, holding purpose, herd size
+  * Check holding identifier is unique in various holding data tables, if not, how do you select?
+
+## Modifying data and creating network representations
+
+### Questions - data modification
+
+* <mark>What are sensible jitter ranges and rounding units to consider?</mark>
+  * rounding dates: week, month, (2 or 3 months?) + Aggregate yes/no?
+  * jittering dates: +- 3, 7, 15 days? + n simulations?
+  * rounding weights (batch sizes): 5, 10, 50, 100? 
+  * jittering weights (batch sizes): ?
+* <mark>What if anything do we want to do with hexscape geojitter function? distance/coords not part of network measures but relevant in models</mark>  
+* <mark>Treat all the same or require different treatments for different types of holdings?</mark>  
+* <mark>Immediately create networks for all combinations of date treatment + weight treatment, or let this depend on first analyses?</mark> 
+
+### Questions - network generation
+
+* <mark>The following assumptions are made in creating temporal networks: networks are 
+assumed to be directed, monopartite, and with no loops allowed. Are these assumptions 
+reasonable for pig data? For cattle and sheep, what would need to change?</mark>
+* <mark>Include non-active holdings yes/no? How does this matter?</mark>
+
+```{r modify-data}
+jitter_dates_set <- c(3, 7, 15) #corresponding to half rounding units
+jitter_dates_n_sim <- 5 #How many simulations to do for each jitter value?
+round_dates_set <- c("week", "month", "bimonth")
+
+create_jittered_dates_networks <- function(movement_data, movement_configfile, 
+                                           jitter_set, n_sim, n_threads,
+                                           holding_data = NULL, 
+                                           incl_nonactive_holdings = FALSE){
+
+  cl <- makeCluster(n_threads)
+  on.exit(stopCluster(cl))
+  clusterExport(cl, c("movement_data", "holding_data", "movement_configfile", 
+                      "incl_nonactive_holdings"), envir = environment())
+  clusterExport(cl, c("has_element", "floor_date", "select", "networkDynamic"))
+  clusterEvalQ(cl, {
+    library(movenet)
+    library(checkmate)
+    library(dplyr)
+    load_config(movement_configfile)
+  })
+  jitter_networks <-
+    pblapply(rep(jitter_set, n_sim),
+             function(x){jitter_dates(movement_data, range = x) |>
+                         movedata2networkDynamic(holding_data = holding_data,
+                                                 incl_nonactive_holdings = incl_nonactive_holdings)},
+             cl = cl)
+  names(jitter_networks) <- paste0("jitter (",rep(jitter_set, n_sim)," days)")
+  return(jitter_networks)
+}
+
+create_rounded_dates_networks <- function(movement_data, movement_configfile, 
+                                          round_set, n_threads, holding_data = NULL, 
+                                          incl_nonactive_holdings = FALSE,
+                                     week_start = getOption("lubridate.week.start", 7),
+                                     sum_weight = TRUE, ...){
+  cl <- makeCluster(n_threads)
+  on.exit(stopCluster(cl))
+  clusterExport(cl, c( "week_start", "has_element", "floor_date", "select", "networkDynamic"))
+  clusterExport(cl, c("movement_data", "holding_data", "movement_configfile", 
+                      "incl_nonactive_holdings"), envir = environment())
+  clusterEvalQ(cl, {
+    library(movenet)
+    library(checkmate)
+    library(dplyr)
+    load_config(movement_configfile)
+  })
+  rounding_networks <-
+    pblapply(round_set,
+             function(x){round_dates(movement_data, unit = x,
+                                     week_start = week_start,
+                                     sum_weight = sum_weight, ...) |>
+                         movedata2networkDynamic(holding_data = holding_data, 
+                                                 incl_nonactive_holdings = 
+                                                   incl_nonactive_holdings)},
+             cl = cl)
+  names(rounding_networks) <- paste0(round_set,"ly")
+  return(rounding_networks)
+}
+
+jitter_networks <- 
+  create_jittered_dates_networks(movement_data, config_file, jitter_dates_set, 
+                                 jitter_dates_n_sim, n_threads, holding_data, 
+                                 incl_nonactive_holdings = FALSE)
+week_start <- wday(min(movement_data[[movenet:::movenetenv$options$movedata_cols$date]]))
+rounding_networks <- 
+  create_rounded_dates_networks(movement_data, config_file, round_dates_set, 
+                                n_threads, holding_data, 
+                                incl_nonactive_holdings = FALSE, 
+                                week_start = week_start, sum_weight = TRUE)
+
+```
+
+
+### To do
+*
+* (Remove assumptions by setting additional arguments or using '...')
+
