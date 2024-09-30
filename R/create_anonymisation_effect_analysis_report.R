@@ -272,7 +272,6 @@ create_anonymisation_effect_analysis_report <- function(movement_data,
 
   if(isTRUE(modify_weights)){
 
-    browser()
     if(verbose){cat("Calculating and plotting: mean movement weights...\n")}
     weight_mod_subnetwork_properties$movement_weight <-
       sapply(weight_mod_subnetwork_properties$static_subnetworks,
