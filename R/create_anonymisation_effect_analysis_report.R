@@ -71,10 +71,6 @@
 #' @family Privacy-enhancing functions
 #' @family Network-related functions
 #'
-#' @export
-#'
-#' @keywords internal
-#'
 #' @examples
 #' # Set-up: Save movenet environment with current configurations
 #' movenetenv <- movenet:::movenetenv
@@ -100,6 +96,7 @@
 #' file.remove(file.path(tempdir(), "mod_weight_analysis.html"))
 #'
 #'
+#' @export
 create_anonymisation_effect_analysis_report <- function(movement_data,
                                                         output_file,
                                                         modify_weights = TRUE,
@@ -283,13 +280,13 @@ create_anonymisation_effect_analysis_report <- function(movement_data,
       filter(.data$modification_treatment %in% c("true", "jittered")) %>%
       # for each period, calculate the average across 3 jitter simulations
       group_by(.data$unit_or_range, period) %>%
-      summarise(movement_weight = mean(movement_weight)) %>%
-      select(.data$unit_or_range, movement_weight)
+      summarise(movement_weight = mean(.data$movement_weight)) %>%
+      select(.data$unit_or_range, .data$movement_weight)
 
     movement_weight_round <-
       weight_mod_subnetwork_properties %>%
       filter(.data$modification_treatment %in% c("true", "rounded")) %>%
-      select(.data$unit_or_range, movement_weight)
+      select(.data$unit_or_range, .data$movement_weight)
 
     plot_movement_weight_jitter <-
       movement_weight_jitter %>%
@@ -312,7 +309,7 @@ create_anonymisation_effect_analysis_report <- function(movement_data,
       filter(.data$modification_treatment %in% c("true", "jittered")) %>%
       # for each period, calculate the average across 3 jitter simulations
       group_by(.data$unit_or_range, period) %>%
-      summarise(mean_distance = mean(mean_distance)) %>%
+      summarise(mean_distance = mean(.data$mean_distance)) %>%
       select(.data$unit_or_range, mean_distance)
 
     mean_distance_round <-

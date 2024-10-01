@@ -1,13 +1,13 @@
 Package: movenet
 Title: A Toolkit Facilitating the Use of Livestock Movement Data in Veterinary Public Health
-Version: 0.4.0-1
+Version: 0.5.0-1
 Date: 2024-09-30
 Authors@R:
     c(person(given = "Carlijn", family = "Bogaardt",
              email = "cbogaardt@gmail.com", role = c("aut","cre"),
              comment = c(ORCID = "0000-0002-9322-6978")),
       person(given = "Matt", family = "Denwood",
-             email = "md@sund.ku.dk", role = c("aut","cre")),
+             email = "md@sund.ku.dk", role = "aut"),
       person(given = "Stefan", family = "Widgren",
              email = "stefan.widgren@sva.se", role = "aut",
              comment = c(ORCID = "0000-0001-5745-2284")),
@@ -38,6 +38,7 @@ Config/testthat/edition: 3
 VignetteBuilder: knitr
 Language: en-GB
 Imports:
+    bookdown,
     checkmate,
     dplyr,
     EpiContactTrace,

@@ -16,7 +16,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Carlijn Bogaardt \email{Carlijn.Bogaardt@glasgow.ac.uk} (\href{https://orcid.org/0000-0002-9322-6978}{ORCID})
+\strong{Maintainer}: Carlijn Bogaardt \email{cbogaardt@gmail.com} (\href{https://orcid.org/0000-0002-9322-6978}{ORCID})
 
 Authors:
 \itemize{
