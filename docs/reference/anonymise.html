@@ -4,7 +4,7 @@ holding identifiers with prefix-integer combinations. Both the anonymised
 data frame and the anonymisation key are returned. By default, a new
 anonymisation key is generated; alternatively, an existing key can be
 provided."><title>Anonymise data by replacing holding identifiers with prefix-integer
-combinations — anonymise • movenet</title><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.1.0/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.1.0/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Anonymise data by replacing holding identifiers with prefix-integer
+combinations — anonymise • movenet</title><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"><link href="../deps/bootstrap-5.1.3/bootstrap.min.css" rel="stylesheet"><script src="../deps/bootstrap-5.1.3/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous"><!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Anonymise data by replacing holding identifiers with prefix-integer
 combinations — anonymise"><meta property="og:description" content="anonymise() anonymises a holding or movement data frame by replacing
 holding identifiers with prefix-integer combinations. Both the anonymised
 data frame and the anonymisation key are returned. By default, a new
@@ -20,7 +20,7 @@ provided."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/m
     
     <a class="navbar-brand me-2" href="../index.html">movenet</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0-1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0-1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,6 +41,7 @@ provided."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/m
     <a class="dropdown-item" href="../articles/pseudonymise.html">Enhancing the privacy of livestock movement and holding data</a>
     <a class="dropdown-item" href="../articles/network-analysis.html">Network analysis of livestock movement data</a>
     <a class="dropdown-item" href="../articles/trace-contact-chains.html">Analysing and visualising contact chains on a Leaflet map</a>
+    <a class="dropdown-item" href="../articles/anonymisation-effect-analysis.html">How do privacy-enhancing modifications affect network analyses?</a>
   </div>
 </li>
       </ul><form class="form-inline my-2 my-lg-0" role="search">
@@ -120,6 +121,7 @@ combinations.</p>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p>Other Privacy-enhancing functions: 
+<code><a href="create_anonymisation_effect_analysis_report.html">create_anonymisation_effect_analysis_report</a>()</code>,
 <code><a href="jitter_dates.html">jitter_dates</a>()</code>,
 <code><a href="jitter_weights.html">jitter_weights</a>()</code>,
 <code><a href="round_dates.html">round_dates</a>()</code>,
@@ -135,7 +137,7 @@ combinations.</p>
 <span class="r-in"><span><span class="co"># Load a combined config file</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="load_config.html">load_config</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"configurations"</span>, <span class="st">"fakeScotEID_combined_config.yml"</span>,</span></span>
 <span class="r-in"><span>                        package <span class="op">=</span> <span class="st">"movenet"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Successfully loaded config file: C:/Users/cboga/Documents/R/win-library/4.1/movenet/configurations/fakeScotEID_combined_config.yml</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Successfully loaded config file: C:/Users/cboga/AppData/Local/Temp/RtmpgnjGPN/temp_libpath4a401eb67cc9/movenet/configurations/fakeScotEID_combined_config.yml</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Pseudonymise holding data by replacing identifiers with random consecutive</span></span></span>
 <span class="r-in"><span><span class="co"># integers from 1-N</span></span></span>
@@ -144,12 +146,12 @@ combinations.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 x 4</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   cph   holding_type herd_size           coordinates</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;POINT [°]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 451   GXFSR             <span style="text-decoration: underline;">2</span>111   (3.718568 52.69096)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 490   SCHZQ             <span style="text-decoration: underline;">2</span>134  (-4.959035 51.88195)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 138   HEJDE             <span style="text-decoration: underline;">2</span>140   (5.709143 51.97547)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 125   IQALL             <span style="text-decoration: underline;">2</span>141  (-2.983365 57.55851)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 14    YUFUC             <span style="text-decoration: underline;">2</span>148   (5.586477 50.50902)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 281   IATKP             <span style="text-decoration: underline;">2</span>151 (-0.3323066 58.84295)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 237   GXFSR             <span style="text-decoration: underline;">2</span>111   (3.718568 52.69096)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 135   SCHZQ             <span style="text-decoration: underline;">2</span>134  (-4.959035 51.88195)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 391   HEJDE             <span style="text-decoration: underline;">2</span>140   (5.709143 51.97547)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 78    IQALL             <span style="text-decoration: underline;">2</span>141  (-2.983365 57.55851)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 383   YUFUC             <span style="text-decoration: underline;">2</span>148   (5.586477 50.50902)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 408   IATKP             <span style="text-decoration: underline;">2</span>151 (-0.3323066 58.84295)</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Pseudonymise holding data by replacing identifiers with FARM_1 to FARM_N</span></span></span>
 <span class="r-in"><span><span class="va">pseudonymised_holdings</span> <span class="op">&lt;-</span> <span class="fu">anonymise</span><span class="op">(</span><span class="va">example_holding_data</span>, prefix <span class="op">=</span> <span class="st">"FARM_"</span><span class="op">)</span></span></span>
@@ -157,14 +159,14 @@ combinations.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 x 4</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   cph      holding_type herd_size           coordinates</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;POINT [°]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> FARM_257 GXFSR             <span style="text-decoration: underline;">2</span>111   (3.718568 52.69096)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> FARM_285 SCHZQ             <span style="text-decoration: underline;">2</span>134  (-4.959035 51.88195)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> FARM_236 HEJDE             <span style="text-decoration: underline;">2</span>140   (5.709143 51.97547)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> FARM_427 IQALL             <span style="text-decoration: underline;">2</span>141  (-2.983365 57.55851)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> FARM_6   YUFUC             <span style="text-decoration: underline;">2</span>148   (5.586477 50.50902)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> FARM_452 IATKP             <span style="text-decoration: underline;">2</span>151 (-0.3323066 58.84295)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> FARM_7   GXFSR             <span style="text-decoration: underline;">2</span>111   (3.718568 52.69096)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> FARM_218 SCHZQ             <span style="text-decoration: underline;">2</span>134  (-4.959035 51.88195)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> FARM_365 HEJDE             <span style="text-decoration: underline;">2</span>140   (5.709143 51.97547)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> FARM_290 IQALL             <span style="text-decoration: underline;">2</span>141  (-2.983365 57.55851)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> FARM_224 YUFUC             <span style="text-decoration: underline;">2</span>148   (5.586477 50.50902)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> FARM_277 IATKP             <span style="text-decoration: underline;">2</span>151 (-0.3323066 58.84295)</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">pseudonymised_holdings</span><span class="op">$</span><span class="va">key</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 48/368/5275 28/693/6939 57/923/3360 32/307/1166 23/347/2906 29/675/4499 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 33/172/2465 17/454/1844 28/693/6939 34/467/9102 30/292/8549 68/891/6323 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    "FARM_1"    "FARM_2"    "FARM_3"    "FARM_4"    "FARM_5"    "FARM_6" </span>
 <span class="r-in"><span><span class="co"># Save the pseudonymisation key for later use</span></span></span>
 <span class="r-in"><span><span class="va">pseudonymisation_key</span> <span class="op">&lt;-</span> <span class="va">pseudonymised_holdings</span><span class="op">$</span><span class="va">key</span></span></span>
@@ -176,12 +178,12 @@ combinations.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 x 5</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   departure_cph dest_cph departure_date qty_pigs movement_reference</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> FARM_218      FARM_411 2019-02-08           97             <span style="text-decoration: underline;">304</span>781</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> FARM_316      FARM_76  2019-08-15          167             <span style="text-decoration: underline;">229</span>759</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> FARM_372      FARM_427 2019-09-15          115              <span style="text-decoration: underline;">36</span>413</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> FARM_410      FARM_132 2019-10-26          125             <span style="text-decoration: underline;">488</span>616</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> FARM_37       FARM_166 2019-10-17          109             <span style="text-decoration: underline;">581</span>785</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> FARM_128      FARM_35  2019-10-06           72             <span style="text-decoration: underline;">564</span>911</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> FARM_441      FARM_160 2019-02-08           97             <span style="text-decoration: underline;">304</span>781</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> FARM_251      FARM_407 2019-08-15          167             <span style="text-decoration: underline;">229</span>759</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> FARM_14       FARM_290 2019-09-15          115              <span style="text-decoration: underline;">36</span>413</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> FARM_271      FARM_42  2019-10-26          125             <span style="text-decoration: underline;">488</span>616</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> FARM_387      FARM_13  2019-10-17          109             <span style="text-decoration: underline;">581</span>785</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> FARM_134      FARM_319 2019-10-06           72             <span style="text-decoration: underline;">564</span>911</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Clean-up: Reinstate previous configurations</span></span></span>
 <span class="r-in"><span><span class="va">movenetenv</span><span class="op">$</span><span class="va">options</span> <span class="op">&lt;-</span> <span class="va">old_config</span></span></span>

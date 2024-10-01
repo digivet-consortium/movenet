@@ -4,6 +4,9 @@
     <loc>https://digivet-consortium.github.io/movenet/404.html</loc>
   </url>
   <url>
+    <loc>https://digivet-consortium.github.io/movenet/articles/anonymisation-effect-analysis.html</loc>
+  </url>
+  <url>
     <loc>https://digivet-consortium.github.io/movenet/articles/configurations.html</loc>
   </url>
   <url>
@@ -263,6 +266,9 @@
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/reference/violinplot_monthly_measures.html</loc>
+  </url>
+  <url>
+    <loc>https://digivet-consortium.github.io/movenet/vignettes/modified_weights_analyis_report.html</loc>
   </url>
   <url>
     <loc>https://digivet-consortium.github.io/movenet/vignettes/network_report.html</loc>

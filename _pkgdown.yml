@@ -14,6 +14,7 @@ reference:
   - anonymise
   - starts_with("jitter")
   - starts_with("round")
+  - create_anonymisation_effect_analysis_report
 - title: Network analysis of movement data
   desc: Functions for generating network representations of movement data and performing
     network analyses
@@ -21,6 +22,7 @@ reference:
   - movedata2igraph
   - movedata2networkDynamic
   - create_temporal_network_analysis_report
+  - create_anonymisation_effect_analysis_report
   - parallel_summarise_temporal_node_properties
   - trace_contact_chains
 - title: Configurations
@@ -51,5 +53,6 @@ articles:
   - pseudonymise
   - network-analysis
   - trace-contact-chains
+  - anonymisation-effect-analysis
 
 
