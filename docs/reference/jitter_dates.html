@@ -107,7 +107,7 @@ original date range.</p>
 <span class="r-in"><span><span class="co"># Load a movement config file</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="load_config.html">load_config</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"configurations"</span>, <span class="st">"ScotEID.yml"</span>,</span></span>
 <span class="r-in"><span>                        package <span class="op">=</span> <span class="st">"movenet"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Successfully loaded config file: C:/Users/cboga/AppData/Local/Temp/Rtmp25xhub/temp_libpath11486afc22e/movenet/configurations/ScotEID.yml</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Successfully loaded config file: C:/Users/cboga/AppData/Local/Temp/Rtmp25xhub/temp_libpath11484970381d/movenet/configurations/ScotEID.yml</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Add -3 to +3 days of jitter to movement dates</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">example_movement_data</span><span class="op">)</span></span></span>
@@ -125,12 +125,12 @@ original date range.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 x 5</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   departure_cph dest_cph    departure_date qty_pigs movement_reference</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 95/216/1100   19/818/9098 2019-02-08           97             <span style="text-decoration: underline;">304</span>781</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 69/196/5890   71/939/3228 2019-08-12          167             <span style="text-decoration: underline;">229</span>759</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 52/577/5349   82/501/8178 2019-09-14          115              <span style="text-decoration: underline;">36</span>413</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 39/103/5541   13/282/1763 2019-10-27          125             <span style="text-decoration: underline;">488</span>616</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 41/788/6464   57/418/6011 2019-10-16          109             <span style="text-decoration: underline;">581</span>785</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 69/393/9398   39/947/2201 2019-10-04           72             <span style="text-decoration: underline;">564</span>911</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 95/216/1100   19/818/9098 2019-02-10           97             <span style="text-decoration: underline;">304</span>781</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 69/196/5890   71/939/3228 2019-08-15          167             <span style="text-decoration: underline;">229</span>759</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 52/577/5349   82/501/8178 2019-09-15          115              <span style="text-decoration: underline;">36</span>413</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 39/103/5541   13/282/1763 2019-10-23          125             <span style="text-decoration: underline;">488</span>616</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 41/788/6464   57/418/6011 2019-10-18          109             <span style="text-decoration: underline;">581</span>785</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 69/393/9398   39/947/2201 2019-10-09           72             <span style="text-decoration: underline;">564</span>911</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Clean-up: Reinstate previous configurations</span></span></span>
 <span class="r-in"><span><span class="va">movenetenv</span><span class="op">$</span><span class="va">options</span> <span class="op">&lt;-</span> <span class="va">old_config</span></span></span>

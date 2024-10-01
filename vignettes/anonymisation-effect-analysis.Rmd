@@ -49,7 +49,7 @@ effects of privacy enhancing modifications. Here we use the example
 If the file name does not include a path, the report will be saved in your current working directory.
 Here we save the file to a temporary directory.
 - `modify_weights`: A logical indicating whether to modify the weights in the dataset. 
-  This needs to be TRUE for the current implementation.
+  This needs to be `TRUE` for the current implementation.
 - (`modify_dates`: a logical indicating whether to modify the dates in the dataset. 
   This is not yet implemented and is currently automatically set to `FALSE`.)
 - `n_jitter_sim`: The number of times to run `jitter_weights()` on `movement_data`,
